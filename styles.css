@@ -1,0 +1,475 @@
+/* تنظیمات کلی */
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #333;
+  --border-color: #dee2e6;
+  --toolbar-bg: #f1f3f5;
+  --button-bg: white;
+  --button-border: #ced4da;
+  --button-hover: #e9ecef;
+  --editor-bg: white;
+  --preview-bg: white;
+  --modal-bg: white;
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --toggle-bg: #ccc;
+  --toggle-active: #4caf50;
+  --line-numbers-bg: #f1f3f5;
+  --line-numbers-text: #6c757d;
+  --stats-bg: #f1f3f5;
+  --stats-text: #6c757d;
+  --font-family: "Vazirmatn";
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --border-color: #444;
+  --toolbar-bg: #2a2a2a;
+  --button-bg: #333;
+  --button-border: #555;
+  --button-hover: #444;
+  --editor-bg: #2a2a2a;
+  --preview-bg: #2a2a2a;
+  --modal-bg: #2a2a2a;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --toggle-bg: #555;
+  --toggle-active: #4caf50;
+  --line-numbers-bg: #333;
+  --line-numbers-text: #999;
+  --stats-bg: #2a2a2a;
+  --stats-text: #999;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  line-height: 1.6;
+  direction: rtl;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* کانتینر اصلی ویرایشگر */
+.editor-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* پنل ویرایشگر (سمت راست) */
+.editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-color);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  background-color: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.settings-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+  background-color: var(--button-bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--border-color);
+  margin: 0 4px;
+}
+
+.toolbar button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+  background-color: var(--button-bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.toolbar button:hover {
+  background-color: var(--button-hover);
+}
+
+.toolbar button i {
+  font-size: 14px;
+}
+
+.editor-wrapper {
+  display: flex;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* اصلاح استایل شماره خطوط برای هم‌راستا شدن با متن */
+.line-numbers {
+  display: none;
+  width: 40px;
+  background-color: var(--line-numbers-bg);
+  color: var(--line-numbers-text);
+  font-family: monospace;
+  font-size: 16px;
+  text-align: left;
+  overflow-y: hidden;
+  user-select: none;
+  border-right: 1px solid var(--border-color);
+  line-height: 1.6;
+  padding: 16px 8px 16px 0;
+}
+
+/* اضافه کردن استایل برای شماره خط‌ها */
+.line-number {
+  height: 1.6em;
+  text-align: left;
+  padding-left: 8px;
+  line-height: inherit;
+  display: flex;
+  align-items: center;
+}
+
+.show-line-numbers .line-numbers {
+  display: block;
+}
+
+.show-line-numbers #editor {
+  padding-right: 8px;
+}
+
+#editor {
+  flex: 1;
+  padding: 16px;
+  font-family: var(--font-family), monospace;
+  font-size: 16px;
+  border: none;
+  resize: none;
+  outline: none;
+  direction: rtl;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+/* تغییر استایل بخش آمار برای نمایش در سمت راست */
+.editor-stats {
+  display: flex;
+  background-color: var(--stats-bg);
+  border-top: 1px solid var(--border-color);
+  color: var(--stats-text);
+  font-size: 12px;
+  padding: 4px 16px;
+  width: 100%;
+  justify-content: flex-start; /* چینش از سمت راست */
+  direction: rtl; /* جهت RTL */
+}
+
+.editor-stats span {
+  margin-left: 20px; /* فاصله بیشتر بین آمارها */
+}
+
+.editor-stats span:last-child {
+  margin-left: 0; /* حذف فاصله برای آخرین آیتم */
+}
+
+/* پنل پیش‌نمایش (سمت چپ) */
+.preview-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--preview-bg);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.export-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.export-buttons button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+  background-color: var(--button-bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+}
+
+.export-buttons button:hover {
+  background-color: var(--button-hover);
+}
+
+.preview-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  direction: rtl;
+  font-family: var(--font-family), sans-serif;
+  color: var(--text-color);
+}
+
+/* مدال تنظیمات */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-overlay);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: var(--modal-bg);
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.settings-group {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-select {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  font-family: var(--font-family), sans-serif;
+  width: 200px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--toggle-bg);
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.toggle-label:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-label {
+  background-color: var(--toggle-active);
+}
+
+input:checked + .toggle-label:before {
+  transform: translateX(26px);
+}
+
+/* استایل‌های مارک‌داون در پیش‌نمایش */
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  font-family: var(--font-family), sans-serif;
+}
+
+.preview-content h1 {
+  font-size: 2em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3em;
+}
+
+.preview-content h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3em;
+}
+
+.preview-content p {
+  margin-bottom: 1em;
+}
+
+.preview-content ul,
+.preview-content ol {
+  margin-bottom: 1em;
+  padding-right: 2em;
+}
+
+.preview-content blockquote {
+  padding: 0 1em;
+  color: var(--stats-text);
+  border-right: 0.25em solid var(--border-color);
+  margin: 0 0 1em 0;
+}
+
+.preview-content pre {
+  background-color: var(--line-numbers-bg);
+  border-radius: 3px;
+  padding: 16px;
+  overflow: auto;
+  margin-bottom: 1em;
+}
+
+.preview-content code {
+  font-family: monospace;
+  background-color: var(--line-numbers-bg);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+
+.preview-content pre code {
+  padding: 0;
+  background-color: transparent;
+}
+
+.preview-content img {
+  max-width: 100%;
+  margin: 1em 0;
+}
+
+.preview-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.preview-content table th,
+.preview-content table td {
+  border: 1px solid var(--border-color);
+  padding: 6px 13px;
+}
+
+.preview-content table tr {
+  background-color: var(--editor-bg);
+  border-top: 1px solid var(--border-color);
+}
+
+.preview-content table tr:nth-child(2n) {
+  background-color: var(--line-numbers-bg);
+}
+
+/* واکنش‌گرایی */
+@media (max-width: 768px) {
+  .editor-container {
+    flex-direction: column;
+  }
+
+  .editor-panel {
+    border-left: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  #editor,
+  .preview-content {
+    min-height: 300px;
+  }
+}
+

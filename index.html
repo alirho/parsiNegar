@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ویرایشگر مارک‌داون</title>
+  <!-- فونت وزیرمتن -->
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+  <!-- فونت Iranian Sans -->
+  <link href="https://cdn.jsdelivr.net/gh/font-store/font-iranian-sans@master/WebFonts/css/style.css" rel="stylesheet" type="text/css" />
+  <!-- آیکون‌های Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <!-- از کتابخانه marked برای تبدیل مارک‌داون به HTML استفاده می‌کنیم -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+  <!-- اضافه کردن مفسر ShahNeshan -->
+  <script src="https://cdn.jsdelivr.net/gh/barnevis/ShahNeshan/dist/shahneshan.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="editor-container">
+      <!-- بخش ویرایشگر (سمت راست) -->
+      <div class="editor-panel">
+        <div class="toolbar">
+          <!-- دکمه تنظیمات -->
+          <button id="settings-button" title="تنظیمات" class="settings-button">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+          
+          <div class="toolbar-divider"></div>
+          
+          <!-- دکمه‌ها با آیکون -->
+          <button title="پررنگ" data-action="bold"><i class="fa-solid fa-bold"></i></button>
+          <button title="کج" data-action="italic"><i class="fa-solid fa-italic"></i></button>
+          <button title="عنوان" data-action="heading"><i class="fa-solid fa-heading"></i></button>
+          <button title="خط زدن" data-action="strikethrough"><i class="fa-solid fa-strikethrough"></i></button>
+          <button title="لیست نامرتب" data-action="unordered-list"><i class="fa-solid fa-list-ul"></i></button>
+          <button title="لیست مرتب" data-action="ordered-list"><i class="fa-solid fa-list-ol"></i></button>
+          <button title="چک لیست" data-action="checklist"><i class="fa-solid fa-square-check"></i></button>
+          <button title="نقل قول" data-action="blockquote"><i class="fa-solid fa-quote-right"></i></button>
+          <button title="کد" data-action="code"><i class="fa-solid fa-code"></i></button>
+          <button title="جدول" data-action="table"><i class="fa-solid fa-table"></i></button>
+          <button title="تصویر" data-action="image"><i class="fa-solid fa-image"></i></button>
+          <button title="پیوند" data-action="link"><i class="fa-solid fa-link"></i></button>
+        </div>
+        <div class="editor-wrapper">
+          <div id="line-numbers" class="line-numbers"></div>
+          <textarea id="editor" placeholder="متن مارک‌داون خود را اینجا بنویسید..."></textarea>
+        </div>
+      </div>
+
+      <!-- بخش پیش‌نمایش (سمت چپ) -->
+      <div class="preview-panel">
+        <div class="preview-header">
+          <span>نمایش</span>
+          <div class="export-buttons">
+            <button id="export-md" title="خروجی Markdown"><i class="fa-solid fa-file-lines"></i></button>
+            <button id="export-html" title="خروجی HTML"><i class="fa-solid fa-file-code"></i></button>
+          </div>
+        </div>
+        <div id="preview" class="preview-content"></div>
+      </div>
+    </div>
+    
+    <!-- بخش آمار - خارج از پنل‌ها و در پایین صفحه -->
+    <div class="editor-stats">
+      <span id="char-count">نویسه: 0</span>
+      <span id="letter-count">حروف: 0</span>
+      <span id="word-count">واژه‌ها: 0</span>
+      <span id="line-count">خط: 0</span>
+      <span id="file-size">حجم: 0 بایت</span>
+    </div>
+  </div>
+
+  <!-- مدال تنظیمات -->
+  <div id="settings-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>تنظیمات</h2>
+        <button id="close-settings" class="close-button"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-group">
+          <label for="parser-select">مفسر مارک‌داون:</label>
+          <select id="parser-select" class="settings-select">
+            <option value="marked" selected>Marked</option>
+            <option value="shahneshan">ShahNeshan</option>
+            <option value="custom">Custom Parser</option>
+          </select>
+        </div>
+        
+        <div class="settings-group">
+          <label for="font-select">فونت:</label>
+          <select id="font-select" class="settings-select">
+            <option value="Vazirmatn" selected>وزیرمتن</option>
+            <option value="IranianSans">Iranian Sans</option>
+          </select>
+        </div>
+        
+        <div class="settings-group">
+          <label for="theme-select">تم:</label>
+          <select id="theme-select" class="settings-select">
+            <option value="light" selected>روشن</option>
+            <option value="dark">تاریک</option>
+          </select>
+        </div>
+        
+        <div class="settings-group">
+          <label for="line-numbers-toggle">نمایش شماره خطوط:</label>
+          <div class="toggle-switch">
+            <input type="checkbox" id="line-numbers-toggle">
+            <label for="line-numbers-toggle" class="toggle-label"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
