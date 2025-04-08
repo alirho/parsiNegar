@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const exportMdButton = document.getElementById("export-md")
   const exportHtmlButton = document.getElementById("export-html")
   const toolbarButtons = document.querySelectorAll(".toolbar button[data-action]")
+  const undoButton = document.getElementById("undo-button")
+  const redoButton = document.getElementById("redo-button")
 
   // عناصر آمار
   const charCount = document.getElementById("char-count")
@@ -30,115 +32,114 @@ document.addEventListener("DOMContentLoaded", () => {
     gfm: true,
   })
 
+  // متغیرهای تاریخچه تغییرات
+  let history = []
+  let historyIndex = -1
+  let isUndoRedo = false
+
   // بارگذاری تنظیمات از localStorage
   loadSettings()
 
   // بارگذاری محتوای ذخیره شده از localStorage
-  const savedContent = localStorage.getItem("markdown-content")
-  if (savedContent) {
-    editor.value = savedContent
-    renderMarkdown()
-    updateStats()
-    updateLineNumbers()
-  }
+  const savedContent = localStorage.getItem("markdown-content") || ""
+  editor.value = savedContent
+  renderMarkdown()
+  updateStats()
+  updateLineNumbers()
+  highlightCurrentLine()
 
-  // رویداد تغییر متن در ویرایشگر
-  editor.addEventListener("input", () => {
-    localStorage.setItem("markdown-content", editor.value)
-    renderMarkdown()
-    updateStats()
-    updateLineNumbers()
-  })
+  // اضافه کردن محتوای اولیه به تاریخچه
+  history.push(savedContent)
+  historyIndex = 0
 
   // متغیرهای کنترل اسکرول
   let isManualScrolling = false
-  let scrollTimeout
-  let lastEditorScrollTop = 0
-  let lastPreviewScrollTop = 0
+  let editorScrolling = false
+  let previewScrolling = false
 
-  // رویداد اسکرول ویرایشگر - اصلاح شده برای فایرفاکس
+  // رویداد تغییر متن در ویرایشگر
+  editor.addEventListener("input", () => {
+    const content = editor.value
+    localStorage.setItem("markdown-content", content)
+    saveToHistory(content)
+    renderMarkdown()
+    updateStats()
+    updateLineNumbers()
+    highlightCurrentLine()
+  })
+
+  // رویداد کلیدهای میانبر
+  editor.addEventListener("keydown", (e) => {
+    // Ctrl+Z برای undo
+    if (e.ctrlKey && e.key === "z") {
+      e.preventDefault()
+      undo()
+    }
+
+    // Ctrl+Y برای redo
+    if (e.ctrlKey && e.key === "y") {
+      e.preventDefault()
+      redo()
+    }
+  })
+
+  // به‌روزرسانی هایلایت با کلیک یا حرکت مکان‌نما
+  editor.addEventListener("click", highlightCurrentLine)
+  editor.addEventListener("keyup", highlightCurrentLine)
+  editor.addEventListener("mouseup", highlightCurrentLine)
+
+  // رویداد اسکرول ویرایشگر - اصلاح شده
   editor.addEventListener("scroll", () => {
-    // همگام‌سازی شماره خطوط همیشه انجام شود
+    if (editorScrolling) return
+
+    // همگام‌سازی شماره خطوط
     if (lineNumbers.style.display !== "none") {
       lineNumbers.scrollTop = editor.scrollTop
     }
 
-    // اگر اسکرول به صورت دستی نیست یا تغییری نکرده، خارج شو
-    if (!isManualScrolling || lastEditorScrollTop === editor.scrollTop) return
+    // همگام‌سازی پیش‌نمایش فقط اگر کاربر اسکرول کرده باشد
+    if (!isManualScrolling) return
 
-    lastEditorScrollTop = editor.scrollTop
-    clearTimeout(scrollTimeout)
-
-    // همگام‌سازی پیش‌نمایش
+    previewScrolling = true
     const percentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight)
-    const targetScrollTop = percentage * (preview.scrollHeight - preview.clientHeight)
+    preview.scrollTop = percentage * (preview.scrollHeight - preview.clientHeight)
 
-    // جلوگیری از حلقه بازخورد
-    if (Math.abs(preview.scrollTop - targetScrollTop) > 5) {
-      preview.scrollTop = targetScrollTop
-    }
+    setTimeout(() => {
+      previewScrolling = false
+    }, 50)
 
-    scrollTimeout = setTimeout(() => {
-      isManualScrolling = false
-    }, 150)
+    // به‌روزرسانی هایلایت خط فعلی هنگام اسکرول
+    highlightCurrentLine()
   })
 
-  // رویداد اسکرول پیش‌نمایش - اصلاح شده برای فایرفاکس
+  // رویداد اسکرول پیش‌نمایش - اصلاح شده
   preview.addEventListener("scroll", () => {
-    // اگر اسکرول به صورت دستی نیست یا تغییری نکرده، خارج شو
-    if (!isManualScrolling || lastPreviewScrollTop === preview.scrollTop) return
+    if (previewScrolling) return
 
-    lastPreviewScrollTop = preview.scrollTop
-    clearTimeout(scrollTimeout)
+    // همگام‌سازی ویرایشگر فقط اگر کاربر اسکرول کرده باشد
+    if (!isManualScrolling) return
 
-    // همگام‌سازی ویرایشگر
+    editorScrolling = true
     const percentage = preview.scrollTop / (preview.scrollHeight - preview.clientHeight)
-    const targetScrollTop = percentage * (editor.scrollHeight - editor.clientHeight)
+    editor.scrollTop = percentage * (editor.scrollHeight - editor.clientHeight)
 
-    // جلوگیری از حلقه بازخورد
-    if (Math.abs(editor.scrollTop - targetScrollTop) > 5) {
-      editor.scrollTop = targetScrollTop
-
-      // همگام‌سازی شماره خطوط
-      if (lineNumbers.style.display !== "none") {
-        lineNumbers.scrollTop = editor.scrollTop
-      }
-    }
-
-    scrollTimeout = setTimeout(() => {
-      isManualScrolling = false
-    }, 150)
+    setTimeout(() => {
+      editorScrolling = false
+    }, 50)
   })
 
-  // تشخیص اسکرول دستی - بهبود یافته
+  // تشخیص اسکرول دستی
   editor.addEventListener("mousedown", () => (isManualScrolling = true))
   preview.addEventListener("mousedown", () => (isManualScrolling = true))
 
-  editor.addEventListener("wheel", () => {
-    isManualScrolling = true
-    clearTimeout(scrollTimeout)
-    scrollTimeout = setTimeout(() => (isManualScrolling = false), 150)
-  })
+  editor.addEventListener("wheel", () => (isManualScrolling = true))
+  preview.addEventListener("wheel", () => (isManualScrolling = true))
 
-  preview.addEventListener("wheel", () => {
-    isManualScrolling = true
-    clearTimeout(scrollTimeout)
-    scrollTimeout = setTimeout(() => (isManualScrolling = false), 150)
-  })
-
-  // اضافه کردن پشتیبانی از کلیدهای جهت‌دار برای اسکرول
-  editor.addEventListener("keydown", (e) => {
-    if (
-      e.key.startsWith("Arrow") ||
-      e.key === "PageUp" ||
-      e.key === "PageDown" ||
-      e.key === "Home" ||
-      e.key === "End"
-    ) {
-      isManualScrolling = true
-      clearTimeout(scrollTimeout)
-      scrollTimeout = setTimeout(() => (isManualScrolling = false), 150)
-    }
+  // غیرفعال کردن اسکرول دستی بعد از مدتی عدم فعالیت
+  document.addEventListener("mouseup", () => {
+    setTimeout(() => {
+      isManualScrolling = false
+    }, 1000)
   })
 
   // رویداد باز کردن مدال تنظیمات
@@ -196,6 +197,118 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
+  // رویداد دکمه‌های undo و redo
+  if (undoButton) {
+    undoButton.addEventListener("click", () => {
+      undo()
+    })
+  }
+
+  if (redoButton) {
+    redoButton.addEventListener("click", () => {
+      redo()
+    })
+  }
+
+  // تابع ذخیره وضعیت در تاریخچه
+  function saveToHistory(content) {
+    if (isUndoRedo) {
+      isUndoRedo = false
+      return
+    }
+
+    // حذف تاریخچه‌های بعد از موقعیت فعلی
+    if (historyIndex < history.length - 1) {
+      history = history.slice(0, historyIndex + 1)
+    }
+
+    // اضافه کردن وضعیت جدید به تاریخچه
+    history.push(content)
+    historyIndex = history.length - 1
+
+    // محدود کردن تعداد تاریخچه‌ها
+    if (history.length > 100) {
+      history.shift()
+      historyIndex--
+    }
+  }
+
+  // تابع undo
+  function undo() {
+    if (historyIndex > 0) {
+      historyIndex--
+      isUndoRedo = true
+      editor.value = history[historyIndex]
+      renderMarkdown()
+      updateStats()
+      updateLineNumbers()
+      highlightCurrentLine()
+    }
+  }
+
+  // تابع redo
+  function redo() {
+    if (historyIndex < history.length - 1) {
+      historyIndex++
+      isUndoRedo = true
+      editor.value = history[historyIndex]
+      renderMarkdown()
+      updateStats()
+      updateLineNumbers()
+      highlightCurrentLine()
+    }
+  }
+
+  // تابع هایلایت کردن خط فعلی - روش جدید با استفاده از یک textarea موقت
+  function highlightCurrentLine() {
+    // حذف هایلایت قبلی
+    const oldHighlight = document.querySelector(".line-highlight")
+    if (oldHighlight) {
+      oldHighlight.remove()
+    }
+
+    // ایجاد یک textarea موقت برای محاسبه دقیق موقعیت خط
+    const tempTextarea = document.createElement("textarea")
+    tempTextarea.style.position = "absolute"
+    tempTextarea.style.visibility = "hidden"
+    tempTextarea.style.height = "auto"
+    tempTextarea.style.width = editor.clientWidth + "px"
+    tempTextarea.style.font = window.getComputedStyle(editor).font
+    tempTextarea.style.lineHeight = window.getComputedStyle(editor).lineHeight
+    tempTextarea.style.padding = window.getComputedStyle(editor).padding
+    document.body.appendChild(tempTextarea)
+
+    // کپی متن تا موقعیت مکان‌نما به textarea موقت
+    const cursorPosition = editor.selectionStart
+    const textBeforeCursor = editor.value.substring(0, cursorPosition)
+    tempTextarea.value = textBeforeCursor
+
+    // محاسبه ارتفاع متن تا موقعیت مکان‌نما
+    const textHeight = tempTextarea.scrollHeight
+
+    // حذف textarea موقت
+    document.body.removeChild(tempTextarea)
+
+    // محاسبه ارتفاع خط
+    const lineHeight = Number.parseFloat(window.getComputedStyle(editor).lineHeight)
+
+    // محاسبه شماره خط فعلی (با شروع از 0) - اصلاح شده
+    const currentLine = Math.floor(textHeight / lineHeight) - 3 // تغییر از -1 به -3 برای اصلاح مشکل
+
+    // محاسبه موقعیت عمودی خط فعلی با در نظر گرفتن اسکرول
+    const editorPadding = 16 // پدینگ بالای ویرایشگر
+    const topPosition = (currentLine + 1) * lineHeight - editor.scrollTop + editorPadding
+
+    // ایجاد المان هایلایت
+    const highlight = document.createElement("div")
+    highlight.className = "line-highlight"
+    highlight.style.top = `${topPosition}px`
+    highlight.style.height = `${lineHeight}px`
+
+    // اضافه کردن به DOM
+    document.querySelector(".editor-wrapper").appendChild(highlight)
+  }
+
   // تابع بارگذاری تنظیمات
   function loadSettings() {
     // بارگذاری مفسر
@@ -209,8 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (savedFont) {
       fontSelect.value = savedFont
       applyFont(savedFont)
-    } else {
-      applyFont("Vazirmatn") // فونت پیش‌فرض
     }
 
     // بارگذاری تم
@@ -226,49 +337,22 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.toggle("show-line-numbers", showLineNumbers)
   }
 
-  // تابع اعمال فونت - اصلاح شده
+  // تابع اعمال فونت
   function applyFont(fontName) {
-    // نام‌های دقیق فونت‌ها
-    const fontMap = {
-      Vazirmatn: "Vazirmatn",
-      IranianSans: "Iranian Sans",
-    }
-
-    const actualFontName = fontMap[fontName] || fontName
-
-    // تنظیم متغیر CSS
-    document.documentElement.style.setProperty("--font-family", actualFontName)
-
-    // اعمال مستقیم به المان‌ها
-    document.body.style.fontFamily = `${actualFontName}, system-ui, sans-serif`
-    editor.style.fontFamily = `${actualFontName}, monospace`
-    preview.style.fontFamily = `${actualFontName}, sans-serif`
-
-    // اعمال به المان‌های دیگر
-    document
-      .querySelectorAll(
-        ".settings-select, .modal-content, .preview-content h1, .preview-content h2, .preview-content h3, .preview-content h4, .preview-content h5, .preview-content h6",
-      )
-      .forEach((el) => {
-        el.style.fontFamily = `${actualFontName}, sans-serif`
-      })
-
-    console.log(`Font applied: ${actualFontName}`)
+    document.documentElement.style.setProperty("--font-family", fontName)
   }
 
   // تابع اعمال تم
-  function applyTheme(themeName) {
-    document.documentElement.setAttribute("data-theme", themeName)
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme)
   }
 
   // اصلاح تابع به‌روزرسانی شماره خطوط برای هم‌راستا شدن با متن
   function updateLineNumbers() {
     if (!lineNumbersToggle.checked) {
-      lineNumbers.style.display = "none"
       return
     }
 
-    lineNumbers.style.display = "block"
     const lines = editor.value.split("\n")
     let lineNumbersHTML = ""
 
@@ -279,18 +363,11 @@ document.addEventListener("DOMContentLoaded", () => {
     lineNumbers.innerHTML = lineNumbersHTML
 
     // تنظیم ارتفاع خط برای هم‌راستا شدن با متن
-    const editorStyles = window.getComputedStyle(editor)
-    const lineHeight = Number.parseFloat(editorStyles.lineHeight)
-    const fontSize = Number.parseFloat(editorStyles.fontSize)
-    const padding = Number.parseFloat(editorStyles.paddingTop)
-
-    // تنظیم padding برای هم‌راستا شدن با متن
-    lineNumbers.style.paddingTop = `${padding}px`
-
+    const lineHeight = Number.parseFloat(getComputedStyle(editor).lineHeight)
     const lineNumberElements = lineNumbers.querySelectorAll(".line-number")
+
     lineNumberElements.forEach((element) => {
       element.style.height = `${lineHeight}px`
-      element.style.lineHeight = `${lineHeight}px`
     })
   }
 
@@ -336,36 +413,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const markdownText = editor.value
     const parser = parserSelect.value
 
-    try {
-      if (parser === "marked") {
-        preview.innerHTML = marked.parse(markdownText)
-      } else if (parser === "shahneshan") {
-        // بررسی وجود ShahNeshan
-        if (typeof window.ShahNeshan !== "undefined") {
-          preview.innerHTML = window.ShahNeshan.render(markdownText)
-        } else {
-          // تلاش مجدد برای بارگذاری ShahNeshan
-          const script = document.createElement("script")
-          script.src = "https://cdn.jsdelivr.net/gh/barnevis/ShahNeshan/dist/shahneshan.min.js"
-          script.onload = () => {
-            if (typeof window.ShahNeshan !== "undefined") {
-              preview.innerHTML = window.ShahNeshan.render(markdownText)
-            } else {
-              preview.innerHTML = "<p>مفسر ShahNeshan در دسترس نیست.</p>"
-            }
-          }
-          script.onerror = () => {
-            preview.innerHTML = "<p>خطا در بارگذاری مفسر ShahNeshan.</p>"
-          }
-          document.head.appendChild(script)
-        }
-      } else {
-        // در اینجا می‌توانید مفسرهای دیگر را اضافه کنید
-        preview.innerHTML = marked.parse(markdownText)
-      }
-    } catch (error) {
-      console.error("Error rendering markdown:", error)
-      preview.innerHTML = "<p>خطا در پردازش متن مارک‌داون.</p>"
+    if (parser === "marked") {
+      preview.innerHTML = marked.parse(markdownText)
+    } else {
+      // در اینجا می‌توانید مفسرهای دیگر را اضافه کنید
+      preview.innerHTML = marked.parse(markdownText)
     }
   }
 
@@ -445,9 +497,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // به‌روزرسانی پیش‌نمایش و آمار
     localStorage.setItem("markdown-content", editor.value)
+    saveToHistory(editor.value)
     renderMarkdown()
     updateStats()
     updateLineNumbers()
+    highlightCurrentLine()
   }
 
   // تابع خروجی مارک‌داون
@@ -466,6 +520,8 @@ document.addEventListener("DOMContentLoaded", () => {
   <title>سند مارک‌داون</title>
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
   <link href="https://cdn.jsdelivr.net/gh/font-store/font-iranian-sans@master/WebFonts/css/style.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/gh/MDarvishi5124/Arad@main/dist/font-face.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/gh/font-store/BehdadFont@master/WebFonts/css/style.css" rel="stylesheet" type="text/css" />
   <style>
     body { 
       font-family: '${currentFont}', system-ui, sans-serif; 
@@ -508,5 +564,5 @@ document.addEventListener("DOMContentLoaded", () => {
   renderMarkdown()
   updateStats()
   updateLineNumbers()
+  highlightCurrentLine()
 })
-

@@ -17,7 +17,8 @@
   --line-numbers-text: #6c757d;
   --stats-bg: #f1f3f5;
   --stats-text: #6c757d;
-  --font-family: "Vazirmatn";
+  --highlight-color: rgba(0, 0, 0, 0.05);
+  --link-color: #0366d6;
 }
 
 [data-theme="dark"] {
@@ -38,6 +39,8 @@
   --line-numbers-text: #999;
   --stats-bg: #2a2a2a;
   --stats-text: #999;
+  --highlight-color: rgba(255, 255, 255, 0.05);
+  --link-color: #58a6ff;
 }
 
 * {
@@ -47,8 +50,8 @@
 }
 
 body {
-  font-family: var(--font-family), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family: var(--font-family, "Vazirmatn"), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   line-height: 1.6;
   direction: rtl;
   background-color: var(--bg-color);
@@ -89,7 +92,8 @@ body {
   align-items: center;
 }
 
-.settings-button {
+.settings-button,
+.toolbar-button {
   width: 32px;
   height: 32px;
   border: 1px solid var(--button-border);
@@ -142,6 +146,7 @@ body {
 .line-numbers {
   display: none;
   width: 40px;
+  padding: 16px 8px 16px 0;
   background-color: var(--line-numbers-bg);
   color: var(--line-numbers-text);
   font-family: monospace;
@@ -151,7 +156,6 @@ body {
   user-select: none;
   border-right: 1px solid var(--border-color);
   line-height: 1.6;
-  padding: 16px 8px 16px 0;
 }
 
 /* اضافه کردن استایل برای شماره خط‌ها */
@@ -159,9 +163,6 @@ body {
   height: 1.6em;
   text-align: left;
   padding-left: 8px;
-  line-height: inherit;
-  display: flex;
-  align-items: center;
 }
 
 .show-line-numbers .line-numbers {
@@ -175,36 +176,50 @@ body {
 #editor {
   flex: 1;
   padding: 16px;
-  font-family: var(--font-family), monospace;
+  font-family: var(--font-family, "Vazirmatn"), monospace;
   font-size: 16px;
   border: none;
   resize: none;
   outline: none;
   direction: rtl;
-  background-color: var(--editor-bg);
+  background-color: transparent;
   color: var(--text-color);
   line-height: 1.6;
+  position: relative;
+  z-index: 2;
 }
 
-/* تغییر استایل بخش آمار برای نمایش در سمت راست */
+/* هایلایت کردن خط فعلی */
+.line-highlight {
+  background-color: var(--highlight-color);
+  position: absolute;
+  width: 100%;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* تنظیم موقعیت نسبی برای editor-wrapper */
+.editor-wrapper {
+  position: relative;
+  background-color: var(--editor-bg);
+}
+
+/* تغییر استایل بخش آمار برای تمام صفحه شدن و نزدیک‌تر کردن فاصله‌ها */
 .editor-stats {
   display: flex;
+  justify-content: flex-start; /* آمارها از سمت راست شروع می‌شوند */
+  padding: 4px 16px;
   background-color: var(--stats-bg);
   border-top: 1px solid var(--border-color);
   color: var(--stats-text);
   font-size: 12px;
-  padding: 4px 16px;
   width: 100%;
-  justify-content: flex-start; /* چینش از سمت راست */
-  direction: rtl; /* جهت RTL */
+  direction: rtl;
 }
 
 .editor-stats span {
-  margin-left: 20px; /* فاصله بیشتر بین آمارها */
-}
-
-.editor-stats span:last-child {
-  margin-left: 0; /* حذف فاصله برای آخرین آیتم */
+  margin-left: 12px; /* فاصله بین آمارها کمتر شد */
 }
 
 /* پنل پیش‌نمایش (سمت چپ) */
@@ -253,7 +268,7 @@ body {
   padding: 16px;
   overflow-y: auto;
   direction: rtl;
-  font-family: var(--font-family), sans-serif;
+  font-family: var(--font-family, "Vazirmatn"), sans-serif;
   color: var(--text-color);
 }
 
@@ -318,8 +333,36 @@ body {
   border-radius: 4px;
   background-color: var(--button-bg);
   color: var(--text-color);
-  font-family: var(--font-family), sans-serif;
+  font-family: var(--font-family, "Vazirmatn"), sans-serif;
   width: 200px;
+}
+
+/* استایل بخش پیوندها در تنظیمات */
+.settings-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  gap: 16px;
+}
+
+.version-link,
+.github-link {
+  color: var(--link-color);
+  text-decoration: none;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.version-link:hover,
+.github-link:hover {
+  opacity: 0.8;
+}
+
+.github-link i {
+  font-size: 24px;
 }
 
 /* Toggle Switch */
@@ -378,7 +421,7 @@ input:checked + .toggle-label:before {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   font-weight: 600;
-  font-family: var(--font-family), sans-serif;
+  font-family: var(--font-family, "Vazirmatn"), sans-serif;
 }
 
 .preview-content h1 {
@@ -472,4 +515,3 @@ input:checked + .toggle-label:before {
     min-height: 300px;
   }
 }
-

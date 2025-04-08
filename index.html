@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ویرایشگر مارک‌داون</title>
+  <title>پارسی‌نگار - ویرایشگر markdown</title>
   <!-- فونت وزیرمتن -->
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
   <!-- فونت Iranian Sans -->
   <link href="https://cdn.jsdelivr.net/gh/font-store/font-iranian-sans@master/WebFonts/css/style.css" rel="stylesheet" type="text/css" />
+  <!-- فونت آراد -->
+  <link href="https://cdn.jsdelivr.net/gh/MDarvishi5124/Arad@main/dist/font-face.css" rel="stylesheet" type="text/css" />
+  <!-- فونت بهداد -->
+  <link href="https://cdn.jsdelivr.net/gh/font-store/BehdadFont@master/WebFonts/css/style.css" rel="stylesheet" type="text/css" />
   <!-- آیکون‌های Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <!-- از کتابخانه marked برای تبدیل مارک‌داون به HTML استفاده می‌کنیم -->
   <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
-  <!-- اضافه کردن مفسر ShahNeshan -->
-  <script src="https://cdn.jsdelivr.net/gh/barnevis/ShahNeshan/dist/shahneshan.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -27,6 +29,13 @@
             <i class="fa-solid fa-gear"></i>
           </button>
           
+          <button id="undo-button" title="واگرد (Ctrl+Z)" class="toolbar-button">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <button id="redo-button" title="از نو (Ctrl+Y)" class="toolbar-button">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+
           <div class="toolbar-divider"></div>
           
           <!-- دکمه‌ها با آیکون -->
@@ -52,7 +61,7 @@
       <!-- بخش پیش‌نمایش (سمت چپ) -->
       <div class="preview-panel">
         <div class="preview-header">
-          <span>نمایش</span>
+          <span></span>
           <div class="export-buttons">
             <button id="export-md" title="خروجی Markdown"><i class="fa-solid fa-file-lines"></i></button>
             <button id="export-html" title="خروجی HTML"><i class="fa-solid fa-file-code"></i></button>
@@ -84,7 +93,6 @@
           <label for="parser-select">مفسر مارک‌داون:</label>
           <select id="parser-select" class="settings-select">
             <option value="marked" selected>Marked</option>
-            <option value="shahneshan">ShahNeshan</option>
             <option value="custom">Custom Parser</option>
           </select>
         </div>
@@ -94,6 +102,8 @@
           <select id="font-select" class="settings-select">
             <option value="Vazirmatn" selected>وزیرمتن</option>
             <option value="IranianSans">Iranian Sans</option>
+            <option value="Arad">آراد</option>
+            <option value="Behdad">بهداد</option>
           </select>
         </div>
         
@@ -112,6 +122,16 @@
             <label for="line-numbers-toggle" class="toggle-label"></label>
           </div>
         </div>
+        
+        <!-- بخش اطلاعات نسخه و گیت‌هاب -->
+        <div class="settings-links">
+          <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">
+            نسخه ۱.۱.۰
+          </a>
+          <a href="https://github.com/alirho/parsiNegar" target="_blank" class="github-link">
+            <i class="fa-brands fa-github"></i>
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -119,4 +139,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
