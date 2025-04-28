@@ -51,6 +51,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     headerIds: false
   });
 
+  // Load README.md content
+  async function loadReadme() {
+    try {
+      const response = await fetch('/README.md');
+      if (response.ok) {
+        const content = await response.text();
+        editor.value = content;
+        filename.value = 'README.md';
+        updatePreview();
+      }
+    } catch (error) {
+      console.error('Error loading README.md:', error);
+    }
+  }
+
   // Parse markdown based on selected parser
   function parseMarkdown(markdown) {
     const parser = markdownParserSelect.value;
@@ -465,6 +480,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (savedContent && autoSaveCheckbox.checked) {
     editor.value = savedContent;
     updatePreview();
+  } else {
+    // Load README.md by default
+    loadReadme();
   }
   
   // Load settings on startup
@@ -472,4 +490,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Initial preview
   updatePreview();
-}); // End DOMContentLoaded listener
+});
