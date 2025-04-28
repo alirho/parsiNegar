@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load README.md content
   async function loadReadme() {
     try {
-      const response = await fetch('/README.md');
+      const response = await fetch('./README.md');
       if (response.ok) {
         const content = await response.text();
         editor.value = content;
