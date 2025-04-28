@@ -24,6 +24,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   const wordsCount = document.getElementById('wordsCount');
   const linesCount = document.getElementById('linesCount');
   const fileSize = document.getElementById('fileSize');
+
+    // Initialize marked with custom renderer
+    const renderer = new marked.Renderer();
+  
+    // Override paragraph rendering to handle text direction
+    renderer.paragraph = function(md) {
+      console.log(md);
+      // Ensure text is a string before using trim
+      text = String(md.text);
+      const firstChar = text.trim().charAt(0);
+      const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
+      return `<p style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(text)}</p>`;
+    };
+    
+    // Override list item rendering
+    renderer.listitem = function(md) {
+      console.log(md);
+      // Ensure text is a string before using trim
+      text = String(md.text);
+      const firstChar = text.trim().charAt(0);
+      const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
+      return `<li style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(text)}</li>`;
+    };
+    
+    marked.setOptions({
+      renderer: renderer,
+      gfm: true,
+      breaks: true,
+      headerIds: false
+    });
   
   // Load settings from localStorage
   function loadSettings() {
