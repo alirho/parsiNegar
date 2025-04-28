@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const previewContainer = document.getElementById('previewContainer');
   const fontSizeSelect = document.getElementById('fontSize');
   const fontFamilySelect = document.getElementById('fontFamily');
+  const markdownParserSelect = document.getElementById('markdownParser');
   const themeRadios = document.querySelectorAll('input[name="theme"]');
   const autoSaveCheckbox = document.getElementById('autoSave');
   
@@ -25,35 +26,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   const linesCount = document.getElementById('linesCount');
   const fileSize = document.getElementById('fileSize');
 
-    // Initialize marked with custom renderer
-    const renderer = new marked.Renderer();
+  // Initialize marked with custom renderer
+  const markedRenderer = new marked.Renderer();
   
-    // Override paragraph rendering to handle text direction
-    renderer.paragraph = function(md) {
-      console.log(md);
-      // Ensure text is a string before using trim
-      text = String(md.text);
-      const firstChar = text.trim().charAt(0);
-      const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
-      return `<p style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(text)}</p>`;
-    };
-    
-    // Override list item rendering
-    renderer.listitem = function(md) {
-      console.log(md);
-      // Ensure text is a string before using trim
-      text = String(md.text);
-      const firstChar = text.trim().charAt(0);
-      const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
-      return `<li style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(text)}</li>`;
-    };
-    
-    marked.setOptions({
-      renderer: renderer,
-      gfm: true,
-      breaks: true,
-      headerIds: false
-    });
+  // Override paragraph rendering to handle text direction for marked
+  markedRenderer.paragraph = function(md) {
+    const firstChar = md.text.trim().charAt(0);
+    const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
+    return `<p style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(md.text)}</p>`;
+  };
+  
+  // Override list item rendering for marked
+  markedRenderer.listitem = function(md) {
+    const firstChar = md.text.trim().charAt(0);
+    const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
+    return `<li style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(md.text)}</li>`;
+  };
+  
+  marked.setOptions({
+    renderer: markedRenderer,
+    gfm: true,
+    breaks: true,
+    headerIds: false
+  });
+
+  // Parse markdown based on selected parser
+  function parseMarkdown(markdown) {
+    const parser = markdownParserSelect.value;
+    if (parser === 'shahneshan') {
+      return window.markdownParser.markdownToOutput(markdown);
+    } else {
+      return marked.parse(markdown);
+    }
+  }
   
   // Load settings from localStorage
   function loadSettings() {
@@ -79,6 +84,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       fontFamilySelect.value = settings.fontFamily;
     }
     
+    // Apply markdown parser
+    if (settings.markdownParser) {
+      markdownParserSelect.value = settings.markdownParser;
+    }
+    
     // Apply auto save
     if (settings.autoSave !== undefined) {
       autoSaveCheckbox.checked = settings.autoSave;
@@ -91,6 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       theme: document.querySelector('input[name="theme"]:checked').value,
       fontSize: fontSizeSelect.value,
       fontFamily: fontFamilySelect.value,
+      markdownParser: markdownParserSelect.value,
       autoSave: autoSaveCheckbox.checked
     };
     
@@ -157,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Update preview and stats
   function updatePreview() {
     const markdown = editor.value;
-    preview.innerHTML = marked.parse(markdown);
+    preview.innerHTML = parseMarkdown(markdown);
     
     // Update stats
     const chars = markdown.length;
@@ -335,8 +346,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Download HTML
   downloadHtmlBtn.addEventListener('click', () => {
-
-
     const htmlContent = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -345,6 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   <title>پارسی‌نگار | خروجی</title>
   <style>
     ${document.querySelector('style').textContent}
+    ${document.querySelector('styles').textContent}
   </style>
 </head>
 <body id="html-output" class="theme-${document.querySelector('input[name="theme"]:checked').value}">
@@ -412,24 +422,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Fullscreen toggle
   fullscreenBtn.addEventListener('click', () => {
     if (editorContainer.style.display === 'none') {
-      // // Exit fullscreen mode
+      // Exit fullscreen mode
       editorContainer.style.display = 'flex';
-      // previewContainer.style.flex = '1';
       previewContainer.classList.remove('fullscreen');
       document.querySelector('#toolbar').classList.remove('fullscreen');
-      // toolbarLeft.style.display = 'flex';
-      // fullscreenBtn.style.marginLeft = '25rem';
-      // fullscreenBtn.style.marginRight = '25rem';
-      // document.querySelector('.toolbar-left').appendChild(fullscreenBtn);
     } else {
       // Enter fullscreen mode
       editorContainer.style.display = 'none';
-      // previewContainer.style.flex = '2';
       previewContainer.classList.add('fullscreen');
       document.querySelector('#toolbar').classList.add('fullscreen');
-      // toolbarLeft.style.display = 'none';
-      // fullscreenBtn.style.marginRight = '0';
-      // document.querySelector('#toolbar').insertBefore(fullscreenBtn);
     }
   });
   
@@ -438,6 +439,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   closeSettingsBtn.addEventListener('click', () => {
     settingsPanel.classList.add('hidden');
     saveSettings();
+  });
+  
+  // Add event listener for markdown parser change
+  markdownParserSelect.addEventListener('change', () => {
+    saveSettings();
+    updatePreview();
   });
   
   // Load saved content if auto save was enabled

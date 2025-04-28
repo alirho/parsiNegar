@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://unpkg.com/shahneshan@1.0.12/dist/markdownParser.cjs.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -91,6 +92,14 @@
         </div>
         
         <div class="setting-group">
+          <div class="setting-group">
+            <label>مفسر مارک‌داون</label>
+            <select id="markdownParser">
+              <option value="marked">Marked</option>
+              <option value="shahneshan">شه‌نشان</option>
+            </select>
+          </div>
+          
           <label>اندازه فونت</label>
           <select id="fontSize">
             <option value="12">کوچک (12px)</option>
@@ -129,7 +138,7 @@
 
   <script src="script.js"></script>
 
-  <style>
+  <styles style="display: none;">
     /* Markdown Preview Styles */
 
     .markdown-printed{
@@ -254,6 +263,50 @@
     .task-list input[type="checkbox"] {
       margin: 0.25rem 0.5rem 0 0;
     }
-  </style>
+
+    .persian h1{
+        font-size: 16px;
+        /* font-weight: normal; */
+        margin: 0;
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      body.theme-dark .alert {
+        background-color: #333;
+      }
+
+      ol, ul{
+        list-style-type: persian;
+      }
+        
+      ol p, ul p{
+        margin-bottom: 0 !important;
+      }
+
+      /* custom poet style */
+      .poet {
+        max-width: fit-content;
+        justify-self: center;
+      }
+
+      .stanza{
+        width: 225px;
+        height: 32px;
+        text-align: justify !important;
+        display: inline-block;
+      }
+
+      .stanza:after {
+        content: "";
+        display: inline-block;
+        width: 100%;	
+      }
+
+      pre:has(.javascript, .rust){
+        direction: ltr;
+        text-align: left;
+      }
+  </styles>
 </body>
 </html>

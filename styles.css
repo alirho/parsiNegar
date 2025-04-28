@@ -35,7 +35,7 @@ body.theme-dark {
   color: #e5e5e5;
 }
 
-body.theme-dark * {
+body.theme-dark *:not( .persian h1) {
   color: #e5e5e5 !important;
 }
 
@@ -54,6 +54,10 @@ body.theme-dark #editor,
 body.theme-dark #preview {
   background: #1a1a1a;
   color: #e5e5e5;
+}
+
+body.theme-dark th{
+  background-color: #333;
 }
 
 body.theme-dark .modal-content {
@@ -454,4 +458,52 @@ select {
 
 .task-list input[type="checkbox"] {
   margin: 0.25rem 0.5rem 0 0;
+}
+
+
+/* shahneshan styles */
+
+.persian h1{
+  font-size: 16px;
+  /* font-weight: normal; */
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+
+body.theme-dark .alert {
+  background-color: #333;
+}
+
+ol, ul{
+  list-style-type: persian;
+}
+  
+ol p, ul p{
+  margin-bottom: 0 !important;
+}
+
+/* custom poet style */
+.poet {
+  max-width: fit-content;
+  justify-self: center;
+}
+
+.stanza{
+  width: 225px;
+  height: 32px;
+  text-align: justify !important;
+  display: inline-block;
+}
+
+.stanza:after {
+  content: "";
+  display: inline-block;
+  width: 100%;	
+}
+
+pre:has(.javascript, .rust){
+  direction: ltr;
+  text-align: left;
 }
