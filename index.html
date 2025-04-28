@@ -62,6 +62,9 @@
         <span id="linesCount">خط: 0</span>
         <span id="fileSize">حجم: 0 بایت</span>
       </div>
+      <div class="status-right">
+        <input type="text" id="filename" value="نام فایل" class="filename-input">
+      </div>
     </div>
   </div>
 
@@ -139,8 +142,6 @@
   <script src="script.js"></script>
 
   <styles style="display: none;">
-    /* Markdown Preview Styles */
-
     .markdown-printed{
       margin: 0 auto;
       max-width: 1200px;
@@ -265,48 +266,46 @@
     }
 
     .persian h1{
-        font-size: 16px;
-        /* font-weight: normal; */
-        margin: 0;
-        padding-bottom: 0;
-        border-bottom: 0;
-      }
+      font-size: 16px;
+      margin: 0;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
 
-      body.theme-dark .alert {
-        background-color: #333;
-      }
+    body.theme-dark .alert {
+      background-color: #333;
+    }
 
-      ol, ul{
-        list-style-type: persian;
-      }
-        
-      ol p, ul p{
-        margin-bottom: 0 !important;
-      }
+    ol, ul{
+      list-style-type: persian;
+    }
+      
+    ol p, ul p{
+      margin-bottom: 0 !important;
+    }
 
-      /* custom poet style */
-      .poet {
-        max-width: fit-content;
-        justify-self: center;
-      }
+    .poet {
+      max-width: fit-content;
+      justify-self: center;
+    }
 
-      .stanza{
-        width: 225px;
-        height: 32px;
-        text-align: justify !important;
-        display: inline-block;
-      }
+    .stanza{
+      width: 225px;
+      height: 32px;
+      text-align: justify !important;
+      display: inline-block;
+    }
 
-      .stanza:after {
-        content: "";
-        display: inline-block;
-        width: 100%;	
-      }
+    .stanza:after {
+      content: "";
+      display: inline-block;
+      width: 100%;	
+    }
 
-      pre:has(.javascript, .rust){
-        direction: ltr;
-        text-align: left;
-      }
-  </styles>
+    pre:has(.javascript, .rust){
+      direction: ltr;
+      text-align: left;
+    }
+  </style>
 </body>
 </html>

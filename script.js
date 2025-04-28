@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const markdownParserSelect = document.getElementById('markdownParser');
   const themeRadios = document.querySelectorAll('input[name="theme"]');
   const autoSaveCheckbox = document.getElementById('autoSave');
+  const filename = document.getElementById('filename');
   
   // Stats elements
   const charsCount = document.getElementById('charsCount');
@@ -93,6 +94,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (settings.autoSave !== undefined) {
       autoSaveCheckbox.checked = settings.autoSave;
     }
+
+    // Load filename
+    if (settings.filename) {
+      filename.value = settings.filename;
+    }
   }
   
   // Save settings to localStorage
@@ -102,7 +108,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       fontSize: fontSizeSelect.value,
       fontFamily: fontFamilySelect.value,
       markdownParser: markdownParserSelect.value,
-      autoSave: autoSaveCheckbox.checked
+      autoSave: autoSaveCheckbox.checked,
+      filename: filename.value
     };
     
     localStorage.setItem('parsiNegarSettings', JSON.stringify(settings));
@@ -338,10 +345,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       editor.value = e.target.result;
+      filename.value = file.name;
       updatePreview();
       fileInput.value = '';
     };
     reader.readAsText(file);
+  });
+
+  // Update filename when editing
+  filename.addEventListener('change', () => {
+    saveSettings();
   });
   
   // Download HTML
@@ -365,13 +378,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 </html>`;
     
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-    downloadFile(blob, 'document.html');
+    downloadFile(blob, filename.value.replace(/\.md$/, '') + '.html');
   });
   
   // Download Markdown
   downloadMdBtn.addEventListener('click', () => {
     const blob = new Blob([editor.value], { type: 'text/markdown;charset=utf-8' });
-    downloadFile(blob, 'document.md');
+    downloadFile(blob, filename.value.endsWith('.md') ? filename.value : `${filename.value}.md`);
   });
   
   // Download PDF
@@ -385,7 +398,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const opt = {
       margin: [10, 10],
-      filename: 'document.pdf',
+      filename: filename.value.replace(/\.md$/, '') + '.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2,

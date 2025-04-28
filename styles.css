@@ -460,6 +460,33 @@ select {
   margin: 0.25rem 0.5rem 0 0;
 }
 
+.status-right {
+  display: flex;
+  align-items: center;
+}
+
+.filename-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.filename-input:hover,
+.filename-input:focus {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.theme-dark .filename-input:hover,
+body.theme-dark .filename-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+}
 
 /* shahneshan styles */
 
