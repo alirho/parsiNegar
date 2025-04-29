@@ -232,6 +232,8 @@ button {
   position: sticky;
   bottom: 0;
   z-index: 10;
+  display: flex;
+  align-items: center;
 }
 
 .status-left {
