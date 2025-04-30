@@ -13,12 +13,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   const editorContainer = document.getElementById('editorContainer');
   const previewContainer = document.getElementById('previewContainer');
+  const content = document.getElementById('content');
   const fontSizeSelect = document.getElementById('fontSize');
   const fontFamilySelect = document.getElementById('fontFamily');
   const markdownParserSelect = document.getElementById('markdownParser');
   const themeRadios = document.querySelectorAll('input[name="theme"]');
+  // const displayRadios = document.querySelectorAll('input[name="display"]');
   const autoSaveCheckbox = document.getElementById('autoSave');
   const filename = document.getElementById('filename');
+  const shortcutsMenu = document.getElementById('shortcutsMenu');
   
   // Stats elements
   const charsCount = document.getElementById('charsCount');
@@ -26,6 +29,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const wordsCount = document.getElementById('wordsCount');
   const linesCount = document.getElementById('linesCount');
   const fileSize = document.getElementById('fileSize');
+
+  // Markdown shortcuts
+  const shortcuts = [
+    { name: 'عنوان', icon: 'fa-heading', text: '# ', filter: 'عنوان' },
+    { name: 'عنوان دو', icon: 'fa-heading', text: '## ', filter: 'عنوان دو' },
+    { name: 'عنوان سه', icon: 'fa-heading', text: '### ', filter: 'عنوان سه' },
+    { name: 'پررنگ', icon: 'fa-bold', text: '****', filter: 'پررنگ' },
+    { name: 'مورب', icon: 'fa-italic', text: '**', filter: 'مورب' },
+    { name: 'نقل‌قول', icon: 'fa-quote-right', text: '> ', filter: 'نقل‌قول' },
+    { name: 'کد تک‌خطی', icon: 'fa-code', text: '``', filter: 'کد تک‌خطی' },
+    { name: 'کد چندخطی', icon: 'fa-code', text: '```\n\n```', filter: 'کد چندخطی' },
+    { name: 'خط زده', icon: 'fa-strikethrough', text: '~~~~', filter: 'خط زده' },
+    { name: 'لیست نامرتب', icon: 'fa-list-ul', text: '- ', filter: 'لیست نامرتب' },
+    { name: 'لیست مرتب', icon: 'fa-list-ol', text: '1. ', filter: 'لیست مرتب' },
+    { name: 'بازبینه', icon: 'fa-tasks', text: '- [ ] ', filter: 'بازبینه' },
+    { name: 'جدول', icon: 'fa-table', text: '| ستون ۱ | ستون ۲ | ستون ۳ |\n| ------ | ------ | ------ |\n| محتوا | محتوا | محتوا |', filter: 'جدول' },
+    { name: 'تصویر', icon: 'fa-image', text: '![]()', filter: 'تصویر' },
+    { name: 'پیوند', icon: 'fa-link', text: '[]()', filter: 'پیوند' }
+  ];
+
+  let selectedShortcutIndex = -1;
+  let isShortcutMenuVisible = false;
 
   // Initialize marked with custom renderer
   const markedRenderer = new marked.Renderer();
@@ -88,6 +113,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (themeRadio) themeRadio.checked = true;
     }
     
+    // Apply display mode
+    // if (settings.display) {
+    //   content.classList.toggle('unified', settings.display === 'unified');
+    //   const displayRadio = document.querySelector(`input[name="display"][value="${settings.display}"]`);
+    //   if (displayRadio) displayRadio.checked = true;
+    // }
+    
     // Apply font size
     if (settings.fontSize) {
       editor.style.fontSize = `${settings.fontSize}px`;
@@ -120,6 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function saveSettings() {
     const settings = {
       theme: document.querySelector('input[name="theme"]:checked').value,
+      // display: document.querySelector('input[name="display"]:checked').value,
       fontSize: fontSizeSelect.value,
       fontFamily: fontFamilySelect.value,
       markdownParser: markdownParserSelect.value,
@@ -152,7 +185,118 @@ document.addEventListener('DOMContentLoaded', async () => {
     '<': '>'
   };
   
+  // Show shortcuts menu
+  function showShortcutsMenu(query = '') {
+    const cursorPos = editor.selectionStart;
+    const textBeforeCursor = editor.value.substring(0, cursorPos);
+    const lineStart = textBeforeCursor.lastIndexOf('\n') + 1;
+    const textRect = editor.getBoundingClientRect();
+    const lineHeight = parseInt(window.getComputedStyle(editor).lineHeight);
+    const lines = textBeforeCursor.split('\n').length;
+    
+    const filteredShortcuts = shortcuts.filter(s => 
+      s.filter.toLowerCase().includes(query.toLowerCase().substring(1))
+    );
+
+    if (filteredShortcuts.length === 0) {
+      hideShortcutsMenu();
+      return;
+    }
+
+    shortcutsMenu.innerHTML = filteredShortcuts.map((shortcut, index) => `
+      <div class="shortcut-item ${index === selectedShortcutIndex ? 'selected' : ''}" data-index="${index}">
+        <i class="fas ${shortcut.icon}"></i>
+        <span>${shortcut.name}</span>
+      </div>
+    `).join('');
+
+    const top = (lines * lineHeight) - editor.scrollTop;
+    const left = (cursorPos - lineStart) * 8;
+
+    shortcutsMenu.style.display = 'block';
+    shortcutsMenu.style.top = `${top}px`;
+    shortcutsMenu.style.right = `${left + 40}px`;
+
+    isShortcutMenuVisible = true;
+    selectedShortcutIndex = selectedShortcutIndex === -1 ? 0 : selectedShortcutIndex;
+    updateSelectedShortcut();
+  }
+
+  // Hide shortcuts menu
+  function hideShortcutsMenu() {
+    shortcutsMenu.style.display = 'none';
+    isShortcutMenuVisible = false;
+    selectedShortcutIndex = -1;
+  }
+
+  // Update selected shortcut
+  function updateSelectedShortcut() {
+    const items = shortcutsMenu.querySelectorAll('.shortcut-item');
+    items.forEach(item => item.classList.remove('selected'));
+    if (selectedShortcutIndex >= 0 && items[selectedShortcutIndex]) {
+      items[selectedShortcutIndex].classList.add('selected');
+      items[selectedShortcutIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  // Insert shortcut
+  function insertShortcut(shortcut) {
+    const cursorPos = editor.selectionStart;
+    const textBeforeCursor = editor.value.substring(0, cursorPos);
+    const textAfterCursor = editor.value.substring(cursorPos);
+    const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
+    
+    if (lastSlashIndex !== -1) {
+      editor.value = textBeforeCursor.substring(0, lastSlashIndex) + 
+        shortcut.text + 
+        textAfterCursor;
+      
+      const newCursorPos = lastSlashIndex + shortcut.text.length;
+      editor.setSelectionRange(newCursorPos, newCursorPos);
+    }
+    
+    hideShortcutsMenu();
+    updatePreview();
+  }
+
+  // Handle keyboard events for shortcuts menu
   editor.addEventListener('keydown', (e) => {
+    if (isShortcutMenuVisible) {
+      const filteredShortcuts = shortcuts.filter(s => {
+        const cursorPos = editor.selectionStart;
+        const textBeforeCursor = editor.value.substring(0, cursorPos);
+        const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
+        const query = textBeforeCursor.substring(lastSlashIndex + 1);
+        return s.filter.toLowerCase().includes(query.toLowerCase());
+      });
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          selectedShortcutIndex = Math.max(0, selectedShortcutIndex - 1);
+          updateSelectedShortcut();
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          selectedShortcutIndex = Math.min(
+            filteredShortcuts.length - 1,
+            selectedShortcutIndex + 1
+          );
+          updateSelectedShortcut();
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedShortcutIndex >= 0) {
+            insertShortcut(filteredShortcuts[selectedShortcutIndex]);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          hideShortcutsMenu();
+          break;
+      }
+    }
+
     if (pairs[e.key]) {
       e.preventDefault();
       const start = editor.selectionStart;
@@ -184,6 +328,57 @@ document.addEventListener('DOMContentLoaded', async () => {
           updatePreview();
         }
       }
+    }
+  });
+
+  // Handle input for shortcuts menu
+  editor.addEventListener('input', (e) => {
+    const cursorPos = editor.selectionStart;
+    const textBeforeCursor = editor.value.substring(0, cursorPos);
+    const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
+    
+    if (lastSlashIndex !== -1 && lastSlashIndex === cursorPos - 1) {
+      showShortcutsMenu(textBeforeCursor.substring(lastSlashIndex));
+    } else if (lastSlashIndex !== -1 && lastSlashIndex < cursorPos) {
+      const query = textBeforeCursor.substring(lastSlashIndex);
+      showShortcutsMenu(query);
+    } else {
+      hideShortcutsMenu();
+    }
+
+    updatePreview();
+    
+    // Add to history if significant change
+    if (history[historyIndex] !== editor.value) {
+      history = history.slice(0, historyIndex + 1);
+      history.push(editor.value);
+      historyIndex++;
+    }
+  });
+
+  // Handle click on shortcuts menu
+  shortcutsMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('.shortcut-item');
+    if (item) {
+      const index = parseInt(item.dataset.index);
+      const cursorPos = editor.selectionStart;
+      const textBeforeCursor = editor.value.substring(0, cursorPos);
+      const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
+      const query = textBeforeCursor.substring(lastSlashIndex + 1);
+      
+      const filteredShortcuts = shortcuts.filter(s => 
+        s.filter.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      insertShortcut(filteredShortcuts[index]);
+    }
+  });
+
+  // Close shortcuts menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#shortcutsMenu') && 
+        !e.target.closest('#editor')) {
+      hideShortcutsMenu();
     }
   });
   
@@ -218,18 +413,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} مگابایت`;
   }
   
-  // Handle editor changes
-  editor.addEventListener('input', () => {
-    updatePreview();
-    
-    // Add to history if significant change
-    if (history[historyIndex] !== editor.value) {
-      history = history.slice(0, historyIndex + 1);
-      history.push(editor.value);
-      historyIndex++;
-    }
-  });
-  
   // Theme handling
   themeRadios.forEach(radio => {
     radio.addEventListener('change', (e) => {
@@ -238,6 +421,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       saveSettings();
     });
   });
+
+  // // Display mode handling
+  // displayRadios.forEach(radio => {
+  //   radio.addEventListener('change', (e) => {
+  //     content.classList.toggle('unified', e.target.value === 'unified');
+  //     saveSettings();
+  //   });
+  // });
   
   // Settings handlers
   fontSizeSelect.addEventListener('change', (e) => {
@@ -381,7 +572,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>پارسی‌نگار | خروجی</title>
   <style>
-    ${document.querySelector('style').textContent}
     ${document.querySelector('styles').textContent}
   </style>
 </head>

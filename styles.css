@@ -194,6 +194,7 @@ button {
 
 #editorContainer {
   border-left: 1px solid #e5e7eb;
+  position: relative;
 }
 
 #editor {
@@ -220,6 +221,54 @@ button {
   max-width: 1200px;
 }
 
+/* Shortcuts Menu */
+#shortcutsMenu {
+  position: absolute;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  min-width: 200px;
+  display: none;
+}
+
+body.theme-dark #shortcutsMenu {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+
+body.theme-sepia #shortcutsMenu {
+  background: #f4ecd8;
+  border-color: #d3c4b3;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.shortcut-item:hover,
+.shortcut-item.selected {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.theme-dark .shortcut-item:hover,
+body.theme-dark .shortcut-item.selected {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.shortcut-item i {
+  width: 1.5rem;
+  text-align: center;
+}
+
 /* Status Bar */
 #statusBar {
   display: flex;
@@ -239,6 +288,34 @@ button {
 .status-left {
   display: flex;
   gap: 1rem;
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+}
+
+.filename-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.filename-input:hover,
+.filename-input:focus {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.theme-dark .filename-input:hover,
+body.theme-dark .filename-input:focus {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Settings Modal */
@@ -296,7 +373,8 @@ button {
   margin-bottom: 0.5rem;
 }
 
-.theme-options {
+.theme-options,
+.display-options {
   display: flex;
   gap: 1rem;
 }
@@ -462,44 +540,13 @@ select {
   margin: 0.25rem 0.5rem 0 0;
 }
 
-.status-right {
-  display: flex;
-  align-items: center;
-}
-
-.filename-input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  text-align: left;
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-  transition: background-color 0.2s;
-}
-
-.filename-input:hover,
-.filename-input:focus {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-body.theme-dark .filename-input:hover,
-body.theme-dark .filename-input:focus {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 /* shahneshan styles */
-
 .persian h1{
   font-size: 16px;
-  /* font-weight: normal; */
   margin: 0;
   padding-bottom: 0;
   border-bottom: 0;
 }
-
 
 body.theme-dark .alert {
   background-color: #333;
