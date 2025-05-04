@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const fontFamilySelect = document.getElementById('fontFamily');
   const markdownParserSelect = document.getElementById('markdownParser');
   const themeRadios = document.querySelectorAll('input[name="theme"]');
-  // const displayRadios = document.querySelectorAll('input[name="display"]');
   const autoSaveCheckbox = document.getElementById('autoSave');
   const filename = document.getElementById('filename');
   const shortcutsMenu = document.getElementById('shortcutsMenu');
@@ -51,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let selectedShortcutIndex = -1;
   let isShortcutMenuVisible = false;
+  let lastEnterTime = 0;
 
   // Initialize marked with custom renderer
   const markedRenderer = new marked.Renderer();
@@ -113,13 +113,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (themeRadio) themeRadio.checked = true;
     }
     
-    // Apply display mode
-    // if (settings.display) {
-    //   content.classList.toggle('unified', settings.display === 'unified');
-    //   const displayRadio = document.querySelector(`input[name="display"][value="${settings.display}"]`);
-    //   if (displayRadio) displayRadio.checked = true;
-    // }
-    
     // Apply font size
     if (settings.fontSize) {
       editor.style.fontSize = `${settings.fontSize}px`;
@@ -152,7 +145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   function saveSettings() {
     const settings = {
       theme: document.querySelector('input[name="theme"]:checked').value,
-      // display: document.querySelector('input[name="display"]:checked').value,
       fontSize: fontSizeSelect.value,
       fontFamily: fontFamilySelect.value,
       markdownParser: markdownParserSelect.value,
@@ -184,6 +176,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     '`': '`',
     '<': '>'
   };
+
+  // Check if current line is a list item
+  function getListPrefix(line) {
+    const checklistMatch = line.match(/^(\s*[-*+]\s*\[\s?\]\s+)/);
+    if (checklistMatch) return checklistMatch[1];
+
+    const unorderedMatch = line.match(/^(\s*[-*+]\s+)/);
+    if (unorderedMatch) return unorderedMatch[1];
+
+    const orderedMatch = line.match(/^(\s*([0-9۰-۹]+))(\.\s+)/);
+    if (orderedMatch) {
+      const fullPrefix = orderedMatch[1] + orderedMatch[3]; // e.g., " ۱۲. "
+      const rawNumber = orderedMatch[2]; // e.g., "۱۲"
+  
+      const isPersian = /[۰-۹]/.test(rawNumber);
+      const westernNumber = rawNumber.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+      const number = parseInt(westernNumber) + 1;
+  
+      const nextNumber = isPersian
+        ? number.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)])
+        : number.toString();
+  
+      return fullPrefix.replace(rawNumber, nextNumber);
+    }
+
+    return null;
+  }
   
   // Show shortcuts menu
   function showShortcutsMenu(query = '') {
@@ -259,7 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePreview();
   }
 
-  // Handle keyboard events for shortcuts menu
+  // Handle keyboard events for shortcuts menu and list continuation
   editor.addEventListener('keydown', (e) => {
     if (isShortcutMenuVisible) {
       const filteredShortcuts = shortcuts.filter(s => {
@@ -294,6 +313,35 @@ document.addEventListener('DOMContentLoaded', async () => {
           e.preventDefault();
           hideShortcutsMenu();
           break;
+      }
+    } else if (e.key === 'Enter') {
+      const cursorPos = editor.selectionStart;
+      const text = editor.value;
+      const lines = text.split('\n');
+      let currentLineStart = text.lastIndexOf('\n', cursorPos - 1) + 1;
+      const currentLine = text.substring(currentLineStart, cursorPos);
+      const prefix = getListPrefix(currentLine);
+
+      if (prefix) {
+        const now = Date.now();
+        const isprefix = prefix.match(/^(\s*[0-9۰-۹]+\.\s+)|(\s*[-*+]\s+)|(\s*[-*+]\s*\[\s?\]\s+)/);
+        if (now - lastEnterTime < 500 && isprefix) {
+          // Double Enter - break the list
+          e.preventDefault();
+          const beforeList = text.substring(0, currentLineStart);
+          const afterList = text.substring(cursorPos);
+          editor.value = beforeList + '\n' + afterList;
+          editor.setSelectionRange(currentLineStart + 1, currentLineStart + 1);
+        } else {
+          // Continue the list
+          e.preventDefault();
+          const beforeCursor = text.substring(0, cursorPos);
+          const afterCursor = text.substring(cursorPos);
+          editor.value = beforeCursor + '\n' + prefix + afterCursor;
+          editor.setSelectionRange(cursorPos + 1 + prefix.length, cursorPos + 1 + prefix.length);
+        }
+        lastEnterTime = now;
+        updatePreview();
       }
     }
 
@@ -421,14 +469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       saveSettings();
     });
   });
-
-  // // Display mode handling
-  // displayRadios.forEach(radio => {
-  //   radio.addEventListener('change', (e) => {
-  //     content.classList.toggle('unified', e.target.value === 'unified');
-  //     saveSettings();
-  //   });
-  // });
   
   // Settings handlers
   fontSizeSelect.addEventListener('change', (e) => {
