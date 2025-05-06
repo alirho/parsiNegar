@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function parseMarkdown(markdown) {
     const parser = markdownParserSelect.value;
     if (parser === 'shahneshan') {
-      return window.markdownParser.markdownToOutput(markdown);
+      return window.shahneshan.markdownToOutput(markdown);
     } else {
       return marked.parse(markdown);
     }
