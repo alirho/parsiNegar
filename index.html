@@ -12,9 +12,85 @@
 </head>
 <body>
   <div id="app">
+    <div id="menuBar">
+      <ul class="menu">
+        <li>
+          <a href="#">فایل</a>
+          <ul class="submenu">
+            <li><a href="#" id="newFileBtn"><i class="fas fa-file"></i> فایل نو</a></li>
+            <li><a href="#" id="loadFileBtn"><i class="fas fa-folder-open"></i> بارگذاری فایل</a></li>
+            <li class="has-submenu">
+              <a href="#"><i class="fas fa-file-export"></i> خروجی گرفتن</a>
+              <ul class="submenu">
+                <li><a href="#" id="exportMdBtn"><i class="fas fa-file-alt"></i> Markdown</a></li>
+                <li><a href="#" id="exportHtmlBtn"><i class="fas fa-file-code"></i> HTML</a></li>
+                <li><a href="#" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF</a></li>
+              </ul>
+            </li>
+            <li><a href="#" id="settingsBtn"><i class="fas fa-cog"></i> تنظیمات</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#">نمایش</a>
+          <ul class="submenu">
+            <li>
+              <label>
+                <input type="checkbox" id="showToolbar" checked>
+                <i class="fas fa-toolbox"></i> نوار ابزار
+              </label>
+            </li>
+            <li>
+              <label>
+                <input type="checkbox" id="showStatusBar" checked>
+                <i class="fas fa-info-circle"></i> نوار آمار
+              </label>
+            </li>
+            <li>
+              <label>
+                <input type="checkbox" id="showToc">
+                <i class="fas fa-list"></i> فهرست
+              </label>
+            </li>
+            <li>
+              <label>
+                <input type="checkbox" id="showFilename" checked>
+                <i class="fas fa-file-signature"></i> نام فایل
+              </label>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#">افزودن</a>
+          <ul class="submenu">
+            <li><a href="#" data-format="heading"><i class="fas fa-heading"></i> عنوان</a></li>
+            <li><a href="#" data-format="bold"><i class="fas fa-bold"></i> پررنگ</a></li>
+            <li><a href="#" data-format="italic"><i class="fas fa-italic"></i> مورب</a></li>
+            <li><a href="#" data-format="strike"><i class="fas fa-strikethrough"></i> خط زده</a></li>
+            <li><a href="#" data-format="orderedList"><i class="fas fa-list-ol"></i> لیست مرتب</a></li>
+            <li><a href="#" data-format="unorderedList"><i class="fas fa-list-ul"></i> لیست نامرتب</a></li>
+            <li><a href="#" data-format="checklist"><i class="fas fa-tasks"></i> بازبینه</a></li>
+            <li><a href="#" data-format="quote"><i class="fas fa-quote-right"></i> نقل‌قول</a></li>
+            <li><a href="#" data-format="code"><i class="fas fa-code"></i> کد</a></li>
+            <li><a href="#" data-format="table"><i class="fas fa-table"></i> جدول</a></li>
+            <li><a href="#" data-format="image"><i class="fas fa-image"></i> تصویر</a></li>
+            <li><a href="#" data-format="link"><i class="fas fa-link"></i> پیوند</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#">راهنما</a>
+          <ul class="submenu">
+            <li><a href="#" id="helpBtn"><i class="fas fa-book"></i> راهنمای پارسی‌نگار</a></li>
+            <li><a href="https://www.markdownguide.org/basic-syntax/" target="_blank"><i class="fas fa-external-link-alt"></i> راهنمای Markdown</a></li>
+          </ul>
+        </li>
+        <li class="menu-right">
+          <a href="#" id="fullscreenBtn"><i class="fas fa-expand"></i></a>
+        </li>
+      </ul>
+    </div>
+
     <div id="toolbar">
       <div class="toolbar-left">
-        <button id="settingsBtn" title="تنظیمات"><i class="fas fa-cog"></i></button>
         <button id="uploadBtn" title="بارگذاری"><i class="fas fa-upload"></i></button>
         <input type="file" id="fileInput" accept=".md,.markdown,.txt" hidden>
         <span class="divider"></span>
@@ -34,7 +110,6 @@
         <button data-action="image" title="تصویر"><i class="fas fa-image"></i></button>
         <button data-action="link" title="پیوند"><i class="fas fa-link"></i></button>
       </div>
-      <button id="fullscreenBtn" title="تمام‌صفحه"><i class="fas fa-expand"></i></button>
       <div class="toolbar-right">
         <button id="downloadPdfBtn" title="دانلود PDF"><i class="fa-solid fa-file-pdf"></i></button>
         <button id="downloadHtmlBtn" title="دانلود HTML"><i class="fa-solid fa-file-code"></i></button>

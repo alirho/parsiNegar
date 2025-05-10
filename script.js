@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const autoSaveCheckbox = document.getElementById('autoSave');
   const filename = document.getElementById('filename');
   const shortcutsMenu = document.getElementById('shortcutsMenu');
+  const toolbar = document.getElementById('toolbar');
+  const statusBar = document.getElementById('statusBar');
   
   // Stats elements
   const charsCount = document.getElementById('charsCount');
@@ -28,6 +30,125 @@ document.addEventListener('DOMContentLoaded', async () => {
   const wordsCount = document.getElementById('wordsCount');
   const linesCount = document.getElementById('linesCount');
   const fileSize = document.getElementById('fileSize');
+
+  // Menu Elements
+  const showToolbarCheckbox = document.getElementById('showToolbar');
+  const showStatusBarCheckbox = document.getElementById('showStatusBar');
+  const showTocCheckbox = document.getElementById('showToc');
+  const showFilenameCheckbox = document.getElementById('showFilename');
+  const newFileBtn = document.getElementById('newFileBtn');
+  const loadFileBtn = document.getElementById('loadFileBtn');
+  const exportMdBtn = document.getElementById('exportMdBtn');
+  const exportHtmlBtn = document.getElementById('exportHtmlBtn');
+  const exportPdfBtn = document.getElementById('exportPdfBtn');
+  const helpBtn = document.getElementById('helpBtn');
+
+  // Set initial toolbar visibility to none
+  toolbar.style.display = 'none';
+  showToolbarCheckbox.checked = false;
+
+  // Menu Event Listeners
+  showToolbarCheckbox.addEventListener('change', (e) => {
+    toolbar.style.display = e.target.checked ? 'flex' : 'none';
+    saveSettings();
+  });
+
+  showStatusBarCheckbox.addEventListener('change', (e) => {
+    statusBar.style.display = e.target.checked ? 'flex' : 'none';
+    saveSettings();
+  });
+
+  showFilenameCheckbox.addEventListener('change', (e) => {
+    filename.style.display = e.target.checked ? 'block' : 'none';
+    saveSettings();
+  });
+
+  newFileBtn.addEventListener('click', () => {
+    if (confirm('آیا مطمئن هستید؟ تمام محتوای فعلی پاک خواهد شد.')) {
+      editor.value = '';
+      filename.value = 'نام فایل';
+      updatePreview();
+    }
+  });
+
+  loadFileBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  exportMdBtn.addEventListener('click', () => {
+    const blob = new Blob([editor.value], { type: 'text/markdown;charset=utf-8' });
+    downloadFile(blob, filename.value.endsWith('.md') ? filename.value : `${filename.value}.md`);
+  });
+
+  exportHtmlBtn.addEventListener('click', () => {
+    const htmlContent = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پارسی‌نگار | خروجی</title>
+  <style>
+    ${document.querySelector('styles').textContent}
+  </style>
+</head>
+<body id="html-output" class="theme-${document.querySelector('input[name="theme"]:checked').value}">
+  <div class="markdown-printed">
+    ${preview.innerHTML}
+  </div>
+</body>
+</html>`;
+    
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    downloadFile(blob, filename.value.replace(/\.md$/, '') + '.html');
+  });
+
+  exportPdfBtn.addEventListener('click', async () => {
+    const element = document.createElement('div');
+    element.className = 'markdown-preview';
+    element.innerHTML = preview.innerHTML;
+    element.style.padding = '2rem';
+    element.style.maxWidth = '210mm';
+    element.style.margin = '0 auto';
+    
+    const opt = {
+      margin: [10, 10],
+      filename: filename.value.replace(/\.md$/, '') + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        letterRendering: true
+      },
+      jsPDF: { 
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait'
+      }
+    };
+    
+    try {
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  });
+
+  helpBtn.addEventListener('click', () => {
+    // Load help content from README.md
+    loadReadme();
+  });
+
+  // Format menu items
+  document.querySelectorAll('.submenu [data-format]').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const format = e.target.dataset.format;
+      const button = document.querySelector(`[data-action="${format}"]`);
+      if (button) {
+        button.click();
+      }
+    });
+  });
 
   // Markdown shortcuts
   const shortcuts = [
@@ -139,6 +260,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (settings.filename) {
       filename.value = settings.filename;
     }
+
+    // Apply visibility settings
+    if (settings.showToolbar !== undefined) {
+      showToolbarCheckbox.checked = settings.showToolbar;
+      toolbar.style.display = settings.showToolbar ? 'flex' : 'none';
+    }
+
+    if (settings.showStatusBar !== undefined) {
+      showStatusBarCheckbox.checked = settings.showStatusBar;
+      statusBar.style.display = settings.showStatusBar ? 'flex' : 'none';
+    }
+
+    if (settings.showFilename !== undefined) {
+      showFilenameCheckbox.checked = settings.showFilename;
+      filename.style.display = settings.showFilename ? 'block' : 'none';
+    }
   }
   
   // Save settings to localStorage
@@ -149,7 +286,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       fontFamily: fontFamilySelect.value,
       markdownParser: markdownParserSelect.value,
       autoSave: autoSaveCheckbox.checked,
-      filename: filename.value
+      filename: filename.value,
+      showToolbar: showToolbarCheckbox.checked,
+      showStatusBar: showStatusBarCheckbox.checked,
+      showFilename: showFilenameCheckbox.checked
     };
     
     localStorage.setItem('parsiNegarSettings', JSON.stringify(settings));
