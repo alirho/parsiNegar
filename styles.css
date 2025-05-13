@@ -173,7 +173,8 @@ body.theme-dark #statusBar {
 }
 
 body.theme-dark #editor,
-body.theme-dark #preview {
+body.theme-dark #preview,
+body.theme-dark #tocPanel {
   background: #1a1a1a;
   color: #e5e5e5;
 }
@@ -211,7 +212,8 @@ body.theme-sepia #statusBar {
 }
 
 body.theme-sepia #editor,
-body.theme-sepia #preview {
+body.theme-sepia #preview,
+body.theme-sepia #tocPanel {
   background: #f4ecd8;
   color: #5f4b32;
 }
@@ -232,6 +234,11 @@ body.theme-sepia select {
   color: #5f4b32;
 }
 
+/* به صورت دستی اضافه شده است */
+h1,h2,h3{ 
+  scroll-margin-top: 2em;
+}
+
 /* Layout */
 #app {
   min-height: 100vh;
@@ -241,7 +248,7 @@ body.theme-sepia select {
 
 /* Toolbar */
 #toolbar {
-  display: flex;
+  display: none;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
@@ -293,7 +300,7 @@ button {
 #content {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  position: relative
 }
 
 #editorContainer, #previewContainer {
@@ -329,6 +336,96 @@ button {
 #previewContainer.fullscreen {
   margin: 0 auto;
   max-width: 1200px;
+}
+
+/* Table of Contents */
+#tocPanel {
+  width: 250px;
+  background: rgb(243, 244, 246);
+  border-left: 1px solid #e5e7eb;
+  display: none;
+  /* position: absolute; */
+  top: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+  /* padding: 0.8rem; */
+}
+
+#tocPanel .toc-list:first-child{ /* به صورت دستی افزوده شده است */
+  position: fixed;
+  width: inherit;
+  padding: 0.8rem;
+}
+
+body.theme-dark #tocPanel {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+
+body.theme-sepia #tocPanel {
+    background: #e8dcca;
+    border-color: #d3c4b3;
+    color: #5f4b32;
+}
+
+#tocPanel.visible {
+  display: block;
+}
+
+.toc-title {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.toc-item {
+  margin: 0.25rem 0;
+  padding-right: calc(var(--level) * 1rem);
+}
+
+.toc-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+}
+
+.toc-link:hover {
+  color: #0f766e;
+}
+
+.toc-link a{
+  text-decoration: none;
+  color: inherit;
+}
+
+.toc-toggle {
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-right: -0.25rem;
+  color: #6b7280;
+}
+
+.toc-toggle:hover {
+  color: #0f766e;
+}
+
+.toc-item.collapsed .toc-list {
+  display: none;
 }
 
 /* Shortcuts Menu */

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://unpkg.com/shahneshan@2.0.0/dist/shahneshan.umd.js"></script>
+  <script src="https://unpkg.com/shahneshan@2.0.1/dist/shahneshan.umd.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -35,7 +35,7 @@
           <ul class="submenu">
             <li>
               <label>
-                <input type="checkbox" id="showToolbar" checked>
+                <input type="checkbox" id="showToolbar">
                 <i class="fas fa-toolbox"></i> نوار ابزار
               </label>
             </li>
@@ -48,7 +48,7 @@
             <li>
               <label>
                 <input type="checkbox" id="showToc">
-                <i class="fas fa-list"></i> فهرست
+                <i class="fas fa-list"></i> فهرست مطالب
               </label>
             </li>
             <li>
@@ -118,11 +118,15 @@
     </div>
 
     <div id="content">
+      <div id="tocPanel">
+        <div class="toc-list"></div>
+      </div>
+
       <div id="editorContainer">
         <textarea dir="auto" id="editor" spellcheck="false"></textarea>
         <div id="shortcutsMenu"></div>
       </div>
-      
+          
       <div id="previewContainer">
         <div id="preview" class="markdown-preview" dir="rtl"></div>
       </div>

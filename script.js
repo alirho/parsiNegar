@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const shortcutsMenu = document.getElementById('shortcutsMenu');
   const toolbar = document.getElementById('toolbar');
   const statusBar = document.getElementById('statusBar');
+  const tocPanel = document.getElementById('tocPanel');
+  const tocList = document.querySelector('.toc-list');
   
   // Stats elements
   const charsCount = document.getElementById('charsCount');
@@ -43,9 +45,111 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportPdfBtn = document.getElementById('exportPdfBtn');
   const helpBtn = document.getElementById('helpBtn');
 
-  // Set initial toolbar visibility to none
-  toolbar.style.display = 'none';
-  showToolbarCheckbox.checked = false;
+  // TOC visibility handler
+  showTocCheckbox.addEventListener('change', (e) => {
+    tocPanel.style.display = e.target.checked ? 'block' : 'none';
+    saveSettings();
+    updatePreview(); // Rebuild TOC
+  });
+
+  // Extract headings from markdown
+  function extractHeadings(markdown) {
+    const headings = [];
+    const lines = markdown.split('\n');
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      const match = line.match(/^(#{1,6})\s+(.+)$/);
+      
+      if (match) {
+        const level = match[1].length;
+        const text = match[2];
+        console.log(text);
+        const id = text.toLowerCase()
+          .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        
+        headings.push({ level, text, id });
+      }
+    }
+    
+    return headings;
+  }
+
+  // Build TOC structure
+  function buildTocStructure(headings) {
+    const root = { children: [], level: 0 };
+    const stack = [root];
+    
+    headings.forEach(heading => {
+      const node = { ...heading, children: [] };
+      
+      while (stack[stack.length - 1].level >= heading.level) {
+        stack.pop();
+      }
+      
+      stack[stack.length - 1].children.push(node);
+      stack.push(node);
+    });
+    
+    return root.children;
+  }
+
+  // Create TOC HTML
+  function createTocHtml(structure, level = 0) {
+    if (!structure.length) return '';
+    
+    let html = '<ul class="toc-list">';
+    
+    structure.forEach(item => {
+      const hasChildren = item.children && item.children.length > 0;
+      
+      html += `
+        <li class="toc-item" style="--level: ${level}">
+          <div class="toc-link">
+            ${hasChildren ? `<span class="toc-toggle"><i class="fas fa-caret-down"></i></span>` : ''}
+            <a href="#${item.id}">${item.text}</a>
+          </div>
+          ${hasChildren ? createTocHtml(item.children, level + 1) : ''}
+        </li>
+      `;
+    });
+    
+    html += '</ul>';
+    return html;
+  }
+
+  // Update TOC
+  function updateToc() {
+    if (!showTocCheckbox.checked) return;
+    
+    const headings = extractHeadings(editor.value);
+    const structure = buildTocStructure(headings);
+    tocList.innerHTML = createTocHtml(structure);
+    
+    // Add click handlers for toggles
+    document.querySelectorAll('.toc-toggle').forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        const item = e.target.closest('.toc-item');
+        item.classList.toggle('collapsed');
+        const icon = toggle.querySelector('i');
+        icon.classList.toggle('fa-caret-down');
+        icon.classList.toggle('fa-caret-left');
+      });
+    });
+    
+    // Add click handlers for links
+    document.querySelectorAll('.toc-link a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = link.getAttribute('href').substring(1);
+        const element = preview.querySelector(`[id="${id}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  }
 
   // Menu Event Listeners
   showToolbarCheckbox.addEventListener('change', (e) => {
@@ -189,12 +293,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
     return `<li style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(md.text)}</li>`;
   };
+
+  // Override heading rendering to add IDs
+  markedRenderer.heading = function(md, level) {
+    var match = md.raw.trim().match(/^#+/);
+    length = match ? match[0].length : 0;
+    const id = md.text.toLowerCase()
+      .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    
+    return `<h${level ?? length} id="${id}">${md.text}</h${level ?? length}>`;
+  };
   
   marked.setOptions({
     renderer: markedRenderer,
     gfm: true,
     breaks: true,
-    headerIds: false
+    headerIds: true
   });
 
   // Load README.md content
@@ -272,6 +387,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       statusBar.style.display = settings.showStatusBar ? 'flex' : 'none';
     }
 
+    if (settings.showToc !== undefined) {
+      showTocCheckbox.checked = settings.showToc;
+      tocPanel.style.display = settings.showToc ? 'block' : 'none';
+    }
+
     if (settings.showFilename !== undefined) {
       showFilenameCheckbox.checked = settings.showFilename;
       filename.style.display = settings.showFilename ? 'block' : 'none';
@@ -289,6 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       filename: filename.value,
       showToolbar: showToolbarCheckbox.checked,
       showStatusBar: showStatusBarCheckbox.checked,
+      showToc: showTocCheckbox.checked,
       showFilename: showFilenameCheckbox.checked
     };
     
@@ -327,8 +448,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const orderedMatch = line.match(/^(\s*([0-9۰-۹]+))(\.\s+)/);
     if (orderedMatch) {
-      const fullPrefix = orderedMatch[1] + orderedMatch[3]; // e.g., " ۱۲. "
-      const rawNumber = orderedMatch[2]; // e.g., "۱۲"
+      const fullPrefix = orderedMatch[1] + orderedMatch[3];
+      const rawNumber = orderedMatch[2];
   
       const isPersian = /[۰-۹]/.test(rawNumber);
       const westernNumber = rawNumber.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
@@ -574,6 +695,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updatePreview() {
     const markdown = editor.value;
     preview.innerHTML = parseMarkdown(markdown);
+    updateToc();
     
     // Update stats
     const chars = markdown.length;
@@ -689,11 +811,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           break;
         case 'image':
           newText = `![]()`;
-          newCursorPos = start + 10;
+          newCursorPos = start + 4;
           break;
         case 'link':
-          newText = `[${selectedText} || ]()`;
-          newCursorPos = selectedText ? end + 12 : start + 13;
+          newText = `[${selectedText}]()`;
+          newCursorPos = selectedText ? end + 3 : start + 1;
           break;
       }
       
@@ -814,8 +936,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
-  
-  const toolbarLeft = document.querySelector('.toolbar-left');
   
   // Fullscreen toggle
   fullscreenBtn.addEventListener('click', () => {
