@@ -709,6 +709,10 @@ select {
   text-decoration: none;
 }
 
+body.theme-dark .markdown-preview a {
+  color: #5eead4 !important;
+}
+
 .markdown-preview a:hover {
   text-decoration: underline;
 }
