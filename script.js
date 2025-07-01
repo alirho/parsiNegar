@@ -13,6 +13,87 @@ function configureMermaidTheme() {
   });
 }
 
+// --- IndexedDB Functions ---
+let db;
+async function openDB() {
+  return new Promise((resolve, reject) => {
+    if (db) {
+        return resolve(db);
+    }
+    const request = indexedDB.open('parsiNegarDB', 1);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains('files')) {
+        db.createObjectStore('files', { keyPath: 'id' });
+      }
+    };
+
+    request.onsuccess = (event) => {
+      db = event.target.result;
+      resolve(db);
+    };
+
+    request.onerror = (event) => {
+      console.error('IndexedDB error:', event.target.errorCode);
+      reject(event.target.errorCode);
+    };
+  });
+}
+
+async function saveFile(content, filenameValue) {
+  if (!db) await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['files'], 'readwrite');
+    const store = transaction.objectStore('files');
+    const file = {
+      id: 'currentFile',
+      content,
+      filename: filenameValue,
+      lastModified: new Date()
+    };
+    const request = store.put(file);
+
+    request.onsuccess = () => resolve();
+    request.onerror = (event) => {
+      console.error('Error saving file to IndexedDB', event.target.error);
+      reject(event.target.error);
+    };
+  });
+}
+
+async function loadFileFromDB() {
+  if (!db) await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['files'], 'readonly');
+    const store = transaction.objectStore('files');
+    const request = store.get('currentFile');
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = (event) => {
+      console.error('Error loading file from IndexedDB', event.target.error);
+      reject(event.target.error);
+    };
+  });
+}
+
+// Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const editor = document.getElementById('editor');
@@ -33,7 +114,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const fontFamilySelect = document.getElementById('fontFamily');
   const markdownParserSelect = document.getElementById('markdownParser');
   const themeRadios = document.querySelectorAll('input[name="theme"]');
-  const autoSaveCheckbox = document.getElementById('autoSave');
   const filename = document.getElementById('filename');
   const shortcutsMenu = document.getElementById('shortcutsMenu');
   const toolbar = document.getElementById('toolbar');
@@ -59,6 +139,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportHtmlBtn = document.getElementById('exportHtmlBtn');
   const exportPdfBtn = document.getElementById('exportPdfBtn');
   const helpBtn = document.getElementById('helpBtn');
+
+  const debouncedSave = debounce(async () => {
+    try {
+        await saveFile(editor.value, filename.value);
+    } catch(e) {
+        console.error("Failed to auto-save to DB", e);
+    }
+  }, 500);
 
   // TOC visibility handler
   showTocCheckbox.addEventListener('change', (e) => {
@@ -181,11 +269,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveSettings();
   });
 
-  newFileBtn.addEventListener('click', () => {
+  newFileBtn.addEventListener('click', async () => {
     if (confirm('آیا مطمئن هستید؟ تمام محتوای فعلی پاک خواهد شد.')) {
       editor.value = '';
       filename.value = 'نام فایل';
       updatePreview();
+      try {
+        await saveFile(editor.value, filename.value);
+      } catch (e) {
+          console.error("Failed to clear file in DB", e);
+      }
     }
   });
 
@@ -360,6 +453,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editor.value = content;
         filename.value = 'README.md';
         updatePreview();
+        await saveFile(content, 'README.md');
       }
     } catch (error) {
       console.error('Error loading README.md:', error);
@@ -405,16 +499,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       markdownParserSelect.value = settings.markdownParser;
     }
     
-    // Apply auto save
-    if (settings.autoSave !== undefined) {
-      autoSaveCheckbox.checked = settings.autoSave;
-    }
-
-    // Load filename
-    if (settings.filename) {
-      filename.value = settings.filename;
-    }
-
     // Apply visibility settings
     if (settings.showToolbar !== undefined) {
       showToolbarCheckbox.checked = settings.showToolbar;
@@ -444,8 +528,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       fontSize: fontSizeSelect.value,
       fontFamily: fontFamilySelect.value,
       markdownParser: markdownParserSelect.value,
-      autoSave: autoSaveCheckbox.checked,
-      filename: filename.value,
       showToolbar: showToolbarCheckbox.checked,
       showStatusBar: showStatusBarCheckbox.checked,
       showToc: showTocCheckbox.checked,
@@ -688,6 +770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     updatePreview();
+    debouncedSave();
     
     // Add to history if significant change
     if (history[historyIndex] !== editor.value) {
@@ -760,11 +843,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     wordsCount.textContent = `واژه: ${words}`;
     linesCount.textContent = `خط: ${lines}`;
     fileSize.textContent = `حجم: ${formatFileSize(size)}`;
-    
-    // Auto save if enabled
-    if (autoSaveCheckbox.checked) {
-      localStorage.setItem('parsiNegarContent', markdown);
-    }
   }
   
   // Format file size
@@ -797,8 +875,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     editor.style.fontFamily = font;
     saveSettings();
   });
-  
-  autoSaveCheckbox.addEventListener('change', saveSettings);
   
   // Toolbar actions
   document.querySelectorAll('[data-action]').forEach(button => {
@@ -908,11 +984,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!file) return;
     
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       editor.value = e.target.result;
       filename.value = file.name;
       updatePreview();
       fileInput.value = '';
+      await saveFile(editor.value, filename.value);
     };
     reader.readAsText(file);
   });
@@ -920,6 +997,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Update filename when editing
   filename.addEventListener('change', () => {
     saveSettings();
+    debouncedSave();
   });
   
   // Download HTML
@@ -1022,18 +1100,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePreview();
   });
   
-  // Load saved content if auto save was enabled
-  const savedContent = localStorage.getItem('parsiNegarContent');
-  if (savedContent && autoSaveCheckbox.checked) {
-    editor.value = savedContent;
-    updatePreview();
-  } else {
-    // Load README.md by default
-    loadReadme();
-  }
-  
   // Load settings on startup
   loadSettings();
+
+  // Load content from IndexedDB or default to README
+  try {
+    const savedFile = await loadFileFromDB();
+    if (savedFile) {
+        editor.value = savedFile.content;
+        if (savedFile.filename) {
+            filename.value = savedFile.filename;
+        }
+        history = [editor.value];
+        historyIndex = 0;
+    } else {
+        await loadReadme();
+    }
+  } catch (e) {
+      console.error("Could not load from DB, loading README.", e);
+      await loadReadme();
+  }
+
   configureMermaidTheme();
   
   // Initial preview
