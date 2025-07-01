@@ -161,6 +161,10 @@ body.theme-dark *:not( .persian h1) {
   color: #e5e5e5 !important;
 }
 
+body.theme-dark .markdown-preview a {
+  color: #5eead4 !important;
+}
+
 body.theme-dark  pre, body.theme-dark code {
   background-color: #484848 !important;
 }
