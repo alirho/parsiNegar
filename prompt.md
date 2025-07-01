@@ -356,3 +356,58 @@
 مشکل اسکرول حل شد، الان مشکل جدید که بوجود اومده این هست که در حالت پیش‌فرض ویرایشگر (نمایش دو بخش نوشتن و پیش‌نمایش) فهرست مطالب نمایش داده نمیشه.
 
 **نکته:** برای حل مشکل ثابت بودن فهرست مطالب در زمان اسکرول کردن متن، تغییرات به صورت دستی ایجاد شده است.
+
+# دستیار هوش Gemini 2.5 Pro
+
+## پرامپت ۱
+امکان استفاده از کتابخانه mermaidjs را اضافه کن. و رندر نمودارها را در بخش نمایش پشتیبانی بشه.
+
+https://github.com/mermaid-js/mermaid
+
+## پرامپت ۲
+با انتخاب مفسر marked در بخش پیش‌نمایش متنی نمایش داده نمی‌شه و در کنسول مرورگر خطای زیر نمایش داده می‌شه.
+
+```
+script.js:314 Uncaught (in promise) TypeError: text.toLowerCase is not a function
+Please report this to https://github.com/markedjs/marked.
+at markedRenderer.heading (script.js:314:21)
+at l.parse (marked.min.js:65:1819)
+at parse (marked.min.js:65:1290)
+at E.parse (marked.min.js:66:5622)
+at Object.k (marked.min.js:67:238)
+at parseMarkdown (script.js:357:21)
+at updatePreview (script.js:711:25)
+at HTMLSelectElement.<anonymous> (script.js:1000:5)
+markedRenderer.heading @ script.js:314
+parse @ marked.min.js:65
+parse @ marked.min.js:65
+(anonymous) @ marked.min.js:66
+k @ marked.min.js:67
+parseMarkdown @ script.js:357
+updatePreview @ script.js:711
+(anonymous) @ script.js:1000
+```
+
+## پرامپت ۳
+حالا در کنسول هیچ خطایی نمایش داده نمیشه اما در بخش پیش‌نمایش تمامی متن‌ها به صورت [object Object] نمایش داده می‌شه.
+
+## پرامپت ۴
+مشکل نمایش بر طرف شده، اما مشکل تازه‌ای که وجود داره این هست که عنوان‌ها، لینک‌ها و تصاویر به صورت متن ساده نمایش داده می‌شوند نه فرمت‌بندی مارک‌دوان.
+
+## پرامپت ۵
+مشکل نمایش عکس‌ها و پیوند‌ها بر طرف شد، اما نمایش عنوان‌ها هنوز مشکل داره. عنوان در داخل تگ hundefined قرار گرفتن که باعث می‌شه در بخش نمایش به صورت یک متن ساده دیده بشن.
+دقت کن که عنوان‌‌ها باید در تگ‌ها h1 تا h6 قرار بگیرن
+
+## پرامپت ۶
+گزینه نمودار را به بخش‌های زیر اضافه کن:
+به منو «افزودن»
+به منوی میان‌بر (shortcuts menu)
+نوار ابزار (toolbar)
+با زدن گزینه نمودار به صورت پیش‌فرض مقدار زیر نمایش داده بشه:
+
+```mermaid
+flowchart LR
+  A[شروع] --> B{تصمیم}
+  B -->|بله| C[ادامه]
+  B -->|خیر| D[توقف]
+```

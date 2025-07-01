@@ -1,3 +1,18 @@
+// Configure Mermaid.js theme based on the application's current theme.
+function configureMermaidTheme() {
+  const currentTheme = document.querySelector('input[name="theme"]:checked').value;
+  let mermaidTheme = 'default';
+  if (currentTheme === 'dark') {
+      mermaidTheme = 'dark';
+  } else if (currentTheme === 'sepia') {
+      mermaidTheme = 'neutral';
+  }
+  mermaid.initialize({
+      startOnLoad: false,
+      theme: mermaidTheme
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const editor = document.getElementById('editor');
@@ -64,7 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (match) {
         const level = match[1].length;
         const text = match[2];
-        console.log(text);
         const id = text.toLowerCase()
           .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
           .replace(/^-+|-+$/g, '');
@@ -246,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.submenu [data-format]').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
-      const format = e.target.dataset.format;
+      const format = e.target.closest('[data-format]').dataset.format;
       const button = document.querySelector(`[data-action="${format}"]`);
       if (button) {
         button.click();
@@ -270,7 +284,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     { name: 'بازبینه', icon: 'fa-tasks', text: '- [ ] ', filter: 'بازبینه' },
     { name: 'جدول', icon: 'fa-table', text: '| ستون ۱ | ستون ۲ | ستون ۳ |\n| ------ | ------ | ------ |\n| محتوا | محتوا | محتوا |', filter: 'جدول' },
     { name: 'تصویر', icon: 'fa-image', text: '![]()', filter: 'تصویر' },
-    { name: 'پیوند', icon: 'fa-link', text: '[]()', filter: 'پیوند' }
+    { name: 'پیوند', icon: 'fa-link', text: '[]()', filter: 'پیوند' },
+    { name: 'نمودار', icon: 'fa-sitemap', text: '```mermaid\nflowchart LR\n  A[شروع] --> B{تصمیم}\n  B -->|بله| C[ادامه]\n  B -->|خیر| D[توقف]\n```', filter: 'نمودار' }
   ];
 
   let selectedShortcutIndex = -1;
@@ -281,35 +296,59 @@ document.addEventListener('DOMContentLoaded', async () => {
   const markedRenderer = new marked.Renderer();
   
   // Override paragraph rendering to handle text direction for marked
-  markedRenderer.paragraph = function(md) {
-    const firstChar = md.text.trim().charAt(0);
+  markedRenderer.paragraph = function(token) {
+    const text = this.parser.parseInline(token.tokens);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    const plainText = (tempDiv.textContent || tempDiv.innerText || '').trim();
+    const firstChar = plainText.charAt(0);
     const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
-    return `<p style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(md.text)}</p>`;
+    return `<p style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${text}</p>`;
   };
   
   // Override list item rendering for marked
-  markedRenderer.listitem = function(md) {
-    const firstChar = md.text.trim().charAt(0);
+  markedRenderer.listitem = function(token) {
+    const text = this.parser.parseInline(token.tokens);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    const plainText = (tempDiv.textContent || tempDiv.innerText || '').trim();
+    const firstChar = plainText.charAt(0);
     const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
-    return `<li style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(md.text)}</li>`;
+    const style = `style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}"`;
+
+    if (token.task) {
+      const checkbox = `<input type="checkbox" disabled ${token.checked ? 'checked' : ''}>`;
+      return `<li class="task-list" ${style}>${checkbox} ${text}</li>`;
+    }
+    
+    return `<li ${style}>${text}</li>`;
   };
 
   // Override heading rendering to add IDs
-  markedRenderer.heading = function(md, level) {
-    var match = md.raw.trim().match(/^#+/);
-    length = match ? match[0].length : 0;
-    const id = md.text.toLowerCase()
+  markedRenderer.heading = function(token) {
+    const text = this.parser.parseInline(token.tokens);
+    const { depth, raw } = token;
+    const id = String(raw || '').toLowerCase()
       .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
       .replace(/^-+|-+$/g, '');
     
-    return `<h${level ?? length} id="${id}">${md.text}</h${level ?? length}>`;
+    return `<h${depth} id="${id}">${text}</h${depth}>`;
+  };
+
+  // Override code rendering for Mermaid.js support
+  markedRenderer.code = function(token) {
+    const { text, lang } = token;
+    if (lang === 'mermaid') {
+      return `<div class="mermaid">${text}</div>`;
+    }
+    return `<pre><code class="language-${lang || ''}">${text}</code></pre>`;
   };
   
   marked.setOptions({
     renderer: markedRenderer,
     gfm: true,
     breaks: true,
-    headerIds: true
+    headerIds: false
   });
 
   // Load README.md content
@@ -419,13 +458,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // History for undo/redo
   let history = [editor.value];
   let historyIndex = 0;
-  
-  // Initialize marked
-  marked.setOptions({
-    gfm: true,
-    breaks: true,
-    headerIds: false
-  });
   
   // Auto-pair characters
   const pairs = {
@@ -692,9 +724,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   
   // Update preview and stats
-  function updatePreview() {
+  async function updatePreview() {
     const markdown = editor.value;
     preview.innerHTML = parseMarkdown(markdown);
+
+    try {
+      const mermaidElements = preview.querySelectorAll('.mermaid');
+      for (const el of mermaidElements) {
+        const code = el.textContent;
+        const id = `mermaid-svg-${Date.now()}`;
+        el.textContent = 'در حال رندر شدن...';
+        try {
+          const { svg } = await mermaid.render(id, code);
+          el.innerHTML = svg;
+        } catch (e) {
+          console.error(e);
+          el.innerHTML = 'نمودار نامعتبر است';
+        }
+      }
+    } catch (e) {
+      console.error('Mermaid rendering error:', e);
+    }
+
     updateToc();
     
     // Update stats
@@ -729,6 +780,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.body.classList.remove('theme-light', 'theme-dark', 'theme-sepia');
       document.body.classList.add(`theme-${e.target.value}`);
       saveSettings();
+      configureMermaidTheme();
+      updatePreview();
     });
   });
   
@@ -816,6 +869,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         case 'link':
           newText = `[${selectedText}]()`;
           newCursorPos = selectedText ? end + 3 : start + 1;
+          break;
+        case 'chart':
+          newText = '```mermaid\nflowchart LR\n  A[شروع] --> B{تصمیم}\n  B -->|بله| C[ادامه]\n  B -->|خیر| D[توقف]\n```';
+          newCursorPos = start + newText.length;
           break;
       }
       
@@ -977,6 +1034,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Load settings on startup
   loadSettings();
+  configureMermaidTheme();
   
   // Initial preview
   updatePreview();
