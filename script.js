@@ -185,6 +185,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportAllZipBtn = document.getElementById('exportAllZipBtn');
   const helpBtn = document.getElementById('helpBtn');
 
+  // --- Synchronized Scrolling for Editor and Preview ---
+  let isSyncingScroll = false;
+  const syncScroll = (source, target) => {
+    if (isSyncingScroll) return;
+
+    const sourceScrollHeight = source.scrollHeight - source.clientHeight;
+    if (sourceScrollHeight <= 0) return; // Don't sync if source has no scrollbar
+
+    isSyncingScroll = true;
+
+    const percentage = source.scrollTop / sourceScrollHeight;
+    const targetScrollHeight = target.scrollHeight - target.clientHeight;
+    
+    target.scrollTop = percentage * targetScrollHeight;
+
+    // Reset lock after a short delay to allow the other pane's scroll event to fire without causing a loop
+    setTimeout(() => { isSyncingScroll = false; }, 50);
+  };
+
+  editor.addEventListener('scroll', () => syncScroll(editor, preview));
+  preview.addEventListener('scroll', () => syncScroll(preview, editor));
+  
   const debouncedSave = debounce(async () => {
     try {
         const currentContent = editor.value;

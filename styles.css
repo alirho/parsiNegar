@@ -273,9 +273,10 @@ h1,h2,h3{
 
 /* Layout */
 #app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Toolbar */
@@ -332,7 +333,8 @@ button {
 #content {
   display: flex;
   flex: 1;
-  position: relative
+  position: relative;
+  overflow: hidden;
 }
 
 #editorContainer, #previewContainer {
@@ -356,6 +358,7 @@ button {
   font-size: 1rem;
   line-height: 1.5;
   background: white;
+  overflow-y: auto;
 }
 
 #preview {
