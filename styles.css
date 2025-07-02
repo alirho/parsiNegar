@@ -191,6 +191,10 @@ body.theme-dark .side-panel-tab {
     border-bottom-color: #404040;
 }
 
+body.theme-dark .side-panel-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 body.theme-dark .side-panel-tab.active {
     background: #1a1a1a;
     border-bottom-color: #1a1a1a;
@@ -242,6 +246,10 @@ body.theme-sepia #sidePanel {
 
 body.theme-sepia .side-panel-tab {
     border-bottom-color: #d3c4b3;
+}
+
+body.theme-sepia .side-panel-tab:hover {
+    background: #d3c4b3;
 }
 
 body.theme-sepia .side-panel-tab.active {
