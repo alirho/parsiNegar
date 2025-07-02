@@ -349,6 +349,7 @@ button {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* Prevent flex item from growing beyond its basis due to long content */
 }
 
 #editorContainer {
