@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://unpkg.com/shahneshan@2.0.1/dist/shahneshan.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <link rel="stylesheet" href="styles.css">
@@ -26,6 +27,7 @@
                 <li><a href="#" id="exportMdBtn"><i class="fas fa-file-alt"></i> Markdown</a></li>
                 <li><a href="#" id="exportHtmlBtn"><i class="fas fa-file-code"></i> HTML</a></li>
                 <li><a href="#" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF</a></li>
+                <li><a href="#" id="exportAllZipBtn"><i class="fas fa-file-archive"></i> خروجی گرفتن از همه فایل‌ها (zip)</a></li>
               </ul>
             </li>
             <li><a href="#" id="settingsBtn"><i class="fas fa-cog"></i> تنظیمات</a></li>
@@ -50,6 +52,12 @@
               <label>
                 <input type="checkbox" id="showToc">
                 <i class="fas fa-list"></i> فهرست مطالب
+              </label>
+            </li>
+            <li>
+              <label>
+                <input type="checkbox" id="showFiles">
+                <i class="fas fa-folder-tree"></i> فایل‌ها
               </label>
             </li>
             <li>
@@ -121,8 +129,19 @@
     </div>
 
     <div id="content">
-      <div id="tocPanel">
-        <div class="toc-list"></div>
+      <div id="sidePanel">
+        <div id="sidePanelTabs">
+          <button class="side-panel-tab" data-tab="files" title="فایل‌ها"><i class="fas fa-folder-tree"></i></button>
+          <button class="side-panel-tab" data-tab="toc" title="فهرست مطالب"><i class="fas fa-list"></i></button>
+        </div>
+        <div id="sidePanelContent">
+          <div id="filesPanel" class="side-panel-pane">
+            <div class="files-list"></div>
+          </div>
+          <div id="tocPanel" class="side-panel-pane">
+            <div class="toc-list"></div>
+          </div>
+        </div>
       </div>
 
       <div id="editorContainer">
@@ -201,11 +220,16 @@
           </select>
         </div>
 
+        <div class="setting-group">
+          <label>پاک کردن داده‌ها</label>
+          <button id="clearDBBtn" class="danger-btn">پاک کردن</button>
+        </div>
+
         <div class="setting-footer">
           <a href="https://github.com/alirho/parsiNegar" target="_blank" class="github-link" title="گیت‌هاب">
             <i class="fab fa-github"></i>
           </a>
-          <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۴.۰</a>
+          <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۷.۰</a>
         </div>
       </div>
     </div>

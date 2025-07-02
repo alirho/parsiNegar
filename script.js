@@ -41,44 +41,82 @@ async function openDB() {
   });
 }
 
-async function saveFile(content, filenameValue) {
-  if (!db) await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(['files'], 'readwrite');
-    const store = transaction.objectStore('files');
-    const file = {
-      id: 'currentFile',
-      content,
-      filename: filenameValue,
-      lastModified: new Date()
-    };
-    const request = store.put(file);
-
-    request.onsuccess = () => resolve();
-    request.onerror = (event) => {
-      console.error('Error saving file to IndexedDB', event.target.error);
-      reject(event.target.error);
-    };
-  });
+async function saveFileToDB(id, content) {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readwrite');
+      const store = transaction.objectStore('files');
+      const file = { id, content, lastModified: new Date() };
+      const request = store.put(file);
+  
+      request.onsuccess = () => resolve();
+      request.onerror = (event) => {
+        console.error('Error saving file to IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
 }
 
-async function loadFileFromDB() {
-  if (!db) await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(['files'], 'readonly');
-    const store = transaction.objectStore('files');
-    const request = store.get('currentFile');
-
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = (event) => {
-      console.error('Error loading file from IndexedDB', event.target.error);
-      reject(event.target.error);
-    };
-  });
+async function getFileFromDB(id) {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readonly');
+      const store = transaction.objectStore('files');
+      const request = store.get(id);
+  
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (event) => {
+        console.error('Error loading file from IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
 }
+  
+async function getAllFilesFromDB() {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readonly');
+      const store = transaction.objectStore('files');
+      const request = store.getAll();
+  
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (event) => {
+        console.error('Error loading all files from IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+
+async function deleteFileFromDB(id) {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readwrite');
+      const store = transaction.objectStore('files');
+      const request = store.delete(id);
+  
+      request.onsuccess = () => resolve();
+      request.onerror = (event) => {
+        console.error('Error deleting file from IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+
+async function clearFilesDB() {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readwrite');
+      const store = transaction.objectStore('files');
+      const request = store.clear();
+  
+      request.onsuccess = () => resolve();
+      request.onerror = (event) => {
+        console.error('Error clearing IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+
 
 // Debounce function
 function debounce(func, wait) {
@@ -118,8 +156,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const shortcutsMenu = document.getElementById('shortcutsMenu');
   const toolbar = document.getElementById('toolbar');
   const statusBar = document.getElementById('statusBar');
+  const sidePanel = document.getElementById('sidePanel');
   const tocPanel = document.getElementById('tocPanel');
+  const filesPanel = document.getElementById('filesPanel');
   const tocList = document.querySelector('.toc-list');
+  const filesList = document.querySelector('.files-list');
+  const [filesTabBtn, tocTabBtn] = document.querySelectorAll('.side-panel-tab');
+  const clearDBBtn = document.getElementById('clearDBBtn');
   
   // Stats elements
   const charsCount = document.getElementById('charsCount');
@@ -132,28 +175,75 @@ document.addEventListener('DOMContentLoaded', async () => {
   const showToolbarCheckbox = document.getElementById('showToolbar');
   const showStatusBarCheckbox = document.getElementById('showStatusBar');
   const showTocCheckbox = document.getElementById('showToc');
+  const showFilesCheckbox = document.getElementById('showFiles');
   const showFilenameCheckbox = document.getElementById('showFilename');
   const newFileBtn = document.getElementById('newFileBtn');
   const loadFileBtn = document.getElementById('loadFileBtn');
   const exportMdBtn = document.getElementById('exportMdBtn');
   const exportHtmlBtn = document.getElementById('exportHtmlBtn');
   const exportPdfBtn = document.getElementById('exportPdfBtn');
+  const exportAllZipBtn = document.getElementById('exportAllZipBtn');
   const helpBtn = document.getElementById('helpBtn');
 
   const debouncedSave = debounce(async () => {
     try {
-        await saveFile(editor.value, filename.value);
+        const currentContent = editor.value;
+        const currentFilename = filename.value;
+
+        localStorage.setItem('parsiNegarLastState', JSON.stringify({
+            content: currentContent,
+            filename: currentFilename,
+        }));
+
+        if (currentFilename && currentFilename.trim() !== '' && currentFilename !== 'نام فایل') {
+            await saveFileToDB(currentFilename, currentContent);
+        }
     } catch(e) {
-        console.error("Failed to auto-save to DB", e);
+        console.error("Failed to auto-save", e);
     }
   }, 500);
 
-  // TOC visibility handler
+  // --- Side Panel Logic ---
+  const activateTab = (tabName) => {
+    const isFiles = tabName === 'files';
+    filesTabBtn.classList.toggle('active', isFiles);
+    tocTabBtn.classList.toggle('active', !isFiles);
+    filesPanel.classList.toggle('active', isFiles);
+    tocPanel.classList.toggle('active', !isFiles);
+
+    if (isFiles) {
+        populateFilesList();
+    } else {
+        updateToc();
+    }
+    const settings = JSON.parse(localStorage.getItem('parsiNegarSettings') || '{}');
+    settings.activeTab = tabName;
+    localStorage.setItem('parsiNegarSettings', JSON.stringify(settings));
+  };
+  
+  const updateSidePanelVisibility = () => {
+      const show = showFilesCheckbox.checked || showTocCheckbox.checked;
+      sidePanel.style.display = show ? 'flex' : 'none';
+  };
+  
   showTocCheckbox.addEventListener('change', (e) => {
-    tocPanel.style.display = e.target.checked ? 'block' : 'none';
+    updateSidePanelVisibility();
+    if (e.target.checked) {
+        activateTab('toc');
+    }
     saveSettings();
-    updatePreview(); // Rebuild TOC
   });
+  
+  showFilesCheckbox.addEventListener('change', (e) => {
+    updateSidePanelVisibility();
+    if (e.target.checked) {
+        activateTab('files');
+    }
+    saveSettings();
+  });
+
+  filesTabBtn.addEventListener('click', () => activateTab('files'));
+  tocTabBtn.addEventListener('click', () => activateTab('toc'));
 
   // Extract headings from markdown
   function extractHeadings(markdown) {
@@ -201,7 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function createTocHtml(structure, level = 0) {
     if (!structure.length) return '';
     
-    let html = '<ul class="toc-list">';
+    let html = '<ul class="toc-list-inner">';
     
     structure.forEach(item => {
       const hasChildren = item.children && item.children.length > 0;
@@ -223,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Update TOC
   function updateToc() {
-    if (!showTocCheckbox.checked) return;
+    if (!showTocCheckbox.checked && !tocTabBtn.classList.contains('active')) return;
     
     const headings = extractHeadings(editor.value);
     const structure = buildTocStructure(headings);
@@ -252,6 +342,108 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   }
+  
+  const toggleFileActionsMenu = (e) => {
+    e.stopPropagation();
+    const currentDropdown = e.target.closest('.file-actions-menu').querySelector('.file-actions-dropdown');
+    
+    document.querySelectorAll('.file-actions-dropdown').forEach(dropdown => {
+      if (dropdown !== currentDropdown) {
+        dropdown.classList.add('hidden');
+      }
+    });
+    
+    currentDropdown.classList.toggle('hidden');
+  };
+
+  async function populateFilesList() {
+    const currentFilename = filename.value;
+    const files = await getAllFilesFromDB();
+    files.sort((a, b) => b.lastModified - a.lastModified);
+    
+    if (files.length === 0) {
+        filesList.innerHTML = '<p style="text-align: center; font-size: 0.8rem; opacity: 0.7;">فایلی یافت نشد.</p>';
+        return;
+    }
+  
+    filesList.innerHTML = files.map(file => `
+      <div class="file-item ${file.id === currentFilename ? 'active' : ''}" data-id="${file.id}">
+        <span class="file-name" title="آخرین تغییر: ${new Date(file.lastModified).toLocaleString('fa-IR')}">${file.id}</span>
+        <div class="file-actions-menu">
+            <button class="file-actions-toggle" title="گزینه‌ها"><i class="fas fa-ellipsis-v"></i></button>
+            <div class="file-actions-dropdown hidden">
+                <a href="#" class="download-file-btn"><i class="fas fa-download"></i> دانلود</a>
+                <a href="#" class="rename-file-btn"><i class="fas fa-edit"></i> تغییر نام</a>
+                <a href="#" class="delete-file-btn danger-action"><i class="fas fa-trash"></i> حذف</a>
+            </div>
+        </div>
+      </div>
+    `).join('');
+  
+    filesList.querySelectorAll('.file-name').forEach(el => el.addEventListener('click', handleLoadFile));
+    filesList.querySelectorAll('.file-actions-toggle').forEach(el => el.addEventListener('click', toggleFileActionsMenu));
+    filesList.querySelectorAll('.download-file-btn').forEach(el => el.addEventListener('click', handleDownloadFile));
+    filesList.querySelectorAll('.rename-file-btn').forEach(el => el.addEventListener('click', handleRenameFile));
+    filesList.querySelectorAll('.delete-file-btn').forEach(el => el.addEventListener('click', handleDeleteFile));
+  }
+  
+  async function handleLoadFile(e) {
+    const id = e.target.closest('.file-item').dataset.id;
+    const file = await getFileFromDB(id);
+    if (file) {
+      editor.value = file.content;
+      filename.value = file.id;
+      updatePreview();
+      debouncedSave();
+    }
+  }
+  
+  async function handleDownloadFile(e) {
+    e.preventDefault();
+    const id = e.target.closest('.file-item').dataset.id;
+    const file = await getFileFromDB(id);
+    if (file) {
+      const blob = new Blob([file.content], { type: 'text/markdown;charset=utf-8' });
+      downloadFile(blob, id.endsWith('.md') ? id : `${id}.md`);
+    }
+  }
+
+  async function handleRenameFile(e) {
+    e.preventDefault();
+    const oldId = e.target.closest('.file-item').dataset.id;
+    const newId = prompt('نام جدید فایل را وارد کنید:', oldId);
+
+    if (newId && newId.trim() !== '' && newId !== oldId) {
+        const existingFile = await getFileFromDB(newId);
+        if (existingFile) {
+            alert('خطا: فایلی با این نام از قبل وجود دارد.');
+            return;
+        }
+        const fileToRename = await getFileFromDB(oldId);
+        await saveFileToDB(newId, fileToRename.content);
+        await deleteFileFromDB(oldId);
+        if (filename.value === oldId) {
+            filename.value = newId;
+            debouncedSave();
+        }
+        await populateFilesList();
+    }
+  }
+  
+  async function handleDeleteFile(e) {
+    e.preventDefault();
+    const id = e.target.closest('.file-item').dataset.id;
+    if (confirm(`آیا از حذف فایل «${id}» مطمئن هستید؟ این عمل بازگشت‌پذیر نیست.`)) {
+        await deleteFileFromDB(id);
+        if (filename.value === id) {
+            editor.value = '';
+            filename.value = 'نام فایل';
+            updatePreview();
+            localStorage.removeItem('parsiNegarLastState');
+        }
+        await populateFilesList();
+    }
+  }
 
   // Menu Event Listeners
   showToolbarCheckbox.addEventListener('change', (e) => {
@@ -269,16 +461,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveSettings();
   });
 
-  newFileBtn.addEventListener('click', async () => {
+  newFileBtn.addEventListener('click', () => {
     if (confirm('آیا مطمئن هستید؟ تمام محتوای فعلی پاک خواهد شد.')) {
       editor.value = '';
       filename.value = 'نام فایل';
       updatePreview();
-      try {
-        await saveFile(editor.value, filename.value);
-      } catch (e) {
-          console.error("Failed to clear file in DB", e);
-      }
+      localStorage.removeItem('parsiNegarLastState');
     }
   });
 
@@ -344,8 +532,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  exportAllZipBtn.addEventListener('click', async () => {
+    if (typeof JSZip === 'undefined') {
+        alert('کتابخانه مورد نیاز برای ساخت فایل فشرده بارگذاری نشده است.');
+        return;
+    }
+
+    if (!confirm('آیا می‌خواهید از تمام فایل‌های ذخیره شده خروجی زیپ بگیرید؟')) {
+        return;
+    }
+
+    try {
+        const files = await getAllFilesFromDB();
+        if (files.length === 0) {
+            alert('هیچ فایلی برای خروجی گرفتن وجود ندارد.');
+            return;
+        }
+
+        const zip = new JSZip();
+        files.forEach(file => {
+            const filename = file.id.endsWith('.md') ? file.id : `${file.id}.md`;
+            zip.file(filename, file.content);
+        });
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        downloadFile(zipBlob, 'parsiNegar-backup.zip');
+
+    } catch (error) {
+        console.error('Error creating zip file:', error);
+        alert('خطایی در هنگام ایجاد فایل زیپ رخ داد.');
+    }
+  });
+
   helpBtn.addEventListener('click', () => {
-    // Load help content from README.md
     loadReadme();
   });
 
@@ -453,7 +672,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editor.value = content;
         filename.value = 'README.md';
         updatePreview();
-        await saveFile(content, 'README.md');
+        await saveFileToDB('README.md', content);
       }
     } catch (error) {
       console.error('Error loading README.md:', error);
@@ -512,17 +731,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (settings.showToc !== undefined) {
       showTocCheckbox.checked = settings.showToc;
-      tocPanel.style.display = settings.showToc ? 'block' : 'none';
+    }
+
+    if (settings.showFiles !== undefined) {
+      showFilesCheckbox.checked = settings.showFiles;
     }
 
     if (settings.showFilename !== undefined) {
       showFilenameCheckbox.checked = settings.showFilename;
       filename.style.display = settings.showFilename ? 'block' : 'none';
     }
+
+    updateSidePanelVisibility();
+    if (showFilesCheckbox.checked || showTocCheckbox.checked) {
+        activateTab(settings.activeTab || 'files');
+    }
   }
   
   // Save settings to localStorage
   function saveSettings() {
+    const activeTab = filesTabBtn.classList.contains('active') ? 'files' : 'toc';
     const settings = {
       theme: document.querySelector('input[name="theme"]:checked').value,
       fontSize: fontSizeSelect.value,
@@ -531,7 +759,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToolbar: showToolbarCheckbox.checked,
       showStatusBar: showStatusBarCheckbox.checked,
       showToc: showTocCheckbox.checked,
-      showFilename: showFilenameCheckbox.checked
+      showFiles: showFilesCheckbox.checked,
+      showFilename: showFilenameCheckbox.checked,
+      activeTab: activeTab,
     };
     
     localStorage.setItem('parsiNegarSettings', JSON.stringify(settings));
@@ -804,6 +1034,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         !e.target.closest('#editor')) {
       hideShortcutsMenu();
     }
+    // Close file actions dropdown
+    document.querySelectorAll('.file-actions-dropdown:not(.hidden)').forEach(dropdown => {
+        if (!e.target.closest('.file-actions-menu')) {
+             dropdown.classList.add('hidden');
+        }
+    });
   });
   
   // Update preview and stats
@@ -828,8 +1064,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
       console.error('Mermaid rendering error:', e);
     }
-
-    updateToc();
+    
+    // Update active side panel content
+    if (sidePanel.style.display !== 'none') {
+        if (filesTabBtn.classList.contains('active')) {
+            populateFilesList();
+        } else {
+            updateToc();
+        }
+    }
     
     // Update stats
     const chars = markdown.length;
@@ -989,15 +1232,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       filename.value = file.name;
       updatePreview();
       fileInput.value = '';
-      await saveFile(editor.value, filename.value);
+      await saveFileToDB(file.name, e.target.result);
+      await populateFilesList();
     };
     reader.readAsText(file);
   });
 
   // Update filename when editing
-  filename.addEventListener('change', () => {
+  let oldFilenameOnFocus = '';
+  filename.addEventListener('focus', () => {
+    oldFilenameOnFocus = filename.value;
+  });
+  filename.addEventListener('change', async () => {
+    const newFilename = filename.value.trim();
+    if (!newFilename || newFilename === 'نام فایل') {
+      filename.value = oldFilenameOnFocus;
+      return;
+    }
+    if (oldFilenameOnFocus && newFilename !== oldFilenameOnFocus && oldFilenameOnFocus !== 'نام فایل') {
+        await deleteFileFromDB(oldFilenameOnFocus);
+    }
+    await saveFileToDB(newFilename, editor.value);
+    await populateFilesList();
     saveSettings();
-    debouncedSave();
   });
   
   // Download HTML
@@ -1094,6 +1351,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveSettings();
   });
   
+  clearDBBtn.addEventListener('click', async () => {
+    if (confirm('آیا مطمئن هستید؟ تمام فایل‌های ذخیره شده برای همیشه پاک خواهند شد. این عمل بازگشت‌پذیر نیست.')) {
+      await clearFilesDB();
+      await populateFilesList();
+      editor.value = '';
+      filename.value = 'نام فایل';
+      updatePreview();
+      localStorage.removeItem('parsiNegarLastState');
+      alert('تمام داده‌ها پاک شدند.');
+    }
+  });
+
   // Add event listener for markdown parser change
   markdownParserSelect.addEventListener('change', () => {
     saveSettings();
@@ -1103,26 +1372,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load settings on startup
   loadSettings();
 
-  // Load content from IndexedDB or default to README
+  // Load content from localStorage or default to README
   try {
-    const savedFile = await loadFileFromDB();
-    if (savedFile) {
-        editor.value = savedFile.content;
-        if (savedFile.filename) {
-            filename.value = savedFile.filename;
-        }
-        history = [editor.value];
-        historyIndex = 0;
+    const lastStateJSON = localStorage.getItem('parsiNegarLastState');
+    if (lastStateJSON) {
+        const lastState = JSON.parse(lastStateJSON);
+        editor.value = lastState.content;
+        filename.value = lastState.filename;
     } else {
         await loadReadme();
     }
   } catch (e) {
-      console.error("Could not load from DB, loading README.", e);
+      console.error("Could not load last state, loading README.", e);
       await loadReadme();
   }
 
+  history = [editor.value];
+  historyIndex = 0;
+
   configureMermaidTheme();
   
-  // Initial preview
+  // Initial preview and panels
   updatePreview();
 });
