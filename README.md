@@ -1,6 +1,6 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v1.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.7.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -8,7 +8,7 @@
 
 پارسی‌نگار یک ویرایشگر مارک‌داون آنلاین و سبک است که به طور خاص برای نوشتن متن‌های فارسی و راست به چپ (RTL) طراحی شده است. این ویرایشگر با تمرکز بر تجربه کاربری مناسب برای کاربران فارسی‌زبان ایجاد شده و امکان نوشتن، ویرایش و پیش‌نمایش متن‌های مارک‌داون را به صورت همزمان فراهم می‌کند.
 
-این پروژه با استفاده از ابزار [bolt (دستیار هوش مصنوعی)](https://bolt.new) توسعه یافته است.
+این پروژه با استفاده از ابزارهای [bolt](https://bolt.new) و [google aistudio](https://aistudio.google.com) توسعه یافته است.
 
 مشاور فنی [ShahroozD](https://github.com/ShahroozD)
 
