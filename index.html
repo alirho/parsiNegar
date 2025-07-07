@@ -94,7 +94,20 @@
           </ul>
         </li>
         <li class="menu-right">
-          <a href="#" id="fullscreenBtn"><i class="fas fa-expand"></i></a>
+          <a href="#" id="searchBtn" title="جستجو"><i class="fas fa-search"></i></a>
+          <a href="#" id="fullscreenBtn" title="تمام صفحه"><i class="fas fa-expand"></i></a>
+          <div id="searchBar" class="hidden">
+            <select id="searchScope" title="محدوده جستجو">
+              <option value="all" selected>همه جا</option>
+              <option value="editor">نوشتن</option>
+              <option value="preview">نمایش</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="جستجو..." spellcheck="false">
+            <span id="searchCount">0/0</span>
+            <button id="prevMatchBtn" title="مورد قبلی"><i class="fas fa-chevron-up"></i></button>
+            <button id="nextMatchBtn" title="مورد بعدی"><i class="fas fa-chevron-down"></i></button>
+            <button id="closeSearchBtn" title="بستن"><i class="fas fa-times"></i></button>
+          </div>
         </li>
       </ul>
     </div>
@@ -145,7 +158,10 @@
       </div>
 
       <div id="editorContainer">
-        <textarea dir="auto" id="editor" spellcheck="false"></textarea>
+        <div id="editorWrapper">
+          <div id="editorBackdrop"></div>
+          <textarea dir="auto" id="editor" spellcheck="false"></textarea>
+        </div>
         <div id="shortcutsMenu"></div>
       </div>
           

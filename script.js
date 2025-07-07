@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const editor = document.getElementById('editor');
   const preview = document.getElementById('preview');
+  const editorBackdrop = document.getElementById('editorBackdrop');
   const settingsPanel = document.getElementById('settingsPanel');
   const settingsBtn = document.getElementById('settingsBtn');
   const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -164,6 +165,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const [filesTabBtn, tocTabBtn] = document.querySelectorAll('.side-panel-tab');
   const clearDBBtn = document.getElementById('clearDBBtn');
   
+  // Search Elements
+  const searchBtn = document.getElementById('searchBtn');
+  const searchBar = document.getElementById('searchBar');
+  const searchInput = document.getElementById('searchInput');
+  const searchScopeSelect = document.getElementById('searchScope');
+  const searchCount = document.getElementById('searchCount');
+  const prevMatchBtn = document.getElementById('prevMatchBtn');
+  const nextMatchBtn = document.getElementById('nextMatchBtn');
+  const closeSearchBtn = document.getElementById('closeSearchBtn');
+
+  // Search State
+  let isSearchActive = false;
+  let matches = [];
+  let currentMatchIndex = -1;
+
   // Stats elements
   const charsCount = document.getElementById('charsCount');
   const lettersCount = document.getElementById('lettersCount');
@@ -204,7 +220,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => { isSyncingScroll = false; }, 50);
   };
 
-  editor.addEventListener('scroll', () => syncScroll(editor, preview));
+  editor.addEventListener('scroll', () => {
+      syncScroll(editor, preview);
+      editorBackdrop.scrollTop = editor.scrollTop;
+      editorBackdrop.scrollLeft = editor.scrollLeft;
+  });
   preview.addEventListener('scroll', () => syncScroll(preview, editor));
   
   const debouncedSave = debounce(async () => {
@@ -415,7 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (file) {
       editor.value = file.content;
       filename.value = file.id;
-      updatePreview();
+      await updatePreview();
       debouncedSave();
     }
   }
@@ -460,7 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (filename.value === id) {
             editor.value = '';
             filename.value = 'نام فایل';
-            updatePreview();
+            await updatePreview();
             localStorage.removeItem('parsiNegarLastState');
         }
         await populateFilesList();
@@ -483,11 +503,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveSettings();
   });
 
-  newFileBtn.addEventListener('click', () => {
+  newFileBtn.addEventListener('click', async () => {
     if (confirm('آیا مطمئن هستید؟ تمام محتوای فعلی پاک خواهد شد.')) {
       editor.value = '';
       filename.value = 'نام فایل';
-      updatePreview();
+      await updatePreview();
       localStorage.removeItem('parsiNegarLastState');
     }
   });
@@ -693,7 +713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const content = await response.text();
         editor.value = content;
         filename.value = 'README.md';
-        updatePreview();
+        await updatePreview();
         await saveFileToDB('README.md', content);
       }
     } catch (error) {
@@ -726,18 +746,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Apply font size
     if (settings.fontSize) {
       editor.style.fontSize = `${settings.fontSize}px`;
+      editorBackdrop.style.fontSize = `${settings.fontSize}px`;
       fontSizeSelect.value = settings.fontSize;
     }
     
     // Apply font family
     if (settings.fontFamily) {
       editor.style.fontFamily = settings.fontFamily;
+      editorBackdrop.style.fontFamily = settings.fontFamily;
       fontFamilySelect.value = settings.fontFamily;
     }
     
     // Apply markdown parser
     if (settings.markdownParser) {
       markdownParserSelect.value = settings.markdownParser;
+    }
+
+    // Apply search scope
+    if (settings.searchScope) {
+      searchScopeSelect.value = settings.searchScope;
     }
     
     // Apply visibility settings
@@ -778,6 +805,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       fontSize: fontSizeSelect.value,
       fontFamily: fontFamilySelect.value,
       markdownParser: markdownParserSelect.value,
+      searchScope: searchScopeSelect.value,
       showToolbar: showToolbarCheckbox.checked,
       showStatusBar: showStatusBarCheckbox.checked,
       showToc: showTocCheckbox.checked,
@@ -886,7 +914,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Insert shortcut
-  function insertShortcut(shortcut) {
+  async function insertShortcut(shortcut) {
     const cursorPos = editor.selectionStart;
     const textBeforeCursor = editor.value.substring(0, cursorPos);
     const textAfterCursor = editor.value.substring(cursorPos);
@@ -902,11 +930,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     hideShortcutsMenu();
-    updatePreview();
+    await updatePreview();
   }
 
   // Handle keyboard events for shortcuts menu and list continuation
-  editor.addEventListener('keydown', (e) => {
+  editor.addEventListener('keydown', async (e) => {
     if (isShortcutMenuVisible) {
       const filteredShortcuts = shortcuts.filter(s => {
         const cursorPos = editor.selectionStart;
@@ -933,7 +961,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         case 'Enter':
           e.preventDefault();
           if (selectedShortcutIndex >= 0) {
-            insertShortcut(filteredShortcuts[selectedShortcutIndex]);
+            await insertShortcut(filteredShortcuts[selectedShortcutIndex]);
           }
           break;
         case 'Escape':
@@ -968,7 +996,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           editor.setSelectionRange(cursorPos + 1 + prefix.length, cursorPos + 1 + prefix.length);
         }
         lastEnterTime = now;
-        updatePreview();
+        await updatePreview();
       }
     }
 
@@ -987,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         editor.setSelectionRange(start + 1, start + 1);
       }
-      updatePreview();
+      await updatePreview();
     } else if (e.key === 'Backspace') {
       const start = editor.selectionStart;
       const end = editor.selectionEnd;
@@ -1000,14 +1028,16 @@ document.addEventListener('DOMContentLoaded', async () => {
           editor.value = editor.value.substring(0, start - 1) +
             editor.value.substring(start + 1);
           editor.setSelectionRange(start - 1, start - 1);
-          updatePreview();
+          await updatePreview();
         }
       }
     }
   });
 
+  const debouncedSearch = debounce(() => performSearch(), 300);
+
   // Handle input for shortcuts menu
-  editor.addEventListener('input', (e) => {
+  editor.addEventListener('input', async (e) => {
     const cursorPos = editor.selectionStart;
     const textBeforeCursor = editor.value.substring(0, cursorPos);
     const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
@@ -1021,8 +1051,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       hideShortcutsMenu();
     }
 
-    updatePreview();
+    await updatePreview();
     debouncedSave();
+    if(isSearchActive) {
+      debouncedSearch();
+    }
     
     // Add to history if significant change
     if (history[historyIndex] !== editor.value) {
@@ -1086,6 +1119,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
       console.error('Mermaid rendering error:', e);
     }
+
+    if (isSearchActive && searchInput.value) {
+        performSearch(false);
+    }
     
     // Update active side panel content
     if (sidePanel.style.display !== 'none') {
@@ -1119,12 +1156,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Theme handling
   themeRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
+    radio.addEventListener('change', async (e) => {
       document.body.classList.remove('theme-light', 'theme-dark', 'theme-sepia');
       document.body.classList.add(`theme-${e.target.value}`);
       saveSettings();
       configureMermaidTheme();
-      updatePreview();
+      await updatePreview();
     });
   });
   
@@ -1132,18 +1169,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   fontSizeSelect.addEventListener('change', (e) => {
     const size = e.target.value;
     editor.style.fontSize = `${size}px`;
+    editorBackdrop.style.fontSize = `${size}px`;
     saveSettings();
   });
   
   fontFamilySelect.addEventListener('change', (e) => {
     const font = e.target.value;
     editor.style.fontFamily = font;
+    editorBackdrop.style.fontFamily = font;
     saveSettings();
   });
   
   // Toolbar actions
   document.querySelectorAll('[data-action]').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       const action = button.dataset.action;
       const start = editor.selectionStart;
       const end = editor.selectionEnd;
@@ -1168,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           newText = editor.value.substring(0, lineStart) + prefix + editor.value.substring(lineStart);
           editor.value = newText;
           editor.setSelectionRange(lineStart + prefix.length, lineStart + prefix.length);
-          updatePreview();
+          await updatePreview();
           return;
         case 'strike':
           newText = `~~${selectedText}~~`;
@@ -1220,25 +1259,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (action !== 'heading') {
         editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
         editor.setSelectionRange(newCursorPos, newCursorPos);
-        updatePreview();
+        await updatePreview();
       }
     });
   });
   
   // Undo/Redo
-  document.getElementById('undoBtn').addEventListener('click', () => {
+  document.getElementById('undoBtn').addEventListener('click', async () => {
     if (historyIndex > 0) {
       historyIndex--;
       editor.value = history[historyIndex];
-      updatePreview();
+      await updatePreview();
     }
   });
   
-  document.getElementById('redoBtn').addEventListener('click', () => {
+  document.getElementById('redoBtn').addEventListener('click', async () => {
     if (historyIndex < history.length - 1) {
       historyIndex++;
       editor.value = history[historyIndex];
-      updatePreview();
+      await updatePreview();
     }
   });
   
@@ -1252,7 +1291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     reader.onload = async (e) => {
       editor.value = e.target.result;
       filename.value = file.name;
-      updatePreview();
+      await updatePreview();
       fileInput.value = '';
       await saveFileToDB(file.name, e.target.result);
       await populateFilesList();
@@ -1379,18 +1418,173 @@ document.addEventListener('DOMContentLoaded', async () => {
       await populateFilesList();
       editor.value = '';
       filename.value = 'نام فایل';
-      updatePreview();
+      await updatePreview();
       localStorage.removeItem('parsiNegarLastState');
       alert('تمام داده‌ها پاک شدند.');
     }
   });
 
   // Add event listener for markdown parser change
-  markdownParserSelect.addEventListener('change', () => {
+  markdownParserSelect.addEventListener('change', async () => {
     saveSettings();
-    updatePreview();
+    await updatePreview();
   });
   
+  // --- Search Functionality ---
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function openSearchBar() {
+    isSearchActive = true;
+    searchBar.classList.remove('hidden');
+    searchInput.focus();
+    searchInput.select();
+    performSearch();
+  }
+
+  async function closeSearchBar() {
+    isSearchActive = false;
+    searchBar.classList.add('hidden');
+    searchInput.value = '';
+    matches = [];
+    currentMatchIndex = -1;
+    editorBackdrop.innerHTML = '';
+    editor.classList.remove('searching');
+    await updatePreview(); // Re-render preview to remove highlights
+  }
+
+  function performSearch(resetIndex = true) {
+    const term = searchInput.value;
+    const scope = searchScopeSelect.value;
+
+    // 1. Clear all previous highlights
+    editorBackdrop.innerHTML = '';
+    preview.querySelectorAll('mark.highlight').forEach(m => {
+        const parent = m.parentNode;
+        if (parent) {
+            parent.replaceChild(document.createTextNode(m.textContent), m);
+            parent.normalize();
+        }
+    });
+
+    if (!term) {
+        matches = [];
+        currentMatchIndex = -1;
+        updateSearchCount();
+        editor.classList.remove('searching');
+        return;
+    }
+
+    // 2. Decide whether to make editor text transparent based on scope
+    editor.classList.toggle('searching', scope === 'editor' || scope === 'all');
+
+    const regex = new RegExp(escapeRegExp(term), 'gi');
+    let editorMatches = [];
+    let previewMatches = [];
+
+    // 3. Highlight in editor based on scope
+    if (scope === 'editor' || scope === 'all') {
+        const escapedText = editor.value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        editorBackdrop.innerHTML = escapedText.replace(regex, match => `<mark class="highlight">${match}</mark>`);
+        editorMatches = Array.from(editorBackdrop.querySelectorAll('.highlight'));
+    }
+
+    // 4. Highlight in preview based on scope
+    if (scope === 'preview' || scope === 'all') {
+        const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+        let currentNode;
+        while(currentNode = walker.nextNode()) {
+            if (!currentNode.parentElement.closest('script, style, pre, code')) {
+                textNodes.push(currentNode);
+            }
+        }
+
+        textNodes.forEach(node => {
+            if (node.nodeValue.match(regex)) {
+                const newNode = document.createElement('span');
+                newNode.innerHTML = node.nodeValue.replace(regex, `<mark class="highlight">$&</mark>`);
+                if (node.parentNode) {
+                   node.parentNode.replaceChild(newNode, node);
+                   newNode.replaceWith(...newNode.childNodes);
+                }
+            }
+        });
+        previewMatches = Array.from(preview.querySelectorAll('.highlight'));
+    }
+
+    // 5. Combine matches and update UI
+    matches = [...editorMatches, ...previewMatches];
+    if (resetIndex) {
+        currentMatchIndex = matches.length > 0 ? 0 : -1;
+    } else {
+         if (currentMatchIndex >= matches.length) {
+            currentMatchIndex = matches.length > 0 ? matches.length - 1 : -1;
+        }
+    }
+    updateActiveHighlight();
+  }
+
+  function updateActiveHighlight() {
+    matches.forEach(m => m.classList.remove('active'));
+    if (currentMatchIndex > -1 && matches[currentMatchIndex]) {
+        const activeMatch = matches[currentMatchIndex];
+        activeMatch.classList.add('active');
+        activeMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    updateSearchCount();
+  }
+
+  function navigateMatches(direction) {
+    if (matches.length === 0) return;
+    currentMatchIndex += direction;
+    if (currentMatchIndex < 0) {
+        currentMatchIndex = matches.length - 1;
+    } else if (currentMatchIndex >= matches.length) {
+        currentMatchIndex = 0;
+    }
+    updateActiveHighlight();
+  }
+
+  function updateSearchCount() {
+    if (matches.length > 0) {
+        searchCount.textContent = `${currentMatchIndex + 1}/${matches.length}`;
+    } else {
+        searchCount.textContent = searchInput.value ? '0/0' : '';
+    }
+  }
+
+  searchBtn.addEventListener('click', openSearchBar);
+  closeSearchBtn.addEventListener('click', closeSearchBar);
+  searchInput.addEventListener('input', debouncedSearch);
+  searchScopeSelect.addEventListener('change', () => performSearch());
+  nextMatchBtn.addEventListener('click', () => navigateMatches(1));
+  prevMatchBtn.addEventListener('click', () => navigateMatches(-1));
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        navigateMatches(e.shiftKey ? -1 : 1);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        openSearchBar();
+    }
+    if (e.key === 'Escape') {
+      if (isSearchActive) {
+        e.preventDefault();
+        closeSearchBar();
+      } else if (isShortcutMenuVisible) {
+        e.preventDefault();
+        hideShortcutsMenu();
+      }
+    }
+  });
+
+
   // Load settings on startup
   loadSettings();
 
@@ -1415,5 +1609,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   configureMermaidTheme();
   
   // Initial preview and panels
-  updatePreview();
+  await updatePreview();
 });
