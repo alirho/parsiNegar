@@ -689,13 +689,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `<h${depth} id="${id}">${text}</h${depth}>`;
   };
 
-  // Override code rendering for Mermaid.js support
+  // Override code rendering for Mermaid.js and syntax highlighting
   markedRenderer.code = function(token) {
     const { text, lang } = token;
     if (lang === 'mermaid') {
       return `<div class="mermaid">${text}</div>`;
     }
-    return `<pre><code class="language-${lang || ''}">${text}</code></pre>`;
+
+    if (typeof hljs !== 'undefined') {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        try {
+            const highlighted = hljs.highlight(text, { language, ignoreIllegals: true }).value;
+            return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
+        } catch (e) {
+            console.error('Highlighting error', e);
+        }
+    }
+
+    // Fallback for when hljs is not available or fails
+    const escapeHtml = (unsafe) => unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    return `<pre><code class="language-${lang || 'plaintext'}">${escapeHtml(text)}</code></pre>`;
   };
   
   marked.setOptions({
@@ -730,6 +743,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       return marked.parse(markdown);
     }
   }
+
+  // --- Theme and Syntax Highlighting ---
+  function setHljsTheme(theme) {
+    const lightTheme = document.getElementById('hljs-light-theme');
+    const darkTheme = document.getElementById('hljs-dark-theme');
+
+    if (!lightTheme || !darkTheme) return;
+
+    if (theme === 'dark') {
+        lightTheme.disabled = true;
+        darkTheme.disabled = false;
+    } else { // light and sepia use the light theme
+        lightTheme.disabled = false;
+        darkTheme.disabled = true;
+    }
+  }
   
   // Load settings from localStorage
   function loadSettings() {
@@ -741,6 +770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.body.classList.add(`theme-${settings.theme}`);
       const themeRadio = document.querySelector(`input[name="theme"][value="${settings.theme}"]`);
       if (themeRadio) themeRadio.checked = true;
+      setHljsTheme(settings.theme);
     }
     
     // Apply font size
@@ -1161,6 +1191,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.body.classList.add(`theme-${e.target.value}`);
       saveSettings();
       configureMermaidTheme();
+      setHljsTheme(e.target.value);
       await updatePreview();
     });
   });

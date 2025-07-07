@@ -159,8 +159,19 @@ body.theme-dark {
   color: #e5e5e5;
 }
 
-body.theme-dark *:not( .persian h1) {
-  color: #e5e5e5 !important;
+/* Color fixes for dark mode to support syntax highlighting */
+body.theme-dark .toc-toggle,
+body.theme-dark .markdown-preview blockquote,
+body.theme-dark .modal-header h2,
+body.theme-dark .setting-group label,
+body.theme-dark .github-link {
+  color: inherit;
+}
+
+body.theme-dark .toc-link:hover,
+body.theme-dark .toc-toggle:hover,
+body.theme-dark .version-link {
+  color: #5eead4;
 }
 
 body.theme-dark .markdown-preview a {
