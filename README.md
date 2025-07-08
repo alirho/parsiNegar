@@ -1,6 +1,6 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.7.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.8.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -18,7 +18,7 @@
 
 - پشتیبانی کامل از زبان فارسی و نوشتار راست به چپ (RTL)
 - پشتیبانی از مفسر [شه‌نشان](https://github.com/barnevis/ShahNeshan) و [marked](https://github.com/markedjs/marked)
-- پیش‌نمایش زنده و همزمان با نوشتن
+- نمایش زنده و همزمان با نوشتن
 - نمایش آمار متن (تعداد نویسه، کلمه، خط و حجم فایل)
 - قابلیت تغییر فونت
 - قابلیت تغییر اندازه فونت
@@ -26,7 +26,6 @@
 - نوار ابزار با دکمه‌های فرمت‌بندی متن
 - ذخیره خودکار محتوا در مرورگر
 - امکان خروجی گرفتن به فرمت‌های Markdown، HTML و PDF
-- امکان تغییر نام فایل
 - میان‌بر نوشتاری (/) برای دسترسی سریع به فرمت‌بندی‌های مارک‌داون
 - امکان فعال و غیرفعال کردن نوار ابزار و آمار
  
