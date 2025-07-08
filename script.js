@@ -707,7 +707,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Fallback for when hljs is not available or fails
-    const escapeHtml = (unsafe) => unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
     return `<pre><code class="language-${lang || 'plaintext'}">${escapeHtml(text)}</code></pre>`;
   };
   
@@ -1149,6 +1151,65 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
       console.error('Mermaid rendering error:', e);
     }
+
+    // Add copy buttons to code blocks
+    preview.querySelectorAll('pre').forEach(pre => {
+      if (!pre.parentElement.classList.contains('code-block-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block-wrapper';
+  
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-code-btn';
+        copyBtn.title = 'رونوشت';
+        copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+  
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+        wrapper.appendChild(copyBtn);
+  
+        copyBtn.addEventListener('click', () => {
+          const codeToCopy = pre.querySelector('code')?.innerText || pre.innerText;
+
+          const copyAction = new Promise((resolve, reject) => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(codeToCopy).then(resolve).catch(reject);
+            } else {
+              // Fallback for non-secure contexts (e.g., file://)
+              try {
+                const textArea = document.createElement("textarea");
+                textArea.value = codeToCopy;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                  resolve();
+                } else {
+                  reject(new Error('Copy command was unsuccessful'));
+                }
+              } catch (err) {
+                reject(err);
+              }
+            }
+          });
+
+          copyAction.then(() => {
+            copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+            copyBtn.title = 'کپی شد';
+            setTimeout(() => {
+              copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+              copyBtn.title = 'رونوشت';
+            }, 2000);
+          }).catch(err => {
+            console.error('Failed to copy code: ', err);
+            copyBtn.title = 'خطا در کپی';
+          });
+        });
+      }
+    });
 
     if (isSearchActive && searchInput.value) {
         performSearch(false);

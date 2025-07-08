@@ -1199,3 +1199,59 @@ pre:has(.javascript, .rust){
   direction: ltr;
   text-align: left;
 }
+
+/* Code Block Copy Button */
+.code-block-wrapper {
+  position: relative;
+}
+
+.markdown-preview .code-block-wrapper {
+  margin: 1rem 0;
+}
+
+.markdown-preview .code-block-wrapper > pre {
+  margin: 0;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  background-color: #e5e7eb;
+  border: 1px solid #d1d5db;
+  color: #4b5563;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 5;
+}
+
+.code-block-wrapper:hover .copy-code-btn {
+  opacity: 1;
+}
+
+.copy-code-btn:hover {
+  background-color: #d1d5db;
+}
+
+body.theme-dark .copy-code-btn {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #d1d5db;
+}
+
+body.theme-dark .copy-code-btn:hover {
+  background-color: #4b5563;
+}
+
+body.theme-sepia .copy-code-btn {
+  background-color: #e8dcca;
+  border-color: #d3c4b3;
+  color: #5f4b32;
+}
+
+body.theme-sepia .copy-code-btn:hover {
+  background-color: #d3c4b3;
+}
