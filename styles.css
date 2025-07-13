@@ -410,6 +410,13 @@ body.theme-dark #searchInput,
 body.theme-dark #replaceInput {
   background: #1a1a1a;
   border-color: #404040;
+  color: #e5e5e5;
+}
+
+body.theme-dark #searchInput::placeholder,
+body.theme-dark #replaceInput::placeholder {
+  color: #9ca3af;
+  opacity: 1;
 }
 
 body.theme-dark #searchInput:focus,
