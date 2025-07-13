@@ -307,13 +307,21 @@ body.theme-sepia select {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   padding: 0.5rem;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.25rem;
 }
 
 #searchBar.hidden {
   display: none;
+}
+
+.search-top-row,
+.search-bottom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 #searchScope {
@@ -345,16 +353,17 @@ body.theme-sepia select {
     background-color: #f3f4f6;
 }
 
-#searchInput {
+#searchInput, #replaceInput {
   border: 1px solid #d1d5db;
   border-radius: 0.25rem;
   padding: 0.25rem 0.5rem;
   outline: none;
   font-family: inherit;
-  width: 150px;
+  flex-grow: 1;
 }
 
 #searchInput:focus,
+#replaceInput:focus,
 #searchScope:focus {
   border-color: #0f766e;
   box-shadow: 0 0 0 1px #0f766e;
@@ -370,6 +379,18 @@ body.theme-sepia select {
   padding: 0.25rem 0.5rem;
 }
 
+#searchBar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#searchBar .divider {
+  height: 1.5rem;
+  width: 1px;
+  background: #d1d5db;
+  margin: 0 0.25rem;
+}
+
 body.theme-dark #searchBar {
   background: #2d2d2d;
   border-color: #404040;
@@ -383,15 +404,21 @@ body.theme-dark #searchScope:hover {
     background-color: #4b5563;
     border-color: #6b7280;
 }
-body.theme-dark #searchInput {
+body.theme-dark #searchInput,
+body.theme-dark #replaceInput {
   background: #1a1a1a;
   border-color: #404040;
 }
 
 body.theme-dark #searchInput:focus,
+body.theme-dark #replaceInput:focus,
 body.theme-dark #searchScope:focus {
   border-color: #5eead4;
   box-shadow: 0 0 0 1px #5eead4;
+}
+
+body.theme-dark #searchBar .divider {
+    background: #404040;
 }
 
 body.theme-sepia #searchBar {
@@ -407,15 +434,21 @@ body.theme-sepia #searchScope:hover {
     background-color: #e8dcca;
     border-color: #c4b5a3;
 }
-body.theme-sepia #searchInput {
+body.theme-sepia #searchInput,
+body.theme-sepia #replaceInput {
   background: #fff;
   border-color: #d3c4b3;
 }
 
 body.theme-sepia #searchInput:focus,
+body.theme-sepia #replaceInput:focus,
 body.theme-sepia #searchScope:focus {
   border-color: #5f4b32;
   box-shadow: 0 0 0 1px #5f4b32;
+}
+
+body.theme-sepia #searchBar .divider {
+  background: #d3c4b3;
 }
 
 
@@ -1116,10 +1149,6 @@ select {
 .markdown-preview a {
   color: #0f766e;
   text-decoration: none;
-}
-
-body.theme-dark .markdown-preview a {
-  color: #5eead4 !important;
 }
 
 .markdown-preview a:hover {

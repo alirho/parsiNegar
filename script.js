@@ -169,6 +169,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const searchBtn = document.getElementById('searchBtn');
   const searchBar = document.getElementById('searchBar');
   const searchInput = document.getElementById('searchInput');
+  const replaceInput = document.getElementById('replaceInput');
+  const replaceBtn = document.getElementById('replaceBtn');
+  const replaceAllBtn = document.getElementById('replaceAllBtn');
   const searchScopeSelect = document.getElementById('searchScope');
   const searchCount = document.getElementById('searchCount');
   const prevMatchBtn = document.getElementById('prevMatchBtn');
@@ -1527,22 +1530,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  function updateReplaceButtonsState() {
+    const hasSearchTerm = searchInput.value !== '';
+    const hasReplaceTerm = replaceInput.value !== '';
+    const activeMatch = (currentMatchIndex > -1 && matches.length > 0) ? matches[currentMatchIndex] : null;
+
+    const canReplaceOne = activeMatch && activeMatch.dataset.start && hasSearchTerm && hasReplaceTerm;
+    replaceBtn.disabled = !canReplaceOne;
+
+    const canReplaceAll = matches.some(m => m.dataset.start) && hasSearchTerm && hasReplaceTerm;
+    replaceAllBtn.disabled = !canReplaceAll;
+  }
+
   function openSearchBar() {
     isSearchActive = true;
     searchBar.classList.remove('hidden');
     searchInput.focus();
     searchInput.select();
     performSearch();
+    updateReplaceButtonsState();
   }
 
   async function closeSearchBar() {
     isSearchActive = false;
     searchBar.classList.add('hidden');
     searchInput.value = '';
+    replaceInput.value = '';
     matches = [];
     currentMatchIndex = -1;
     editorBackdrop.innerHTML = '';
     editor.classList.remove('searching');
+    updateReplaceButtonsState();
     await updatePreview(); // Re-render preview to remove highlights
   }
 
@@ -1565,6 +1583,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentMatchIndex = -1;
         updateSearchCount();
         editor.classList.remove('searching');
+        updateActiveHighlight(); // This will update button states
         return;
     }
 
@@ -1577,9 +1596,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 3. Highlight in editor based on scope
     if (scope === 'editor' || scope === 'all') {
-        const escapedText = editor.value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        editorBackdrop.innerHTML = escapedText.replace(regex, match => `<mark class="highlight">${match}</mark>`);
+        const editorContent = editor.value;
+        let match;
+        const localEditorMatches = [];
+        const findRegex = new RegExp(escapeRegExp(term), 'gi');
+        while ((match = findRegex.exec(editorContent)) !== null) {
+            localEditorMatches.push({
+                start: match.index,
+                end: match.index + match[0].length,
+                text: match[0]
+            });
+        }
+
+        let backdropHTML = '';
+        let lastIndex = 0;
+        const escapeHtml = (unsafe) => unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+
+        localEditorMatches.forEach(m => {
+            backdropHTML += escapeHtml(editorContent.substring(lastIndex, m.start));
+            backdropHTML += `<mark class="highlight">${escapeHtml(m.text)}</mark>`;
+            lastIndex = m.end;
+        });
+        backdropHTML += escapeHtml(editorContent.substring(lastIndex));
+        editorBackdrop.innerHTML = backdropHTML;
+        
         editorMatches = Array.from(editorBackdrop.querySelectorAll('.highlight'));
+        editorMatches.forEach((el, i) => {
+            el.dataset.start = localEditorMatches[i].start;
+            el.dataset.end = localEditorMatches[i].end;
+        });
     }
 
     // 4. Highlight in preview based on scope
@@ -1626,6 +1671,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         activeMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     updateSearchCount();
+    updateReplaceButtonsState();
   }
 
   function navigateMatches(direction) {
@@ -1649,7 +1695,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   searchBtn.addEventListener('click', openSearchBar);
   closeSearchBtn.addEventListener('click', closeSearchBar);
-  searchInput.addEventListener('input', debouncedSearch);
+  searchInput.addEventListener('input', () => {
+    debouncedSearch();
+    updateReplaceButtonsState();
+  });
+  replaceInput.addEventListener('input', updateReplaceButtonsState);
   searchScopeSelect.addEventListener('change', () => performSearch());
   nextMatchBtn.addEventListener('click', () => navigateMatches(1));
   prevMatchBtn.addEventListener('click', () => navigateMatches(-1));
@@ -1658,6 +1708,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         navigateMatches(e.shiftKey ? -1 : 1);
     }
+  });
+
+  replaceBtn.addEventListener('click', async () => {
+    const replaceText = replaceInput.value;
+    const activeMatch = matches[currentMatchIndex];
+    if (!activeMatch || !activeMatch.dataset.start || replaceBtn.disabled) return;
+
+    const start = parseInt(activeMatch.dataset.start);
+    const end = parseInt(activeMatch.dataset.end);
+    const scrollTop = editor.scrollTop;
+    const positionToFind = start + replaceText.length;
+
+    // Temporarily disable search to prevent updatePreview from re-running it
+    const wasSearchActive = isSearchActive;
+    isSearchActive = false;
+
+    // Modify editor content
+    editor.value = editor.value.substring(0, start) + replaceText + editor.value.substring(end);
+    
+    debouncedSave();
+    await updatePreview();
+
+    // Re-enable search and re-run it
+    isSearchActive = wasSearchActive;
+    performSearch(false);
+    
+    const newIndex = matches.findIndex(m => m.dataset.start && parseInt(m.dataset.start) >= positionToFind);
+    currentMatchIndex = newIndex !== -1 ? newIndex : (matches.length > 0 ? 0 : -1);
+    
+    updateActiveHighlight();
+    
+    editor.focus();
+    editor.setSelectionRange(positionToFind, positionToFind);
+    editor.scrollTop = scrollTop;
+  });
+
+  replaceAllBtn.addEventListener('click', async () => {
+      const searchText = searchInput.value;
+      const replaceText = replaceInput.value;
+      if (replaceAllBtn.disabled || !searchText) return;
+      
+      const regex = new RegExp(escapeRegExp(searchText), 'gi');
+      const scrollTop = editor.scrollTop;
+
+      // Temporarily disable search to prevent updatePreview from re-running it
+      const wasSearchActive = isSearchActive;
+      isSearchActive = false;
+
+      editor.value = editor.value.replace(regex, replaceText);
+      
+      debouncedSave();
+      await updatePreview();
+
+      // Re-enable search and re-run to clear/update highlights
+      isSearchActive = wasSearchActive;
+      performSearch();
+      
+      editor.focus();
+      editor.scrollTop = scrollTop;
   });
 
   document.addEventListener('keydown', (e) => {
