@@ -824,6 +824,7 @@ body.theme-sepia .file-item.active {
 }
 
 .file-actions-dropdown .danger-action:hover {
+  background-color: #ef4444;
   color: white !important;
 }
 
