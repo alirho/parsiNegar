@@ -57,9 +57,11 @@ body {
   padding: 0.5rem;
   color: inherit;
   text-decoration: none;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
 }
 
-.menu > li:hover > a {
+.menu > li > a:hover {
   background: rgba(0, 0, 0, 0.05);
 }
 
@@ -136,7 +138,7 @@ body.theme-dark .submenu {
   border-color: #404040;
 }
 
-body.theme-dark .menu > li:hover > a,
+body.theme-dark .menu > li > a:hover,
 body.theme-dark .submenu li:hover > a,
 body.theme-dark .submenu li label:hover {
   background: rgba(255, 255, 255, 0.1);
