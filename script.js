@@ -1693,7 +1693,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  searchBtn.addEventListener('click', openSearchBar);
+  searchBtn.addEventListener('click', () => {
+    if (isSearchActive) {
+      closeSearchBar();
+    } else {
+      openSearchBar();
+    }
+  });
   closeSearchBtn.addEventListener('click', closeSearchBar);
   searchInput.addEventListener('input', () => {
     debouncedSearch();
