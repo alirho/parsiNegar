@@ -7,7 +7,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://unpkg.com/shahneshan@2.0.1/dist/shahneshan.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet" id="hljs-light-theme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" id="hljs-dark-theme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -25,6 +30,7 @@
                 <li><a href="#" id="exportMdBtn"><i class="fas fa-file-alt"></i> Markdown</a></li>
                 <li><a href="#" id="exportHtmlBtn"><i class="fas fa-file-code"></i> HTML</a></li>
                 <li><a href="#" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF</a></li>
+                <li><a href="#" id="exportAllZipBtn"><i class="fas fa-file-archive"></i> تمامی فایل‌ها (zip)</a></li>
               </ul>
             </li>
             <li><a href="#" id="settingsBtn"><i class="fas fa-cog"></i> تنظیمات</a></li>
@@ -53,6 +59,12 @@
             </li>
             <li>
               <label>
+                <input type="checkbox" id="showFiles">
+                <i class="fas fa-folder-tree"></i> فایل‌ها
+              </label>
+            </li>
+            <li>
+              <label>
                 <input type="checkbox" id="showFilename" checked>
                 <i class="fas fa-file-signature"></i> نام فایل
               </label>
@@ -74,6 +86,7 @@
             <li><a href="#" data-format="table"><i class="fas fa-table"></i> جدول</a></li>
             <li><a href="#" data-format="image"><i class="fas fa-image"></i> تصویر</a></li>
             <li><a href="#" data-format="link"><i class="fas fa-link"></i> پیوند</a></li>
+            <li><a href="#" data-format="chart"><i class="fas fa-sitemap"></i> نمودار</a></li>
           </ul>
         </li>
         <li>
@@ -84,7 +97,20 @@
           </ul>
         </li>
         <li class="menu-right">
-          <a href="#" id="fullscreenBtn"><i class="fas fa-expand"></i></a>
+          <a href="#" id="searchBtn" title="جستجو"><i class="fas fa-search"></i></a>
+          <a href="#" id="fullscreenBtn" title="تمام صفحه"><i class="fas fa-expand"></i></a>
+          <div id="searchBar" class="hidden">
+            <select id="searchScope" title="محدوده جستجو">
+              <option value="all" selected>همه جا</option>
+              <option value="editor">نوشتن</option>
+              <option value="preview">نمایش</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="جستجو..." spellcheck="false">
+            <span id="searchCount">0/0</span>
+            <button id="prevMatchBtn" title="مورد قبلی"><i class="fas fa-chevron-up"></i></button>
+            <button id="nextMatchBtn" title="مورد بعدی"><i class="fas fa-chevron-down"></i></button>
+            <button id="closeSearchBtn" title="بستن"><i class="fas fa-times"></i></button>
+          </div>
         </li>
       </ul>
     </div>
@@ -109,6 +135,7 @@
         <button data-action="table" title="جدول"><i class="fas fa-table"></i></button>
         <button data-action="image" title="تصویر"><i class="fas fa-image"></i></button>
         <button data-action="link" title="پیوند"><i class="fas fa-link"></i></button>
+        <button data-action="chart" title="نمودار"><i class="fas fa-sitemap"></i></button>
       </div>
       <div class="toolbar-right">
         <button id="downloadPdfBtn" title="دانلود PDF"><i class="fa-solid fa-file-pdf"></i></button>
@@ -118,12 +145,26 @@
     </div>
 
     <div id="content">
-      <div id="tocPanel">
-        <div class="toc-list"></div>
+      <div id="sidePanel">
+        <div id="sidePanelTabs">
+          <button class="side-panel-tab" data-tab="files" title="فایل‌ها"><i class="fas fa-folder-tree"></i></button>
+          <button class="side-panel-tab" data-tab="toc" title="فهرست مطالب"><i class="fas fa-list"></i></button>
+        </div>
+        <div id="sidePanelContent">
+          <div id="filesPanel" class="side-panel-pane">
+            <div class="files-list"></div>
+          </div>
+          <div id="tocPanel" class="side-panel-pane">
+            <div class="toc-list"></div>
+          </div>
+        </div>
       </div>
 
       <div id="editorContainer">
-        <textarea dir="auto" id="editor" spellcheck="false"></textarea>
+        <div id="editorWrapper">
+          <div id="editorBackdrop"></div>
+          <textarea dir="auto" id="editor" spellcheck="false"></textarea>
+        </div>
         <div id="shortcutsMenu"></div>
       </div>
           
@@ -173,14 +214,14 @@
         </div>
         
         <div class="setting-group">
-          <div class="setting-group">
-            <label>مفسر مارک‌داون</label>
-            <select id="markdownParser">
-              <option value="marked">Marked</option>
-              <option value="shahneshan">شه‌نشان</option>
-            </select>
-          </div>
-          
+          <label>مفسر مارک‌داون</label>
+          <select id="markdownParser">
+            <option value="marked">Marked</option>
+            <option value="shahneshan">شه‌نشان</option>
+          </select>
+        </div>
+        
+        <div class="setting-group">
           <label>اندازه فونت</label>
           <select id="fontSize">
             <option value="12">کوچک (12px)</option>
@@ -197,19 +238,17 @@
             <option value="IRANYekan">ایران یکان</option>
           </select>
         </div>
-        
+
         <div class="setting-group">
-          <label class="checkbox-label">
-            <input type="checkbox" id="autoSave">
-            <span>ذخیره خودکار</span>
-          </label>
+          <label>پاک کردن داده‌ها</label>
+          <button id="clearDBBtn" class="danger-btn">پاک کردن</button>
         </div>
 
         <div class="setting-footer">
           <a href="https://github.com/alirho/parsiNegar" target="_blank" class="github-link" title="گیت‌هاب">
             <i class="fab fa-github"></i>
           </a>
-          <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۴.۰</a>
+          <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۸.۰</a>
         </div>
       </div>
     </div>

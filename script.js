@@ -1,7 +1,142 @@
+// Configure Mermaid.js theme based on the application's current theme.
+function configureMermaidTheme() {
+  const currentTheme = document.querySelector('input[name="theme"]:checked').value;
+  let mermaidTheme = 'default';
+  if (currentTheme === 'dark') {
+      mermaidTheme = 'dark';
+  } else if (currentTheme === 'sepia') {
+      mermaidTheme = 'neutral';
+  }
+  mermaid.initialize({
+      startOnLoad: false,
+      theme: mermaidTheme
+  });
+}
+
+// --- IndexedDB Functions ---
+let db;
+async function openDB() {
+  return new Promise((resolve, reject) => {
+    if (db) {
+        return resolve(db);
+    }
+    const request = indexedDB.open('parsiNegarDB', 1);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains('files')) {
+        db.createObjectStore('files', { keyPath: 'id' });
+      }
+    };
+
+    request.onsuccess = (event) => {
+      db = event.target.result;
+      resolve(db);
+    };
+
+    request.onerror = (event) => {
+      console.error('IndexedDB error:', event.target.errorCode);
+      reject(event.target.errorCode);
+    };
+  });
+}
+
+async function saveFileToDB(id, content) {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readwrite');
+      const store = transaction.objectStore('files');
+      const file = { id, content, lastModified: new Date() };
+      const request = store.put(file);
+  
+      request.onsuccess = () => resolve();
+      request.onerror = (event) => {
+        console.error('Error saving file to IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+
+async function getFileFromDB(id) {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readonly');
+      const store = transaction.objectStore('files');
+      const request = store.get(id);
+  
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (event) => {
+        console.error('Error loading file from IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+  
+async function getAllFilesFromDB() {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readonly');
+      const store = transaction.objectStore('files');
+      const request = store.getAll();
+  
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (event) => {
+        console.error('Error loading all files from IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+
+async function deleteFileFromDB(id) {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readwrite');
+      const store = transaction.objectStore('files');
+      const request = store.delete(id);
+  
+      request.onsuccess = () => resolve();
+      request.onerror = (event) => {
+        console.error('Error deleting file from IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+
+async function clearFilesDB() {
+    if (!db) await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['files'], 'readwrite');
+      const store = transaction.objectStore('files');
+      const request = store.clear();
+  
+      request.onsuccess = () => resolve();
+      request.onerror = (event) => {
+        console.error('Error clearing IndexedDB', event.target.error);
+        reject(event.target.error);
+      };
+    });
+}
+
+
+// Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements
   const editor = document.getElementById('editor');
   const preview = document.getElementById('preview');
+  const editorBackdrop = document.getElementById('editorBackdrop');
   const settingsPanel = document.getElementById('settingsPanel');
   const settingsBtn = document.getElementById('settingsBtn');
   const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -18,14 +153,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   const fontFamilySelect = document.getElementById('fontFamily');
   const markdownParserSelect = document.getElementById('markdownParser');
   const themeRadios = document.querySelectorAll('input[name="theme"]');
-  const autoSaveCheckbox = document.getElementById('autoSave');
   const filename = document.getElementById('filename');
   const shortcutsMenu = document.getElementById('shortcutsMenu');
   const toolbar = document.getElementById('toolbar');
   const statusBar = document.getElementById('statusBar');
+  const sidePanel = document.getElementById('sidePanel');
   const tocPanel = document.getElementById('tocPanel');
+  const filesPanel = document.getElementById('filesPanel');
   const tocList = document.querySelector('.toc-list');
+  const filesList = document.querySelector('.files-list');
+  const [filesTabBtn, tocTabBtn] = document.querySelectorAll('.side-panel-tab');
+  const clearDBBtn = document.getElementById('clearDBBtn');
   
+  // Search Elements
+  const searchBtn = document.getElementById('searchBtn');
+  const searchBar = document.getElementById('searchBar');
+  const searchInput = document.getElementById('searchInput');
+  const searchScopeSelect = document.getElementById('searchScope');
+  const searchCount = document.getElementById('searchCount');
+  const prevMatchBtn = document.getElementById('prevMatchBtn');
+  const nextMatchBtn = document.getElementById('nextMatchBtn');
+  const closeSearchBtn = document.getElementById('closeSearchBtn');
+
+  // Search State
+  let isSearchActive = false;
+  let matches = [];
+  let currentMatchIndex = -1;
+
   // Stats elements
   const charsCount = document.getElementById('charsCount');
   const lettersCount = document.getElementById('lettersCount');
@@ -37,20 +191,101 @@ document.addEventListener('DOMContentLoaded', async () => {
   const showToolbarCheckbox = document.getElementById('showToolbar');
   const showStatusBarCheckbox = document.getElementById('showStatusBar');
   const showTocCheckbox = document.getElementById('showToc');
+  const showFilesCheckbox = document.getElementById('showFiles');
   const showFilenameCheckbox = document.getElementById('showFilename');
   const newFileBtn = document.getElementById('newFileBtn');
   const loadFileBtn = document.getElementById('loadFileBtn');
   const exportMdBtn = document.getElementById('exportMdBtn');
   const exportHtmlBtn = document.getElementById('exportHtmlBtn');
   const exportPdfBtn = document.getElementById('exportPdfBtn');
+  const exportAllZipBtn = document.getElementById('exportAllZipBtn');
   const helpBtn = document.getElementById('helpBtn');
 
-  // TOC visibility handler
-  showTocCheckbox.addEventListener('change', (e) => {
-    tocPanel.style.display = e.target.checked ? 'block' : 'none';
-    saveSettings();
-    updatePreview(); // Rebuild TOC
+  // --- Synchronized Scrolling for Editor and Preview ---
+  let isSyncingScroll = false;
+  const syncScroll = (source, target) => {
+    if (isSyncingScroll) return;
+
+    const sourceScrollHeight = source.scrollHeight - source.clientHeight;
+    if (sourceScrollHeight <= 0) return; // Don't sync if source has no scrollbar
+
+    isSyncingScroll = true;
+
+    const percentage = source.scrollTop / sourceScrollHeight;
+    const targetScrollHeight = target.scrollHeight - target.clientHeight;
+    
+    target.scrollTop = percentage * targetScrollHeight;
+
+    // Reset lock after a short delay to allow the other pane's scroll event to fire without causing a loop
+    setTimeout(() => { isSyncingScroll = false; }, 50);
+  };
+
+  editor.addEventListener('scroll', () => {
+      syncScroll(editor, preview);
+      editorBackdrop.scrollTop = editor.scrollTop;
+      editorBackdrop.scrollLeft = editor.scrollLeft;
   });
+  preview.addEventListener('scroll', () => syncScroll(preview, editor));
+  
+  const debouncedSave = debounce(async () => {
+    try {
+        const currentContent = editor.value;
+        const currentFilename = filename.value;
+
+        localStorage.setItem('parsiNegarLastState', JSON.stringify({
+            content: currentContent,
+            filename: currentFilename,
+        }));
+
+        if (currentFilename && currentFilename.trim() !== '' && currentFilename !== 'نام فایل') {
+            await saveFileToDB(currentFilename, currentContent);
+        }
+    } catch(e) {
+        console.error("Failed to auto-save", e);
+    }
+  }, 500);
+
+  // --- Side Panel Logic ---
+  const activateTab = (tabName) => {
+    const isFiles = tabName === 'files';
+    filesTabBtn.classList.toggle('active', isFiles);
+    tocTabBtn.classList.toggle('active', !isFiles);
+    filesPanel.classList.toggle('active', isFiles);
+    tocPanel.classList.toggle('active', !isFiles);
+
+    if (isFiles) {
+        populateFilesList();
+    } else {
+        updateToc();
+    }
+    const settings = JSON.parse(localStorage.getItem('parsiNegarSettings') || '{}');
+    settings.activeTab = tabName;
+    localStorage.setItem('parsiNegarSettings', JSON.stringify(settings));
+  };
+  
+  const updateSidePanelVisibility = () => {
+      const show = showFilesCheckbox.checked || showTocCheckbox.checked;
+      sidePanel.style.display = show ? 'flex' : 'none';
+  };
+  
+  showTocCheckbox.addEventListener('change', (e) => {
+    updateSidePanelVisibility();
+    if (e.target.checked) {
+        activateTab('toc');
+    }
+    saveSettings();
+  });
+  
+  showFilesCheckbox.addEventListener('change', (e) => {
+    updateSidePanelVisibility();
+    if (e.target.checked) {
+        activateTab('files');
+    }
+    saveSettings();
+  });
+
+  filesTabBtn.addEventListener('click', () => activateTab('files'));
+  tocTabBtn.addEventListener('click', () => activateTab('toc'));
 
   // Extract headings from markdown
   function extractHeadings(markdown) {
@@ -64,7 +299,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (match) {
         const level = match[1].length;
         const text = match[2];
-        console.log(text);
         const id = text.toLowerCase()
           .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
           .replace(/^-+|-+$/g, '');
@@ -99,7 +333,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function createTocHtml(structure, level = 0) {
     if (!structure.length) return '';
     
-    let html = '<ul class="toc-list">';
+    let html = '<ul class="toc-list-inner">';
     
     structure.forEach(item => {
       const hasChildren = item.children && item.children.length > 0;
@@ -121,7 +355,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Update TOC
   function updateToc() {
-    if (!showTocCheckbox.checked) return;
+    if (!showTocCheckbox.checked && !tocTabBtn.classList.contains('active')) return;
     
     const headings = extractHeadings(editor.value);
     const structure = buildTocStructure(headings);
@@ -150,6 +384,108 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   }
+  
+  const toggleFileActionsMenu = (e) => {
+    e.stopPropagation();
+    const currentDropdown = e.target.closest('.file-actions-menu').querySelector('.file-actions-dropdown');
+    
+    document.querySelectorAll('.file-actions-dropdown').forEach(dropdown => {
+      if (dropdown !== currentDropdown) {
+        dropdown.classList.add('hidden');
+      }
+    });
+    
+    currentDropdown.classList.toggle('hidden');
+  };
+
+  async function populateFilesList() {
+    const currentFilename = filename.value;
+    const files = await getAllFilesFromDB();
+    files.sort((a, b) => b.lastModified - a.lastModified);
+    
+    if (files.length === 0) {
+        filesList.innerHTML = '<p style="text-align: center; font-size: 0.8rem; opacity: 0.7;">فایلی یافت نشد.</p>';
+        return;
+    }
+  
+    filesList.innerHTML = files.map(file => `
+      <div class="file-item ${file.id === currentFilename ? 'active' : ''}" data-id="${file.id}">
+        <span class="file-name" title="آخرین تغییر: ${new Date(file.lastModified).toLocaleString('fa-IR')}">${file.id}</span>
+        <div class="file-actions-menu">
+            <button class="file-actions-toggle" title="گزینه‌ها"><i class="fas fa-ellipsis-v"></i></button>
+            <div class="file-actions-dropdown hidden">
+                <a href="#" class="download-file-btn"><i class="fas fa-download"></i> دانلود</a>
+                <a href="#" class="rename-file-btn"><i class="fas fa-edit"></i> تغییر نام</a>
+                <a href="#" class="delete-file-btn danger-action"><i class="fas fa-trash"></i> حذف</a>
+            </div>
+        </div>
+      </div>
+    `).join('');
+  
+    filesList.querySelectorAll('.file-name').forEach(el => el.addEventListener('click', handleLoadFile));
+    filesList.querySelectorAll('.file-actions-toggle').forEach(el => el.addEventListener('click', toggleFileActionsMenu));
+    filesList.querySelectorAll('.download-file-btn').forEach(el => el.addEventListener('click', handleDownloadFile));
+    filesList.querySelectorAll('.rename-file-btn').forEach(el => el.addEventListener('click', handleRenameFile));
+    filesList.querySelectorAll('.delete-file-btn').forEach(el => el.addEventListener('click', handleDeleteFile));
+  }
+  
+  async function handleLoadFile(e) {
+    const id = e.target.closest('.file-item').dataset.id;
+    const file = await getFileFromDB(id);
+    if (file) {
+      editor.value = file.content;
+      filename.value = file.id;
+      await updatePreview();
+      debouncedSave();
+    }
+  }
+  
+  async function handleDownloadFile(e) {
+    e.preventDefault();
+    const id = e.target.closest('.file-item').dataset.id;
+    const file = await getFileFromDB(id);
+    if (file) {
+      const blob = new Blob([file.content], { type: 'text/markdown;charset=utf-8' });
+      downloadFile(blob, id.endsWith('.md') ? id : `${id}.md`);
+    }
+  }
+
+  async function handleRenameFile(e) {
+    e.preventDefault();
+    const oldId = e.target.closest('.file-item').dataset.id;
+    const newId = prompt('نام جدید فایل را وارد کنید:', oldId);
+
+    if (newId && newId.trim() !== '' && newId !== oldId) {
+        const existingFile = await getFileFromDB(newId);
+        if (existingFile) {
+            alert('خطا: فایلی با این نام از قبل وجود دارد.');
+            return;
+        }
+        const fileToRename = await getFileFromDB(oldId);
+        await saveFileToDB(newId, fileToRename.content);
+        await deleteFileFromDB(oldId);
+        if (filename.value === oldId) {
+            filename.value = newId;
+            debouncedSave();
+        }
+        await populateFilesList();
+    }
+  }
+  
+  async function handleDeleteFile(e) {
+    e.preventDefault();
+    const id = e.target.closest('.file-item').dataset.id;
+    if (confirm(`آیا از حذف فایل «${id}» مطمئن هستید؟ این عمل بازگشت‌پذیر نیست.`)) {
+        await deleteFileFromDB(id);
+        if (filename.value === id) {
+            editor.value = '';
+            filename.value = 'نام فایل';
+            await updatePreview();
+            localStorage.removeItem('parsiNegarLastState');
+        }
+        await populateFilesList();
+    }
+  }
 
   // Menu Event Listeners
   showToolbarCheckbox.addEventListener('change', (e) => {
@@ -167,11 +503,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveSettings();
   });
 
-  newFileBtn.addEventListener('click', () => {
+  newFileBtn.addEventListener('click', async () => {
     if (confirm('آیا مطمئن هستید؟ تمام محتوای فعلی پاک خواهد شد.')) {
       editor.value = '';
       filename.value = 'نام فایل';
-      updatePreview();
+      await updatePreview();
+      localStorage.removeItem('parsiNegarLastState');
     }
   });
 
@@ -237,8 +574,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  exportAllZipBtn.addEventListener('click', async () => {
+    if (typeof JSZip === 'undefined') {
+        alert('کتابخانه مورد نیاز برای ساخت فایل فشرده بارگذاری نشده است.');
+        return;
+    }
+
+    if (!confirm('آیا می‌خواهید از تمام فایل‌های ذخیره شده خروجی زیپ بگیرید؟')) {
+        return;
+    }
+
+    try {
+        const files = await getAllFilesFromDB();
+        if (files.length === 0) {
+            alert('هیچ فایلی برای خروجی گرفتن وجود ندارد.');
+            return;
+        }
+
+        const zip = new JSZip();
+        files.forEach(file => {
+            const filename = file.id.endsWith('.md') ? file.id : `${file.id}.md`;
+            zip.file(filename, file.content);
+        });
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        downloadFile(zipBlob, 'parsiNegar-backup.zip');
+
+    } catch (error) {
+        console.error('Error creating zip file:', error);
+        alert('خطایی در هنگام ایجاد فایل زیپ رخ داد.');
+    }
+  });
+
   helpBtn.addEventListener('click', () => {
-    // Load help content from README.md
     loadReadme();
   });
 
@@ -246,7 +614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.submenu [data-format]').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
-      const format = e.target.dataset.format;
+      const format = e.target.closest('[data-format]').dataset.format;
       const button = document.querySelector(`[data-action="${format}"]`);
       if (button) {
         button.click();
@@ -270,7 +638,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     { name: 'بازبینه', icon: 'fa-tasks', text: '- [ ] ', filter: 'بازبینه' },
     { name: 'جدول', icon: 'fa-table', text: '| ستون ۱ | ستون ۲ | ستون ۳ |\n| ------ | ------ | ------ |\n| محتوا | محتوا | محتوا |', filter: 'جدول' },
     { name: 'تصویر', icon: 'fa-image', text: '![]()', filter: 'تصویر' },
-    { name: 'پیوند', icon: 'fa-link', text: '[]()', filter: 'پیوند' }
+    { name: 'پیوند', icon: 'fa-link', text: '[]()', filter: 'پیوند' },
+    { name: 'نمودار', icon: 'fa-sitemap', text: '```mermaid\nflowchart LR\n  A[شروع] --> B{تصمیم}\n  B -->|بله| C[ادامه]\n  B -->|خیر| D[توقف]\n```', filter: 'نمودار' }
   ];
 
   let selectedShortcutIndex = -1;
@@ -281,35 +650,74 @@ document.addEventListener('DOMContentLoaded', async () => {
   const markedRenderer = new marked.Renderer();
   
   // Override paragraph rendering to handle text direction for marked
-  markedRenderer.paragraph = function(md) {
-    const firstChar = md.text.trim().charAt(0);
+  markedRenderer.paragraph = function(token) {
+    const text = this.parser.parseInline(token.tokens);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    const plainText = (tempDiv.textContent || tempDiv.innerText || '').trim();
+    const firstChar = plainText.charAt(0);
     const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
-    return `<p style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(md.text)}</p>`;
+    return `<p style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${text}</p>`;
   };
   
   // Override list item rendering for marked
-  markedRenderer.listitem = function(md) {
-    const firstChar = md.text.trim().charAt(0);
+  markedRenderer.listitem = function(token) {
+    const text = this.parser.parseInline(token.tokens);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    const plainText = (tempDiv.textContent || tempDiv.innerText || '').trim();
+    const firstChar = plainText.charAt(0);
     const direction = /[a-zA-Z]/.test(firstChar) ? 'ltr' : 'rtl';
-    return `<li style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}">${marked.parseInline(md.text)}</li>`;
+    const style = `style="direction: ${direction}; text-align: ${direction === 'ltr' ? 'left' : 'right'}"`;
+
+    if (token.task) {
+      const checkbox = `<input type="checkbox" disabled ${token.checked ? 'checked' : ''}>`;
+      return `<li class="task-list" ${style}>${checkbox} ${text}</li>`;
+    }
+    
+    return `<li ${style}>${text}</li>`;
   };
 
   // Override heading rendering to add IDs
-  markedRenderer.heading = function(md, level) {
-    var match = md.raw.trim().match(/^#+/);
-    length = match ? match[0].length : 0;
-    const id = md.text.toLowerCase()
+  markedRenderer.heading = function(token) {
+    const text = this.parser.parseInline(token.tokens);
+    const { depth, raw } = token;
+    const id = String(raw || '').toLowerCase()
       .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
       .replace(/^-+|-+$/g, '');
     
-    return `<h${level ?? length} id="${id}">${md.text}</h${level ?? length}>`;
+    return `<h${depth} id="${id}">${text}</h${depth}>`;
+  };
+
+  // Override code rendering for Mermaid.js and syntax highlighting
+  markedRenderer.code = function(token) {
+    const { text, lang } = token;
+    if (lang === 'mermaid') {
+      return `<div class="mermaid">${text}</div>`;
+    }
+
+    if (typeof hljs !== 'undefined') {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        try {
+            const highlighted = hljs.highlight(text, { language, ignoreIllegals: true }).value;
+            return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
+        } catch (e) {
+            console.error('Highlighting error', e);
+        }
+    }
+
+    // Fallback for when hljs is not available or fails
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+    return `<pre><code class="language-${lang || 'plaintext'}">${escapeHtml(text)}</code></pre>`;
   };
   
   marked.setOptions({
     renderer: markedRenderer,
     gfm: true,
     breaks: true,
-    headerIds: true
+    headerIds: false
   });
 
   // Load README.md content
@@ -320,7 +728,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const content = await response.text();
         editor.value = content;
         filename.value = 'README.md';
-        updatePreview();
+        await updatePreview();
+        await saveFileToDB('README.md', content);
       }
     } catch (error) {
       console.error('Error loading README.md:', error);
@@ -336,6 +745,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       return marked.parse(markdown);
     }
   }
+
+  // --- Theme and Syntax Highlighting ---
+  function setHljsTheme(theme) {
+    const lightTheme = document.getElementById('hljs-light-theme');
+    const darkTheme = document.getElementById('hljs-dark-theme');
+
+    if (!lightTheme || !darkTheme) return;
+
+    if (theme === 'dark') {
+        lightTheme.disabled = true;
+        darkTheme.disabled = false;
+    } else { // light and sepia use the light theme
+        lightTheme.disabled = false;
+        darkTheme.disabled = true;
+    }
+  }
   
   // Load settings from localStorage
   function loadSettings() {
@@ -347,17 +772,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.body.classList.add(`theme-${settings.theme}`);
       const themeRadio = document.querySelector(`input[name="theme"][value="${settings.theme}"]`);
       if (themeRadio) themeRadio.checked = true;
+      setHljsTheme(settings.theme);
     }
     
     // Apply font size
     if (settings.fontSize) {
       editor.style.fontSize = `${settings.fontSize}px`;
+      editorBackdrop.style.fontSize = `${settings.fontSize}px`;
       fontSizeSelect.value = settings.fontSize;
     }
     
     // Apply font family
     if (settings.fontFamily) {
       editor.style.fontFamily = settings.fontFamily;
+      editorBackdrop.style.fontFamily = settings.fontFamily;
       fontFamilySelect.value = settings.fontFamily;
     }
     
@@ -365,17 +793,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (settings.markdownParser) {
       markdownParserSelect.value = settings.markdownParser;
     }
+
+    // Apply search scope
+    if (settings.searchScope) {
+      searchScopeSelect.value = settings.searchScope;
+    }
     
-    // Apply auto save
-    if (settings.autoSave !== undefined) {
-      autoSaveCheckbox.checked = settings.autoSave;
-    }
-
-    // Load filename
-    if (settings.filename) {
-      filename.value = settings.filename;
-    }
-
     // Apply visibility settings
     if (settings.showToolbar !== undefined) {
       showToolbarCheckbox.checked = settings.showToolbar;
@@ -389,28 +812,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (settings.showToc !== undefined) {
       showTocCheckbox.checked = settings.showToc;
-      tocPanel.style.display = settings.showToc ? 'block' : 'none';
+    }
+
+    if (settings.showFiles !== undefined) {
+      showFilesCheckbox.checked = settings.showFiles;
     }
 
     if (settings.showFilename !== undefined) {
       showFilenameCheckbox.checked = settings.showFilename;
       filename.style.display = settings.showFilename ? 'block' : 'none';
     }
+
+    updateSidePanelVisibility();
+    if (showFilesCheckbox.checked || showTocCheckbox.checked) {
+        activateTab(settings.activeTab || 'files');
+    }
   }
   
   // Save settings to localStorage
   function saveSettings() {
+    const activeTab = filesTabBtn.classList.contains('active') ? 'files' : 'toc';
     const settings = {
       theme: document.querySelector('input[name="theme"]:checked').value,
       fontSize: fontSizeSelect.value,
       fontFamily: fontFamilySelect.value,
       markdownParser: markdownParserSelect.value,
-      autoSave: autoSaveCheckbox.checked,
-      filename: filename.value,
+      searchScope: searchScopeSelect.value,
       showToolbar: showToolbarCheckbox.checked,
       showStatusBar: showStatusBarCheckbox.checked,
       showToc: showTocCheckbox.checked,
-      showFilename: showFilenameCheckbox.checked
+      showFiles: showFilesCheckbox.checked,
+      showFilename: showFilenameCheckbox.checked,
+      activeTab: activeTab,
     };
     
     localStorage.setItem('parsiNegarSettings', JSON.stringify(settings));
@@ -419,13 +852,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // History for undo/redo
   let history = [editor.value];
   let historyIndex = 0;
-  
-  // Initialize marked
-  marked.setOptions({
-    gfm: true,
-    breaks: true,
-    headerIds: false
-  });
   
   // Auto-pair characters
   const pairs = {
@@ -520,7 +946,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Insert shortcut
-  function insertShortcut(shortcut) {
+  async function insertShortcut(shortcut) {
     const cursorPos = editor.selectionStart;
     const textBeforeCursor = editor.value.substring(0, cursorPos);
     const textAfterCursor = editor.value.substring(cursorPos);
@@ -536,11 +962,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     hideShortcutsMenu();
-    updatePreview();
+    await updatePreview();
   }
 
   // Handle keyboard events for shortcuts menu and list continuation
-  editor.addEventListener('keydown', (e) => {
+  editor.addEventListener('keydown', async (e) => {
     if (isShortcutMenuVisible) {
       const filteredShortcuts = shortcuts.filter(s => {
         const cursorPos = editor.selectionStart;
@@ -567,7 +993,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         case 'Enter':
           e.preventDefault();
           if (selectedShortcutIndex >= 0) {
-            insertShortcut(filteredShortcuts[selectedShortcutIndex]);
+            await insertShortcut(filteredShortcuts[selectedShortcutIndex]);
           }
           break;
         case 'Escape':
@@ -602,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           editor.setSelectionRange(cursorPos + 1 + prefix.length, cursorPos + 1 + prefix.length);
         }
         lastEnterTime = now;
-        updatePreview();
+        await updatePreview();
       }
     }
 
@@ -621,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         editor.setSelectionRange(start + 1, start + 1);
       }
-      updatePreview();
+      await updatePreview();
     } else if (e.key === 'Backspace') {
       const start = editor.selectionStart;
       const end = editor.selectionEnd;
@@ -634,14 +1060,16 @@ document.addEventListener('DOMContentLoaded', async () => {
           editor.value = editor.value.substring(0, start - 1) +
             editor.value.substring(start + 1);
           editor.setSelectionRange(start - 1, start - 1);
-          updatePreview();
+          await updatePreview();
         }
       }
     }
   });
 
+  const debouncedSearch = debounce(() => performSearch(), 300);
+
   // Handle input for shortcuts menu
-  editor.addEventListener('input', (e) => {
+  editor.addEventListener('input', async (e) => {
     const cursorPos = editor.selectionStart;
     const textBeforeCursor = editor.value.substring(0, cursorPos);
     const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
@@ -655,7 +1083,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       hideShortcutsMenu();
     }
 
-    updatePreview();
+    await updatePreview();
+    debouncedSave();
+    if(isSearchActive) {
+      debouncedSearch();
+    }
     
     // Add to history if significant change
     if (history[historyIndex] !== editor.value) {
@@ -689,13 +1121,108 @@ document.addEventListener('DOMContentLoaded', async () => {
         !e.target.closest('#editor')) {
       hideShortcutsMenu();
     }
+    // Close file actions dropdown
+    document.querySelectorAll('.file-actions-dropdown:not(.hidden)').forEach(dropdown => {
+        if (!e.target.closest('.file-actions-menu')) {
+             dropdown.classList.add('hidden');
+        }
+    });
   });
   
   // Update preview and stats
-  function updatePreview() {
+  async function updatePreview() {
     const markdown = editor.value;
     preview.innerHTML = parseMarkdown(markdown);
-    updateToc();
+
+    try {
+      const mermaidElements = preview.querySelectorAll('.mermaid');
+      for (const el of mermaidElements) {
+        const code = el.textContent;
+        const id = `mermaid-svg-${Date.now()}`;
+        el.textContent = 'در حال رندر شدن...';
+        try {
+          const { svg } = await mermaid.render(id, code);
+          el.innerHTML = svg;
+        } catch (e) {
+          console.error(e);
+          el.innerHTML = 'نمودار نامعتبر است';
+        }
+      }
+    } catch (e) {
+      console.error('Mermaid rendering error:', e);
+    }
+
+    // Add copy buttons to code blocks
+    preview.querySelectorAll('pre').forEach(pre => {
+      if (!pre.parentElement.classList.contains('code-block-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block-wrapper';
+  
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-code-btn';
+        copyBtn.title = 'رونوشت';
+        copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+  
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+        wrapper.appendChild(copyBtn);
+  
+        copyBtn.addEventListener('click', () => {
+          const codeToCopy = pre.querySelector('code')?.innerText || pre.innerText;
+
+          const copyAction = new Promise((resolve, reject) => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(codeToCopy).then(resolve).catch(reject);
+            } else {
+              // Fallback for non-secure contexts (e.g., file://)
+              try {
+                const textArea = document.createElement("textarea");
+                textArea.value = codeToCopy;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                  resolve();
+                } else {
+                  reject(new Error('Copy command was unsuccessful'));
+                }
+              } catch (err) {
+                reject(err);
+              }
+            }
+          });
+
+          copyAction.then(() => {
+            copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+            copyBtn.title = 'کپی شد';
+            setTimeout(() => {
+              copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+              copyBtn.title = 'رونوشت';
+            }, 2000);
+          }).catch(err => {
+            console.error('Failed to copy code: ', err);
+            copyBtn.title = 'خطا در کپی';
+          });
+        });
+      }
+    });
+
+    if (isSearchActive && searchInput.value) {
+        performSearch(false);
+    }
+    
+    // Update active side panel content
+    if (sidePanel.style.display !== 'none') {
+        if (filesTabBtn.classList.contains('active')) {
+            populateFilesList();
+        } else {
+            updateToc();
+        }
+    }
     
     // Update stats
     const chars = markdown.length;
@@ -709,11 +1236,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     wordsCount.textContent = `واژه: ${words}`;
     linesCount.textContent = `خط: ${lines}`;
     fileSize.textContent = `حجم: ${formatFileSize(size)}`;
-    
-    // Auto save if enabled
-    if (autoSaveCheckbox.checked) {
-      localStorage.setItem('parsiNegarContent', markdown);
-    }
   }
   
   // Format file size
@@ -725,10 +1247,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Theme handling
   themeRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
+    radio.addEventListener('change', async (e) => {
       document.body.classList.remove('theme-light', 'theme-dark', 'theme-sepia');
       document.body.classList.add(`theme-${e.target.value}`);
       saveSettings();
+      configureMermaidTheme();
+      setHljsTheme(e.target.value);
+      await updatePreview();
     });
   });
   
@@ -736,20 +1261,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   fontSizeSelect.addEventListener('change', (e) => {
     const size = e.target.value;
     editor.style.fontSize = `${size}px`;
+    editorBackdrop.style.fontSize = `${size}px`;
     saveSettings();
   });
   
   fontFamilySelect.addEventListener('change', (e) => {
     const font = e.target.value;
     editor.style.fontFamily = font;
+    editorBackdrop.style.fontFamily = font;
     saveSettings();
   });
   
-  autoSaveCheckbox.addEventListener('change', saveSettings);
-  
   // Toolbar actions
   document.querySelectorAll('[data-action]').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       const action = button.dataset.action;
       const start = editor.selectionStart;
       const end = editor.selectionEnd;
@@ -774,7 +1299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           newText = editor.value.substring(0, lineStart) + prefix + editor.value.substring(lineStart);
           editor.value = newText;
           editor.setSelectionRange(lineStart + prefix.length, lineStart + prefix.length);
-          updatePreview();
+          await updatePreview();
           return;
         case 'strike':
           newText = `~~${selectedText}~~`;
@@ -817,30 +1342,34 @@ document.addEventListener('DOMContentLoaded', async () => {
           newText = `[${selectedText}]()`;
           newCursorPos = selectedText ? end + 3 : start + 1;
           break;
+        case 'chart':
+          newText = '```mermaid\nflowchart LR\n  A[شروع] --> B{تصمیم}\n  B -->|بله| C[ادامه]\n  B -->|خیر| D[توقف]\n```';
+          newCursorPos = start + newText.length;
+          break;
       }
       
       if (action !== 'heading') {
         editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
         editor.setSelectionRange(newCursorPos, newCursorPos);
-        updatePreview();
+        await updatePreview();
       }
     });
   });
   
   // Undo/Redo
-  document.getElementById('undoBtn').addEventListener('click', () => {
+  document.getElementById('undoBtn').addEventListener('click', async () => {
     if (historyIndex > 0) {
       historyIndex--;
       editor.value = history[historyIndex];
-      updatePreview();
+      await updatePreview();
     }
   });
   
-  document.getElementById('redoBtn').addEventListener('click', () => {
+  document.getElementById('redoBtn').addEventListener('click', async () => {
     if (historyIndex < history.length - 1) {
       historyIndex++;
       editor.value = history[historyIndex];
-      updatePreview();
+      await updatePreview();
     }
   });
   
@@ -851,17 +1380,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!file) return;
     
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       editor.value = e.target.result;
       filename.value = file.name;
-      updatePreview();
+      await updatePreview();
       fileInput.value = '';
+      await saveFileToDB(file.name, e.target.result);
+      await populateFilesList();
     };
     reader.readAsText(file);
   });
 
   // Update filename when editing
-  filename.addEventListener('change', () => {
+  let oldFilenameOnFocus = '';
+  filename.addEventListener('focus', () => {
+    oldFilenameOnFocus = filename.value;
+  });
+  filename.addEventListener('change', async () => {
+    const newFilename = filename.value.trim();
+    if (!newFilename || newFilename === 'نام فایل') {
+      filename.value = oldFilenameOnFocus;
+      return;
+    }
+    if (oldFilenameOnFocus && newFilename !== oldFilenameOnFocus && oldFilenameOnFocus !== 'نام فایل') {
+        await deleteFileFromDB(oldFilenameOnFocus);
+    }
+    await saveFileToDB(newFilename, editor.value);
+    await populateFilesList();
     saveSettings();
   });
   
@@ -959,25 +1504,202 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveSettings();
   });
   
+  clearDBBtn.addEventListener('click', async () => {
+    if (confirm('آیا مطمئن هستید؟ تمام فایل‌های ذخیره شده برای همیشه پاک خواهند شد. این عمل بازگشت‌پذیر نیست.')) {
+      await clearFilesDB();
+      await populateFilesList();
+      editor.value = '';
+      filename.value = 'نام فایل';
+      await updatePreview();
+      localStorage.removeItem('parsiNegarLastState');
+      alert('تمام داده‌ها پاک شدند.');
+    }
+  });
+
   // Add event listener for markdown parser change
-  markdownParserSelect.addEventListener('change', () => {
+  markdownParserSelect.addEventListener('change', async () => {
     saveSettings();
-    updatePreview();
+    await updatePreview();
   });
   
-  // Load saved content if auto save was enabled
-  const savedContent = localStorage.getItem('parsiNegarContent');
-  if (savedContent && autoSaveCheckbox.checked) {
-    editor.value = savedContent;
-    updatePreview();
-  } else {
-    // Load README.md by default
-    loadReadme();
+  // --- Search Functionality ---
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
-  
+
+  function openSearchBar() {
+    isSearchActive = true;
+    searchBar.classList.remove('hidden');
+    searchInput.focus();
+    searchInput.select();
+    performSearch();
+  }
+
+  async function closeSearchBar() {
+    isSearchActive = false;
+    searchBar.classList.add('hidden');
+    searchInput.value = '';
+    matches = [];
+    currentMatchIndex = -1;
+    editorBackdrop.innerHTML = '';
+    editor.classList.remove('searching');
+    await updatePreview(); // Re-render preview to remove highlights
+  }
+
+  function performSearch(resetIndex = true) {
+    const term = searchInput.value;
+    const scope = searchScopeSelect.value;
+
+    // 1. Clear all previous highlights
+    editorBackdrop.innerHTML = '';
+    preview.querySelectorAll('mark.highlight').forEach(m => {
+        const parent = m.parentNode;
+        if (parent) {
+            parent.replaceChild(document.createTextNode(m.textContent), m);
+            parent.normalize();
+        }
+    });
+
+    if (!term) {
+        matches = [];
+        currentMatchIndex = -1;
+        updateSearchCount();
+        editor.classList.remove('searching');
+        return;
+    }
+
+    // 2. Decide whether to make editor text transparent based on scope
+    editor.classList.toggle('searching', scope === 'editor' || scope === 'all');
+
+    const regex = new RegExp(escapeRegExp(term), 'gi');
+    let editorMatches = [];
+    let previewMatches = [];
+
+    // 3. Highlight in editor based on scope
+    if (scope === 'editor' || scope === 'all') {
+        const escapedText = editor.value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        editorBackdrop.innerHTML = escapedText.replace(regex, match => `<mark class="highlight">${match}</mark>`);
+        editorMatches = Array.from(editorBackdrop.querySelectorAll('.highlight'));
+    }
+
+    // 4. Highlight in preview based on scope
+    if (scope === 'preview' || scope === 'all') {
+        const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+        let currentNode;
+        while(currentNode = walker.nextNode()) {
+            if (!currentNode.parentElement.closest('script, style, pre, code')) {
+                textNodes.push(currentNode);
+            }
+        }
+
+        textNodes.forEach(node => {
+            if (node.nodeValue.match(regex)) {
+                const newNode = document.createElement('span');
+                newNode.innerHTML = node.nodeValue.replace(regex, `<mark class="highlight">$&</mark>`);
+                if (node.parentNode) {
+                   node.parentNode.replaceChild(newNode, node);
+                   newNode.replaceWith(...newNode.childNodes);
+                }
+            }
+        });
+        previewMatches = Array.from(preview.querySelectorAll('.highlight'));
+    }
+
+    // 5. Combine matches and update UI
+    matches = [...editorMatches, ...previewMatches];
+    if (resetIndex) {
+        currentMatchIndex = matches.length > 0 ? 0 : -1;
+    } else {
+         if (currentMatchIndex >= matches.length) {
+            currentMatchIndex = matches.length > 0 ? matches.length - 1 : -1;
+        }
+    }
+    updateActiveHighlight();
+  }
+
+  function updateActiveHighlight() {
+    matches.forEach(m => m.classList.remove('active'));
+    if (currentMatchIndex > -1 && matches[currentMatchIndex]) {
+        const activeMatch = matches[currentMatchIndex];
+        activeMatch.classList.add('active');
+        activeMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    updateSearchCount();
+  }
+
+  function navigateMatches(direction) {
+    if (matches.length === 0) return;
+    currentMatchIndex += direction;
+    if (currentMatchIndex < 0) {
+        currentMatchIndex = matches.length - 1;
+    } else if (currentMatchIndex >= matches.length) {
+        currentMatchIndex = 0;
+    }
+    updateActiveHighlight();
+  }
+
+  function updateSearchCount() {
+    if (matches.length > 0) {
+        searchCount.textContent = `${currentMatchIndex + 1}/${matches.length}`;
+    } else {
+        searchCount.textContent = searchInput.value ? '0/0' : '';
+    }
+  }
+
+  searchBtn.addEventListener('click', openSearchBar);
+  closeSearchBtn.addEventListener('click', closeSearchBar);
+  searchInput.addEventListener('input', debouncedSearch);
+  searchScopeSelect.addEventListener('change', () => performSearch());
+  nextMatchBtn.addEventListener('click', () => navigateMatches(1));
+  prevMatchBtn.addEventListener('click', () => navigateMatches(-1));
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        navigateMatches(e.shiftKey ? -1 : 1);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        openSearchBar();
+    }
+    if (e.key === 'Escape') {
+      if (isSearchActive) {
+        e.preventDefault();
+        closeSearchBar();
+      } else if (isShortcutMenuVisible) {
+        e.preventDefault();
+        hideShortcutsMenu();
+      }
+    }
+  });
+
+
   // Load settings on startup
   loadSettings();
+
+  // Load content from localStorage or default to README
+  try {
+    const lastStateJSON = localStorage.getItem('parsiNegarLastState');
+    if (lastStateJSON) {
+        const lastState = JSON.parse(lastStateJSON);
+        editor.value = lastState.content;
+        filename.value = lastState.filename;
+    } else {
+        await loadReadme();
+    }
+  } catch (e) {
+      console.error("Could not load last state, loading README.", e);
+      await loadReadme();
+  }
+
+  history = [editor.value];
+  historyIndex = 0;
+
+  configureMermaidTheme();
   
-  // Initial preview
-  updatePreview();
+  // Initial preview and panels
+  await updatePreview();
 });
