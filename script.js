@@ -665,7 +665,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Override list item rendering for marked
   markedRenderer.listitem = function(token) {
-    const text = this.parser.parseInline(token.tokens);
+    let text;
+    // Task lists contain only inline content, while regular lists can contain block content (like other lists).
+    // We must use the correct parser for each case to avoid errors with nested lists.
+    if (token.task) {
+        text = this.parser.parseInline(token.tokens);
+    } else {
+        text = this.parser.parse(token.tokens);
+    }
+    
+    // The rest of the logic determines text direction based on content.
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = text;
     const plainText = (tempDiv.textContent || tempDiv.innerText || '').trim();
@@ -675,9 +684,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (token.task) {
       const checkbox = `<input type="checkbox" disabled ${token.checked ? 'checked' : ''}>`;
+      // The `text` from parseInline will not be wrapped in `<p>` tags.
       return `<li class="task-list" ${style}>${checkbox} ${text}</li>`;
     }
     
+    // For regular list items, `parse()` might wrap content in `<p>` tags if the list is "loose".
+    // This is the correct behavior. The style is applied to the `<li>` element.
     return `<li ${style}>${text}</li>`;
   };
 
