@@ -1,6 +1,6 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.8.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.9.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -41,14 +41,14 @@
 برای اجرای پارسی‌نگار به صورت محلی روی سیستم خود، مراحل زیر را دنبال کنید:
 
 1. مخزن پروژه را کلون کنید:
-   
-```
+
+```bash
 git clone https://github.com/alirho/parsiNegar.git
 ```
 
 2. به دایرکتوری پروژه بروید:
 
-```shellscript
+```bash
 cd parsiNegar
 ```
 
