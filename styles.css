@@ -46,6 +46,7 @@ body {
   display: flex;
   gap: 1rem;
   font-size: 0.8rem;
+  align-items: center;
 }
 
 .menu > li {
@@ -63,6 +64,31 @@ body {
 
 .menu > li > a:hover {
   background: rgba(0, 0, 0, 0.05);
+}
+
+.logo-link, .logo-link:hover {
+  padding: 0.25rem 0 !important;
+  background: transparent !important;
+}
+
+#menuLogo,
+.footer-logo {
+  display: inline-block;
+  background-color: #1f2937; /* Default dark text color */
+  -webkit-mask-image: url(pic/logo.svg);
+  mask-image: url(pic/logo.svg);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+#menuLogo {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
 }
 
 .menu-right {
@@ -238,6 +264,11 @@ body.theme-dark select {
   background: #1a1a1a;
   border-color: #404040;
   color: #e5e5e5;
+}
+
+body.theme-dark #menuLogo,
+body.theme-dark .footer-logo {
+    background-color: #e5e5e5;
 }
 
 body.theme-sepia {
@@ -1052,11 +1083,33 @@ select {
 .setting-footer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-top: 2rem;
   padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
+}
+
+.footer-branding {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-logo {
+  width: 45px;
+  height: 45px;
+}
+
+.footer-app-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .github-link {
