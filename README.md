@@ -1,6 +1,6 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.9.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.10.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -27,7 +27,9 @@
 - ذخیره خودکار محتوا در مرورگر
 - امکان خروجی گرفتن به فرمت‌های Markdown، HTML و PDF
 - میان‌بر نوشتاری (/) برای دسترسی سریع به فرمت‌بندی‌های مارک‌داون
-- امکان فعال و غیرفعال کردن نوار ابزار و آمار
+- امکان فعال و غیرفعال کردن منوها
+- امکان رسم نمودارها و دیاگرام‌های مختلف (mermaidjs)
+- امکان ایجاد نقشه‌ذهنی (mindmap)
  
 
 ## نحوه استفاده
