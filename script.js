@@ -41,19 +41,37 @@ async function openDB() {
   });
 }
 
-async function saveFileToDB(id, content) {
+async function saveFileToDB(id, content, options = {}) {
     if (!db) await openDB();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['files'], 'readwrite');
-      const store = transaction.objectStore('files');
-      const file = { id, content, lastModified: new Date() };
-      const request = store.put(file);
-  
-      request.onsuccess = () => resolve();
-      request.onerror = (event) => {
-        console.error('Error saving file to IndexedDB', event.target.error);
-        reject(event.target.error);
-      };
+        const transaction = db.transaction(['files'], 'readwrite');
+        const store = transaction.objectStore('files');
+        const getRequest = store.get(id);
+
+        getRequest.onerror = (event) => {
+            console.error('Error getting file for save op', event.target.error);
+            reject(event.target.error);
+        };
+
+        getRequest.onsuccess = () => {
+            const existingFile = getRequest.result;
+            // Priority: 1. Passed in options. 2. Existing file's creationDate. 3. Existing file's lastModified (for backward compat). 4. New date.
+            const creationDate = options.creationDate || (existingFile ? (existingFile.creationDate || existingFile.lastModified) : new Date());
+            
+            const file = { 
+                id, 
+                content, 
+                lastModified: new Date(),
+                creationDate: creationDate
+            };
+            const request = store.put(file);
+        
+            request.onsuccess = () => resolve();
+            request.onerror = (event) => {
+              console.error('Error saving file to IndexedDB', event.target.error);
+              reject(event.target.error);
+            };
+        };
     });
 }
 
@@ -164,6 +182,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const filesList = document.querySelector('.files-list');
   const [filesTabBtn, tocTabBtn] = document.querySelectorAll('.side-panel-tab');
   const clearDBBtn = document.getElementById('clearDBBtn');
+  const filePropertiesModal = document.getElementById('filePropertiesModal');
+  const closePropertiesBtn = document.getElementById('closePropertiesBtn');
   
   // Search Elements
   const searchBtn = document.getElementById('searchBtn');
@@ -419,6 +439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="file-actions-dropdown hidden">
                 <a href="#" class="download-file-btn"><i class="fas fa-download"></i> دانلود</a>
                 <a href="#" class="rename-file-btn"><i class="fas fa-edit"></i> تغییر نام</a>
+                <a href="#" class="properties-file-btn"><i class="fas fa-info-circle"></i> ویژگی‌ها</a>
                 <a href="#" class="delete-file-btn danger-action"><i class="fas fa-trash"></i> حذف</a>
             </div>
         </div>
@@ -429,6 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     filesList.querySelectorAll('.file-actions-toggle').forEach(el => el.addEventListener('click', toggleFileActionsMenu));
     filesList.querySelectorAll('.download-file-btn').forEach(el => el.addEventListener('click', handleDownloadFile));
     filesList.querySelectorAll('.rename-file-btn').forEach(el => el.addEventListener('click', handleRenameFile));
+    filesList.querySelectorAll('.properties-file-btn').forEach(el => el.addEventListener('click', handleShowProperties));
     filesList.querySelectorAll('.delete-file-btn').forEach(el => el.addEventListener('click', handleDeleteFile));
   }
   
@@ -483,7 +505,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         const fileToRename = await getFileFromDB(oldId);
-        await saveFileToDB(newId, fileToRename.content);
+        // Pass the creationDate in options to preserve it
+        await saveFileToDB(newId, fileToRename.content, { creationDate: fileToRename.creationDate || fileToRename.lastModified });
         await deleteFileFromDB(oldId);
         if (filename.value === oldId) {
             filename.value = newId;
@@ -507,6 +530,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         await populateFilesList();
     }
   }
+
+  async function handleShowProperties(e) {
+    e.preventDefault();
+    const id = e.target.closest('.file-item').dataset.id;
+    const file = await getFileFromDB(id);
+    if (file) {
+      // Calculate stats
+      const content = file.content || '';
+      const chars = content.length;
+      const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+      const lines = content.split('\n').length;
+      const size = new Blob([content]).size;
+  
+      // Populate modal
+      document.getElementById('propFileName').textContent = file.id;
+      document.getElementById('propFileSize').textContent = formatFileSize(size);
+      // Use lastModified as a fallback for older files that may not have creationDate
+      const creationDate = file.creationDate ? new Date(file.creationDate).toLocaleString('fa-IR') : (file.lastModified ? new Date(file.lastModified).toLocaleString('fa-IR') : 'نامشخص');
+      document.getElementById('propCreationDate').textContent = creationDate;
+      document.getElementById('propLastModified').textContent = new Date(file.lastModified).toLocaleString('fa-IR');
+      document.getElementById('propCharsCount').textContent = chars.toLocaleString('fa-IR');
+      document.getElementById('propWordsCount').textContent = words.toLocaleString('fa-IR');
+      document.getElementById('propLinesCount').textContent = lines.toLocaleString('fa-IR');
+  
+      // Show modal
+      filePropertiesModal.classList.remove('hidden');
+    }
+  }
+
+  closePropertiesBtn.addEventListener('click', () => {
+    filePropertiesModal.classList.add('hidden');
+  });
 
   // Menu Event Listeners
   showToolbarCheckbox.addEventListener('change', (e) => {

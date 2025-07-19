@@ -1076,6 +1076,62 @@ select {
   text-decoration: underline;
 }
 
+/* File Properties Modal */
+#propertiesContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.property-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.property-item:first-child {
+  padding-top: 0;
+}
+
+.property-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.property-label {
+  font-weight: bold;
+  color: #374151;
+}
+
+.property-value {
+  color: #6b7280;
+  text-align: left;
+  direction: ltr;
+}
+
+body.theme-dark .property-item {
+  border-bottom-color: #404040;
+}
+body.theme-dark .property-label {
+  color: #d1d5db;
+}
+body.theme-dark .property-value {
+  color: #9ca3af;
+}
+
+body.theme-sepia .property-item {
+  border-bottom-color: #d3c4b3;
+}
+body.theme-sepia .property-label {
+  color: #5f4b32;
+}
+body.theme-sepia .property-value {
+  color: #8c6d46;
+}
+
+
 /* Markdown Preview Styles */
 .markdown-preview h1 {
   font-size: 1.875rem;
