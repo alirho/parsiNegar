@@ -436,10 +436,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const id = e.target.closest('.file-item').dataset.id;
     const file = await getFileFromDB(id);
     if (file) {
+      // If we are already viewing this file, do nothing to prevent unnecessary reloads.
+      if (filename.value === file.id) return;
+
       editor.value = file.content;
       filename.value = file.id;
+
+      // Update the last state in localStorage for session persistence.
+      // This was previously handled by debouncedSave.
+      localStorage.setItem('parsiNegarLastState', JSON.stringify({
+        content: file.content,
+        filename: file.id,
+      }));
+
+      // Reset undo/redo history for the newly loaded file
+      history = [file.content];
+      historyIndex = 0;
+
       await updatePreview();
-      debouncedSave();
+      // The call to debouncedSave() is removed. This prevents the file's
+      // lastModified timestamp from being updated just by selecting it,
+      // which was causing it to jump to the top of the list.
+      // A save will now only be triggered by an 'input' event (i.e., actual editing).
     }
   }
   
@@ -510,6 +528,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (confirm('آیا مطمئن هستید؟ تمام محتوای فعلی پاک خواهد شد.')) {
       editor.value = '';
       filename.value = 'نام فایل';
+      history = [''];
+      historyIndex = 0;
       await updatePreview();
       localStorage.removeItem('parsiNegarLastState');
     }
@@ -1428,8 +1448,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const reader = new FileReader();
     reader.onload = async (e) => {
-      editor.value = e.target.result;
+      const content = e.target.result;
+      editor.value = content;
       filename.value = file.name;
+      history = [content];
+      historyIndex = 0;
       await updatePreview();
       fileInput.value = '';
       await saveFileToDB(file.name, e.target.result);
@@ -2074,7 +2097,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (config.layout === 'two-sided') {
             // For two-sided layout: if the node is on the right branch (or is the root),
             // the button is on the right. Otherwise, it's on the left.
-            btnX = (node.x >= 0) ? node.width : 0;
+            const isOnRightBranch = parent ? (node.x > parent.x) : (node.x >= 0);
+            btnX = isOnRightBranch ? node.width : 0;
           } else {
             // For one-sided 'rtl' layout, the button is always on the left.
             btnX = 0;
