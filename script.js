@@ -590,14 +590,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   newFileBtn.addEventListener('click', async () => {
-    if (confirm('آیا مطمئن هستید؟ تمام محتوای فعلی پاک خواهد شد.')) {
-      editor.value = '';
-      filename.value = 'نام فایل';
-      history = [''];
-      historyIndex = 0;
-      await updatePreview();
-      localStorage.removeItem('parsiNegarLastState');
-    }
+    editor.value = '';
+    filename.value = 'نام فایل';
+    history = [''];
+    historyIndex = 0;
+    await updatePreview();
+    localStorage.removeItem('parsiNegarLastState');
   });
 
   loadFileBtn.addEventListener('click', () => {
