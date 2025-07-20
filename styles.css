@@ -1219,12 +1219,14 @@ body.theme-sepia .property-value {
 }
 
 .markdown-preview ul {
-  margin: 0 1.25rem 1rem;
+  margin: 0 0.1rem 1rem;
   list-style-type: disc;
 }
 
 .markdown-preview ul ul {
   list-style-type: circle;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .markdown-preview ul ul ul {
