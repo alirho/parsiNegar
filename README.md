@@ -1,12 +1,12 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.10.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.11.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
 > این پروژه جهت بررسی توانایی دستیارهای هوش مصنوعی برای تولید و توسعه برنامه‌های تحت وب پیاده‌سازی شده است.
 
- <center><img src="pic/logo.svg" alt="logo" width="80" height="80"></center>
+<center><img src="pic/logo.svg" alt="logo" width="80" height="80"></center>
 
 پارسی‌نگار یک ویرایشگر مارک‌داون آنلاین و سبک است که به طور خاص برای نوشتن متن‌های فارسی و راست به چپ (RTL) طراحی شده است. این ویرایشگر با تمرکز بر تجربه کاربری مناسب برای کاربران فارسی‌زبان ایجاد شده و امکان نوشتن، ویرایش و پیش‌نمایش متن‌های مارک‌داون را به صورت همزمان فراهم می‌کند.
 
