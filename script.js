@@ -310,26 +310,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   filesTabBtn.addEventListener('click', () => activateTab('files'));
   tocTabBtn.addEventListener('click', () => activateTab('toc'));
 
-  // Extract headings from markdown
-  function extractHeadings(markdown) {
+  // --- Table of Contents Logic ---
+  function slugifyHeading(text) {
+    const cleanedText = text
+      .toLowerCase()
+      // Remove any HTML tags from heading text
+      .replace(/<[^>]*>/g, '')
+      // Transliterate Persian characters to a URL-friendly format
+      .replace(/[\u0600-\u06FF\uFB8A\u067E\u0686\u06AF\u200C]/g, (char) => {
+        const persianMap = { 'ا': 'a', 'آ': 'a', 'ب': 'b', 'پ': 'p', 'ت': 't', 'ث': 's', 'ج': 'j', 'چ': 'ch', 'ح': 'h', 'خ': 'kh', 'د': 'd', 'ذ': 'z', 'ر': 'r', 'ز': 'z', 'ژ': 'zh', 'س': 's', 'ش': 'sh', 'ص': 's', 'ض': 'z', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f', 'ق': 'q', 'ک': 'k', 'گ': 'g', 'ل': 'l', 'م': 'm', 'ن': 'n', 'و': 'v', 'ه': 'h', 'ی': 'y', ' ': '-', '-': '-', '‌': '-' };
+        return persianMap[char] || '';
+      })
+      .replace(/[^\w\s-]/g, '') // Remove remaining special characters
+      .trim()
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-'); // Replace multiple hyphens with a single one
+    return cleanedText || 'heading';
+  }
+  
+  function extractHeadings() {
+    const tokens = marked.lexer(editor.value);
     const headings = [];
-    const lines = markdown.split('\n');
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      const match = line.match(/^(#{1,6})\s+(.+)$/);
-      
-      if (match) {
-        const level = match[1].length;
-        const text = match[2];
-        const id = text.toLowerCase()
-          .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-        
-        headings.push({ level, text, id });
+    tokens.forEach(token => {
+      if (token.type === 'heading') {
+        headings.push({
+          level: token.depth,
+          text: token.text, // Use the parsed text content
+          id: slugifyHeading(token.text)
+        });
       }
-    }
-    
+    });
     return headings;
   }
 
@@ -380,7 +390,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateToc() {
     if (!showTocCheckbox.checked && !tocTabBtn.classList.contains('active')) return;
     
-    const headings = extractHeadings(editor.value);
+    const headings = extractHeadings();
     const structure = buildTocStructure(headings);
     tocList.innerHTML = createTocHtml(structure);
     
@@ -772,12 +782,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Override heading rendering to add IDs
   markedRenderer.heading = function(token) {
     const text = this.parser.parseInline(token.tokens);
-    const { depth, raw } = token;
-    const id = String(raw || '').toLowerCase()
-      .replace(/[^a-z0-9\u0600-\u06FF\u200C]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    
-    return `<h${depth} id="${id}">${text}</h${depth}>`;
+    const id = slugifyHeading(token.text);
+    return `<h${token.depth} id="${id}">${text}</h${token.depth}>`;
   };
 
   // Override code rendering for Mermaid.js and syntax highlighting
@@ -1061,6 +1067,82 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Handle keyboard events for shortcuts menu and list continuation
   editor.addEventListener('keydown', async (e) => {
+    // Handle Tab and Shift+Tab for indentation
+    if (e.key === 'Tab') {
+        e.preventDefault();
+
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const value = editor.value;
+
+        // On no selection, indent at cursor or indent list item
+        if (start === end && !e.shiftKey) {
+            const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+            const lineEnd = (value.indexOf('\n', start) === -1) ? value.length : value.indexOf('\n', start);
+            const line = value.substring(lineStart, lineEnd);
+            
+            // Regex to check if the entire line is just a list marker
+            const emptyListRegex = /^(\s*)((?:[-*+](\s+\[\s?\]\s*)?)|(?:(?:\d+|[۰-۹]+)\.))(\s*)$/;
+            const match = line.match(emptyListRegex);
+
+            if (match) {
+                // It's an empty list item, indent the line
+                let newLine;
+                const marker = match[2];
+                if (/(?:\d+|[۰-۹]+)\./.test(marker)) {
+                    // Ordered list: reset number to 1.
+                    const isPersian = /[۰-۹]/.test(marker);
+                    newLine = match[1] + '  ' + (isPersian ? '۱.' : '1.') + match[4];
+                } else {
+                    // Unordered/Checklist: just indent the whole line.
+                    newLine = '  ' + line;
+                }
+                
+                editor.value = value.substring(0, lineStart) + newLine + value.substring(lineEnd);
+                const newCursorPos = lineStart + newLine.length;
+                editor.setSelectionRange(newCursorPos, newCursorPos);
+            } else {
+                // Default behavior: insert two spaces at cursor
+                editor.value = value.substring(0, start) + '  ' + value.substring(end);
+                editor.setSelectionRange(start + 2, start + 2);
+            }
+        } else {
+            // Get the block of lines affected by the selection
+            const blockStart = value.lastIndexOf('\n', start - 1) + 1;
+            const tempEnd = (value[end - 1] === '\n' && start !== end) ? end - 1 : end;
+            let blockEnd = value.indexOf('\n', tempEnd);
+            if (blockEnd === -1) {
+                blockEnd = value.length;
+            }
+
+            const originalBlock = value.substring(blockStart, blockEnd);
+            let lines = originalBlock.split('\n');
+
+            if (e.shiftKey) {
+                // Outdent: remove two spaces from the start of each line
+                lines = lines.map(line => {
+                    if (line.startsWith('  ')) return line.substring(2);
+                    if (line.startsWith(' ')) return line.substring(1);
+                    return line;
+                });
+            } else {
+                // Indent: add two spaces to the start of each line
+                lines = lines.map(line => '  ' + line);
+            }
+            
+            const newBlock = lines.join('\n');
+            editor.value = value.substring(0, blockStart) + newBlock + value.substring(blockEnd);
+
+            // Reselect the modified block, which is standard IDE behavior
+            editor.selectionStart = blockStart;
+            editor.selectionEnd = blockStart + newBlock.length;
+        }
+
+        await updatePreview();
+        debouncedSave();
+        return; // Stop further keydown processing for this event
+    }
+      
     if (isShortcutMenuVisible) {
       const filteredShortcuts = shortcuts.filter(s => {
         const cursorPos = editor.selectionStart;
