@@ -1097,8 +1097,8 @@ select {
 }
 
 .footer-logo {
-  width: 45px;
-  height: 45px;
+  width: 32px;
+  height: 32px;
 }
 
 .footer-app-name {
@@ -1221,6 +1221,14 @@ body.theme-sepia .property-value {
 .markdown-preview ul {
   margin: 0 1.25rem 1rem;
   list-style-type: disc;
+}
+
+.markdown-preview ul ul {
+  list-style-type: circle;
+}
+
+.markdown-preview ul ul ul {
+  list-style-type: square;
 }
 
 .markdown-preview ol {
