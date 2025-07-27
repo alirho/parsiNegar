@@ -204,6 +204,7 @@ const searchCount = document.getElementById('searchCount');
 const prevMatchBtn = document.getElementById('prevMatchBtn');
 const nextMatchBtn = document.getElementById('nextMatchBtn');
 const closeSearchBtn = document.getElementById('closeSearchBtn');
+const copyAllBtn = document.getElementById('copyAllBtn');
 
 // Custom Dialog Elements
 const customDialog = document.getElementById('customDialog');
@@ -1887,6 +1888,58 @@ clearDBBtn.addEventListener('click', async () => {
     localStorage.removeItem('parsiNegarLastState');
     await customAlert('تمام داده‌ها پاک شدند.', 'عملیات موفق');
   }
+});
+
+// Copy All button in menu
+copyAllBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+
+  const contentToCopy = editor.value;
+  const icon = copyAllBtn.querySelector('i');
+
+  if (!contentToCopy) return; // Do nothing if editor is empty
+
+  const copyAction = new Promise((resolve, reject) => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(contentToCopy).then(resolve).catch(reject);
+      } else {
+          // Fallback for non-secure contexts
+          try {
+              const textArea = document.createElement("textarea");
+              textArea.value = contentToCopy;
+              textArea.style.position = "fixed";
+              textArea.style.left = "-9999px";
+              document.body.appendChild(textArea);
+              textArea.focus();
+              textArea.select();
+              const successful = document.execCommand('copy');
+              document.body.removeChild(textArea);
+              if (successful) {
+                  resolve();
+              } else {
+                  reject(new Error('Copy command was unsuccessful'));
+              }
+          } catch (err) {
+              reject(err);
+          }
+      }
+  });
+
+  copyAction.then(() => {
+      icon.classList.remove('fa-copy');
+      icon.classList.add('fa-check');
+      copyAllBtn.title = 'کپی شد';
+
+      setTimeout(() => {
+          icon.classList.remove('fa-check');
+          icon.classList.add('fa-copy');
+          copyAllBtn.title = 'رونوشت کل فایل';
+      }, 2000);
+  }).catch(err => {
+      console.error('Failed to copy content: ', err);
+      customAlert('رونوشت با خطا مواجه شد.', 'خطا');
+      copyAllBtn.title = 'خطا در کپی';
+  });
 });
 
 // Add event listener for markdown parser change
