@@ -1598,6 +1598,14 @@ fileInput.addEventListener('change', (e) => {
   reader.onload = async (e) => {
     const content = e.target.result;
     const newFileId = file.name;
+
+    const existingFile = await getFileFromDB(newFileId);
+    if (existingFile) {
+      alert(`خطا: فایلی با نام «${newFileId}» از قبل وجود دارد و بازنویسی نخواهد شد.`);
+      fileInput.value = ''; // Reset input to allow re-selection
+      return;
+    }
+
     editor.value = content;
     filename.value = removeFileExtension(newFileId);
     currentFileId = newFileId;
@@ -1605,7 +1613,7 @@ fileInput.addEventListener('change', (e) => {
     historyIndex = 0;
     await updatePreview();
     fileInput.value = '';
-    await saveFileToDB(newFileId, e.target.result);
+    await saveFileToDB(newFileId, content);
     await populateFilesList();
   };
   reader.readAsText(file);
@@ -1621,35 +1629,34 @@ filename.addEventListener('change', async () => {
   const newNameWithoutExt = filename.value.trim();
 
   if (!newNameWithoutExt || newNameWithoutExt === 'نام فایل' || newNameWithoutExt === oldFilenameOnFocus) {
-      filename.value = oldFilenameOnFocus; // revert display if no change or invalid
+      filename.value = oldFilenameOnFocus;
       return;
   }
 
   const extMatch = oldId.match(/\.\w+$/);
-  const ext = extMatch ? extMatch[0] : '.md';
+  const ext = (oldId !== 'نام فایل' && extMatch) ? extMatch[0] : '.md';
   const newId = newNameWithoutExt + ext;
-  
-  if (oldId === 'نام فایل') {
-      await saveFileToDB(newId, editor.value);
-      currentFileId = newId;
-      await populateFilesList();
+
+  if (newId === oldId) {
       return;
   }
 
   const existingFile = await getFileFromDB(newId);
   if (existingFile) {
-    alert('خطا: فایلی با این نام از قبل وجود دارد.');
-    filename.value = oldFilenameOnFocus; // revert display
-    return;
+      alert('خطا: فایلی با این نام از قبل وجود دارد.');
+      filename.value = oldFilenameOnFocus;
+      return;
   }
   
-  const fileToRename = await getFileFromDB(oldId);
-  // Use current editor content for the new file as it's the most up-to-date
-  const contentToSave = editor.value; 
-  const creationDate = fileToRename ? (fileToRename.creationDate || fileToRename.lastModified) : new Date();
-
-  await saveFileToDB(newId, contentToSave, { creationDate });
-  await deleteFileFromDB(oldId);
+  if (oldId === 'نام فایل') {
+      await saveFileToDB(newId, editor.value);
+  } else {
+      const fileToRename = await getFileFromDB(oldId);
+      const contentToSave = editor.value;
+      const creationDate = fileToRename ? (fileToRename.creationDate || fileToRename.lastModified) : new Date();
+      await saveFileToDB(newId, contentToSave, { creationDate });
+      await deleteFileFromDB(oldId);
+  }
 
   currentFileId = newId;
   await populateFilesList();
