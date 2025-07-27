@@ -205,6 +205,14 @@ const prevMatchBtn = document.getElementById('prevMatchBtn');
 const nextMatchBtn = document.getElementById('nextMatchBtn');
 const closeSearchBtn = document.getElementById('closeSearchBtn');
 
+// Custom Dialog Elements
+const customDialog = document.getElementById('customDialog');
+const dialogTitle = document.getElementById('dialogTitle');
+const dialogMessage = document.getElementById('dialogMessage');
+const dialogInput = document.getElementById('dialogInput');
+const dialogButtons = document.getElementById('dialogButtons');
+const dialogCloseBtn = document.getElementById('dialogCloseBtn');
+
 // App State
 let currentFileId = 'نام فایل';
 
@@ -233,6 +241,116 @@ const exportHtmlBtn = document.getElementById('exportHtmlBtn');
 const exportPdfBtn = document.getElementById('exportPdfBtn');
 const exportAllZipBtn = document.getElementById('exportAllZipBtn');
 const helpBtn = document.getElementById('helpBtn');
+
+// --- Custom Dialog Functions ---
+function showCustomDialog(options) {
+  return new Promise((resolve) => {
+    dialogTitle.textContent = options.title || '';
+    dialogMessage.innerHTML = options.message || ''; // Use innerHTML to allow for simple formatting
+
+    // Handle input for prompts
+    if (options.type === 'prompt') {
+      dialogInput.classList.remove('hidden');
+      dialogInput.value = options.defaultValue || '';
+    } else {
+      dialogInput.classList.add('hidden');
+    }
+    
+    dialogButtons.innerHTML = '';
+    
+    // Create buttons
+    options.buttons.forEach(btnInfo => {
+      const button = document.createElement('button');
+      button.textContent = btnInfo.text;
+      button.classList.add('dialog-btn');
+      if (btnInfo.isPrimary) {
+        button.classList.add('dialog-btn-primary');
+      }
+      
+      button.onclick = () => {
+        closeDialog();
+        const value = options.type === 'prompt' ? dialogInput.value : btnInfo.value;
+        resolve(value);
+      };
+      dialogButtons.appendChild(button);
+    });
+
+    // Close button and escape key handler
+    const closeDialog = () => {
+      customDialog.classList.add('hidden');
+      document.removeEventListener('keydown', escapeHandler);
+    };
+    
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            const cancelValue = options.buttons.find(b => b.value === false || b.value === null)?.value;
+            closeDialog();
+            resolve(cancelValue); // Resolve with cancel value on escape
+        }
+    };
+    
+    dialogCloseBtn.onclick = () => {
+        const cancelValue = options.buttons.find(b => b.value === false || b.value === null)?.value;
+        closeDialog();
+        resolve(cancelValue);
+    };
+
+    document.addEventListener('keydown', escapeHandler);
+    customDialog.classList.remove('hidden');
+
+    // Focus the primary button or the input field
+    const primaryButton = dialogButtons.querySelector('.dialog-btn-primary');
+    if (options.type === 'prompt') {
+        dialogInput.focus();
+        dialogInput.select();
+    } else if (primaryButton) {
+        primaryButton.focus();
+    }
+  });
+}
+
+function customAlert(message, title = 'توجه') {
+  return showCustomDialog({
+    title,
+    message,
+    type: 'alert',
+    buttons: [
+      { text: 'باشه', value: true, isPrimary: true }
+    ]
+  });
+}
+
+function customConfirm(message, title = 'تایید') {
+  return showCustomDialog({
+    title,
+    message,
+    type: 'confirm',
+    buttons: [
+      { text: 'انصراف', value: false, isPrimary: false },
+      { text: 'تایید', value: true, isPrimary: true }
+    ]
+  });
+}
+
+function customPrompt(message, defaultValue = '', title = 'ورودی') {
+  return showCustomDialog({
+    title,
+    message,
+    type: 'prompt',
+    defaultValue,
+    buttons: [
+      { text: 'انصراف', value: null, isPrimary: false },
+      { text: 'تایید', value: true, isPrimary: true } // Value is just a trigger, actual value comes from input
+    ]
+  }).then(result => {
+      // The promise from showCustomDialog resolves with the button value.
+      // We need to intercept this and return the input's text content if 'OK' was clicked.
+      if (result === true) { // 'OK' button was clicked
+          return dialogInput.value;
+      }
+      return null; // 'Cancel' or Esc was pressed
+  });
+}
 
 // --- Synchronized Scrolling for Editor and Preview ---
 let isSyncingScroll = false;
@@ -509,7 +627,7 @@ async function handleRenameFile(e) {
   e.preventDefault();
   const oldId = e.target.closest('.file-item').dataset.id;
   const oldIdWithoutExt = removeFileExtension(oldId);
-  const newNameWithoutExt = prompt('نام جدید فایل را وارد کنید:', oldIdWithoutExt);
+  const newNameWithoutExt = await customPrompt('نام جدید فایل را وارد کنید:', oldIdWithoutExt, 'تغییر نام فایل');
 
   if (newNameWithoutExt && newNameWithoutExt.trim() !== '' && newNameWithoutExt !== oldIdWithoutExt) {
       const extMatch = oldId.match(/\.\w+$/);
@@ -520,7 +638,7 @@ async function handleRenameFile(e) {
 
       const existingFile = await getFileFromDB(newId);
       if (existingFile) {
-          alert('خطا: فایلی با این نام از قبل وجود دارد.');
+          await customAlert('فایلی با این نام از قبل وجود دارد.', 'خطا در تغییر نام');
           return;
       }
       const fileToRename = await getFileFromDB(oldId);
@@ -539,7 +657,8 @@ async function handleRenameFile(e) {
 async function handleDeleteFile(e) {
   e.preventDefault();
   const id = e.target.closest('.file-item').dataset.id;
-  if (confirm(`آیا از حذف فایل «${removeFileExtension(id)}» مطمئن هستید؟ این عمل بازگشت‌پذیر نیست.`)) {
+  const confirmed = await customConfirm(`آیا از حذف فایل «${removeFileExtension(id)}» مطمئن هستید؟ این عمل بازگشت‌پذیر نیست.`, 'حذف فایل');
+  if (confirmed) {
       await deleteFileFromDB(id);
       if (currentFileId === id) {
           editor.value = '';
@@ -675,18 +794,19 @@ exportPdfBtn.addEventListener('click', async () => {
 
 exportAllZipBtn.addEventListener('click', async () => {
   if (typeof JSZip === 'undefined') {
-      alert('کتابخانه مورد نیاز برای ساخت فایل فشرده بارگذاری نشده است.');
+      await customAlert('کتابخانه مورد نیاز برای ساخت فایل فشرده بارگذاری نشده است.', 'خطا');
       return;
   }
 
-  if (!confirm('آیا می‌خواهید از تمام فایل‌های ذخیره شده خروجی زیپ بگیرید؟')) {
+  const confirmed = await customConfirm('آیا می‌خواهید از تمام فایل‌های ذخیره شده خروجی زیپ بگیرید؟', 'خروجی کلی');
+  if (!confirmed) {
       return;
   }
 
   try {
       const files = await getAllFilesFromDB();
       if (files.length === 0) {
-          alert('هیچ فایلی برای خروجی گرفتن وجود ندارد.');
+          await customAlert('هیچ فایلی برای خروجی گرفتن وجود ندارد.', 'خروجی خالی');
           return;
       }
 
@@ -700,7 +820,7 @@ exportAllZipBtn.addEventListener('click', async () => {
 
   } catch (error) {
       console.error('Error creating zip file:', error);
-      alert('خطایی در هنگام ایجاد فایل زیپ رخ داد.');
+      await customAlert('خطایی در هنگام ایجاد فایل زیپ رخ داد.', 'خطا');
   }
 });
 
@@ -1590,7 +1710,7 @@ document.getElementById('redoBtn').addEventListener('click', async () => {
 
 // File upload
 uploadBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => {
+fileInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   
@@ -1601,7 +1721,7 @@ fileInput.addEventListener('change', (e) => {
 
     const existingFile = await getFileFromDB(newFileId);
     if (existingFile) {
-      alert(`خطا: فایلی با نام «${newFileId}» از قبل وجود دارد و بازنویسی نخواهد شد.`);
+      await customAlert(`فایلی با نام «${newFileId}» از قبل وجود دارد و بازنویسی نخواهد شد.`, 'خطا در بارگذاری');
       fileInput.value = ''; // Reset input to allow re-selection
       return;
     }
@@ -1643,7 +1763,7 @@ filename.addEventListener('change', async () => {
 
   const existingFile = await getFileFromDB(newId);
   if (existingFile) {
-      alert('خطا: فایلی با این نام از قبل وجود دارد.');
+      await customAlert('فایلی با این نام از قبل وجود دارد.', 'خطا در تغییر نام');
       filename.value = oldFilenameOnFocus;
       return;
   }
@@ -1758,7 +1878,8 @@ closeSettingsBtn.addEventListener('click', () => {
 });
 
 clearDBBtn.addEventListener('click', async () => {
-  if (confirm('آیا مطمئن هستید؟ تمام فایل‌های ذخیره شده برای همیشه پاک خواهند شد. این عمل بازگشت‌پذیر نیست.')) {
+  const confirmed = await customConfirm('آیا مطمئن هستید؟ تمام فایل‌های ذخیره شده برای همیشه پاک خواهند شد. این عمل بازگشت‌پذیر نیست.', 'پاک کردن تمام داده‌ها');
+  if (confirmed) {
     await clearFilesDB();
     await populateFilesList();
     editor.value = '';
@@ -1766,7 +1887,7 @@ clearDBBtn.addEventListener('click', async () => {
     currentFileId = 'نام فایل';
     await updatePreview();
     localStorage.removeItem('parsiNegarLastState');
-    alert('تمام داده‌ها پاک شدند.');
+    await customAlert('تمام داده‌ها پاک شدند.', 'عملیات موفق');
   }
 });
 

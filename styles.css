@@ -1129,6 +1129,126 @@ select {
   text-decoration: underline;
 }
 
+/* Custom Dialog Modal */
+#customDialog .modal-content {
+  max-width: 400px;
+}
+
+#dialogMessage {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+#dialogInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  outline: none;
+}
+
+#dialogInput.hidden {
+  display: none;
+}
+
+#dialogInput:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 1px #0f766e;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dialog-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  background-color: #fff;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.dialog-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.dialog-btn-primary {
+  background-color: #0f766e;
+  color: white !important;
+  border-color: #0f766e;
+}
+
+.dialog-btn-primary:hover {
+  background-color: #0d9488 !important;
+}
+
+body.theme-dark #dialogInput {
+  background: #1a1a1a;
+  border-color: #404040;
+  color: #e5e5e5;
+}
+body.theme-dark #dialogInput:focus {
+  border-color: #5eead4;
+  box-shadow: 0 0 0 1px #5eead4;
+}
+body.theme-dark .modal-footer {
+  border-top-color: #404040;
+}
+body.theme-dark .dialog-btn {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #e5e5e5;
+}
+body.theme-dark .dialog-btn:hover {
+  background-color: #4b5563;
+}
+body.theme-dark .dialog-btn-primary {
+  background-color: #5eead4;
+  color: #1f2937 !important;
+  border-color: #5eead4;
+}
+body.theme-dark .dialog-btn-primary:hover {
+  background-color: #2dd4bf !important;
+}
+
+body.theme-sepia #dialogInput {
+  background: #fbf5e9;
+  border-color: #d3c4b3;
+  color: #5f4b32;
+}
+body.theme-sepia #dialogInput:focus {
+  border-color: #5f4b32;
+  box-shadow: 0 0 0 1px #5f4b32;
+}
+body.theme-sepia .modal-footer {
+  border-top-color: #d3c4b3;
+}
+body.theme-sepia .dialog-btn {
+  background-color: #e8dcca;
+  border-color: #c4b5a3;
+  color: #5f4b32;
+}
+body.theme-sepia .dialog-btn:hover {
+  background-color: #d3c4b3;
+}
+body.theme-sepia .dialog-btn-primary {
+  background-color: #5f4b32;
+  color: #f4ecd8 !important;
+  border-color: #5f4b32;
+}
+body.theme-sepia .dialog-btn-primary:hover {
+  background-color: #785a34 !important;
+}
+
+
 /* File Properties Modal */
 #propertiesContainer {
   display: flex;
