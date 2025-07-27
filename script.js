@@ -269,8 +269,13 @@ function showCustomDialog(options) {
       
       button.onclick = () => {
         closeDialog();
-        const value = options.type === 'prompt' ? dialogInput.value : btnInfo.value;
-        resolve(value);
+        // For prompts, if the 'OK' button (value: true) is clicked, resolve with the input's value.
+        // Otherwise, for all other buttons (like Cancel) and all other dialog types, resolve with the button's own value.
+        if (options.type === 'prompt' && btnInfo.value === true) {
+          resolve(dialogInput.value);
+        } else {
+          resolve(btnInfo.value);
+        }
       };
       dialogButtons.appendChild(button);
     });
@@ -340,15 +345,8 @@ function customPrompt(message, defaultValue = '', title = 'ورودی') {
     defaultValue,
     buttons: [
       { text: 'انصراف', value: null, isPrimary: false },
-      { text: 'تایید', value: true, isPrimary: true } // Value is just a trigger, actual value comes from input
+      { text: 'تایید', value: true, isPrimary: true } // For prompts, value:true is used as a flag in showCustomDialog
     ]
-  }).then(result => {
-      // The promise from showCustomDialog resolves with the button value.
-      // We need to intercept this and return the input's text content if 'OK' was clicked.
-      if (result === true) { // 'OK' button was clicked
-          return dialogInput.value;
-      }
-      return null; // 'Cancel' or Esc was pressed
   });
 }
 
