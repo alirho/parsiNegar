@@ -1,0 +1,41 @@
+/* Table of Contents */
+.toc-list {
+  padding: 0.8rem;
+}
+.toc-list-inner {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.toc-item {
+  margin: 0.25rem 0;
+  padding-right: calc(var(--level) * 1rem);
+}
+.toc-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+}
+.toc-link:hover {
+  color: #0f766e;
+}
+.toc-link a{
+  text-decoration: none;
+  color: inherit;
+}
+.toc-toggle {
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-right: -0.25rem;
+  color: #6b7280;
+}
+.toc-toggle:hover {
+  color: #0f766e;
+}
+.toc-item.collapsed .toc-list-inner {
+  display: none;
+}

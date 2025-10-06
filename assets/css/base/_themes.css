@@ -1,0 +1,315 @@
+/* --- Light Theme (Default) --- */
+/* (No specific rules needed as base styles are light theme) */
+
+
+/* --- Dark Theme --- */
+body.theme-dark {
+  background: #1a1a1a;
+  color: #e5e5e5;
+}
+body.theme-dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+body.theme-dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Specific component color overrides for dark mode */
+body.theme-dark #menuBar,
+body.theme-dark .submenu {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+body.theme-dark .menu > li > a:hover,
+body.theme-dark .submenu li:hover > a,
+body.theme-dark .submenu li label:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+body.theme-dark #menuLogo,
+body.theme-dark .footer-logo {
+  background-color: #e5e5e5;
+}
+body.theme-dark #toolbar,
+body.theme-dark #statusBar {
+  background: #2d2d2d;
+  border-color: #404040;
+  color: #e5e5e5;
+}
+body.theme-dark #editor,
+body.theme-dark #preview {
+  background: #1a1a1a;
+  color: #e5e5e5;
+}
+body.theme-dark #editor {
+  caret-color: #e5e5e5;
+}
+body.theme-dark #sidePanel {
+    background: #2d2d2d;
+    border-color: #404040;
+}
+body.theme-dark .side-panel-tab {
+    border-bottom-color: #404040;
+}
+body.theme-dark .side-panel-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+body.theme-dark .side-panel-tab.active {
+    background: #1a1a1a;
+    border-bottom-color: #5eead4;
+    color: #5eead4;
+}
+body.theme-dark .modal-content {
+  background: #2d2d2d;
+  color: #e5e5e5;
+}
+body.theme-dark .modal-header,
+body.theme-dark .modal-footer,
+body.theme-dark .setting-footer {
+  border-color: #404040;
+}
+body.theme-dark select,
+body.theme-dark #dialogInput {
+  background: #1a1a1a;
+  border-color: #404040;
+  color: #e5e5e5;
+}
+body.theme-dark #searchBar {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+body.theme-dark #searchScope {
+  background-color: #374151;
+  border-color: #4b5563;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23d1d5db' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+body.theme-dark #searchScope:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+}
+body.theme-dark #searchInput,
+body.theme-dark #replaceInput {
+  background: #1a1a1a;
+  border-color: #404040;
+  color: #e5e5e5;
+}
+body.theme-dark #searchInput::placeholder,
+body.theme-dark #replaceInput::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+body.theme-dark #searchInput:focus,
+body.theme-dark #replaceInput:focus,
+body.theme-dark #searchScope:focus,
+body.theme-dark #dialogInput:focus {
+  border-color: #5eead4;
+  box-shadow: 0 0 0 1px #5eead4;
+}
+body.theme-dark #searchBar .divider,
+body.theme-dark .property-item,
+body.theme-dark .modal-footer {
+  background: #404040;
+  border-color: #404040;
+}
+body.theme-dark #shortcutsMenu {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+body.theme-dark .shortcut-item:hover,
+body.theme-dark .shortcut-item.selected {
+  background: rgba(255, 255, 255, 0.1);
+}
+body.theme-dark .filename-input:hover,
+body.theme-dark .filename-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+}
+body.theme-dark .dialog-btn {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #e5e5e5;
+}
+body.theme-dark .dialog-btn:hover {
+  background-color: #4b5563;
+}
+body.theme-dark .dialog-btn-primary {
+  background-color: #5eead4;
+  color: #1f2937 !important;
+  border-color: #5eead4;
+}
+body.theme-dark .dialog-btn-primary:hover {
+  background-color: #2dd4bf !important;
+}
+body.theme-dark .property-label {
+  color: #d1d5db;
+}
+body.theme-dark .property-value {
+  color: #9ca3af;
+}
+body.theme-dark .file-item {
+  border-bottom-color: #404040;
+}
+body.theme-dark .file-item:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+body.theme-dark .file-item.active {
+  background-color: #2c3e3c;
+  border-right-color: #5eead4;
+}
+body.theme-dark .file-actions-dropdown {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+body.theme-dark .file-actions-dropdown a:hover,
+body.theme-dark .file-actions-dropdown .danger-action:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+body.theme-dark .file-actions-dropdown .danger-action:hover {
+  background-color: #ef4444;
+  color: white !important;
+}
+
+
+/* --- Sepia Theme --- */
+body.theme-sepia {
+  background: #f4ecd8;
+  color: #5f4b32;
+}
+body.theme-sepia ::-webkit-scrollbar-thumb {
+  background-color: rgba(95, 75, 50, 0.3);
+}
+body.theme-sepia ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(95, 75, 50, 0.5);
+}
+body.theme-sepia #menuBar,
+body.theme-sepia .submenu {
+  background: #e8dcca;
+  border-color: #d3c4b3;
+}
+body.theme-sepia #toolbar,
+body.theme-sepia #statusBar {
+  background: #e8dcca;
+  border-color: #d3c4b3;
+  color: #5f4b32;
+}
+body.theme-sepia #editor,
+body.theme-sepia #preview {
+  background: #f4ecd8;
+  color: #5f4b32;
+}
+body.theme-sepia #editor {
+  caret-color: #5f4b32;
+}
+body.theme-sepia #sidePanel {
+    background: #e8dcca;
+    border-color: #d3c4b3;
+}
+body.theme-sepia .side-panel-tab {
+    border-bottom-color: #d3c4b3;
+}
+body.theme-sepia .side-panel-tab:hover {
+    background: #d3c4b3;
+}
+body.theme-sepia .side-panel-tab.active {
+    background: #f4ecd8;
+    border-bottom-color: #5f4b32;
+    color: #5f4b32;
+}
+body.theme-sepia .modal-content {
+  background: #f4ecd8;
+  color: #5f4b32;
+}
+body.theme-sepia .modal-header,
+body.theme-sepia .modal-footer,
+body.theme-sepia .setting-footer {
+  border-color: #d3c4b3;
+}
+body.theme-sepia select,
+body.theme-sepia #dialogInput {
+  background: #fbf5e9;
+  border-color: #d3c4b3;
+  color: #5f4b32;
+}
+body.theme-sepia #searchBar {
+  background: #f4ecd8;
+  border-color: #d3c4b3;
+}
+body.theme-sepia #searchScope {
+  background-color: #efebe2;
+  border-color: #d3c4b3;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%235f4b32' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+body.theme-sepia #searchScope:hover {
+    background-color: #e8dcca;
+    border-color: #c4b5a3;
+}
+body.theme-sepia #searchInput,
+body.theme-sepia #replaceInput {
+  background: #fff;
+  border-color: #d3c4b3;
+}
+body.theme-sepia #searchInput:focus,
+body.theme-sepia #replaceInput:focus,
+body.theme-sepia #searchScope:focus,
+body.theme-sepia #dialogInput:focus {
+  border-color: #5f4b32;
+  box-shadow: 0 0 0 1px #5f4b32;
+}
+body.theme-sepia #searchBar .divider,
+body.theme-sepia .property-item,
+body.theme-sepia .modal-footer {
+  background: #d3c4b3;
+  border-color: #d3c4b3;
+}
+body.theme-sepia #shortcutsMenu {
+  background: #f4ecd8;
+  border-color: #d3c4b3;
+}
+body.theme-sepia .dialog-btn {
+  background-color: #e8dcca;
+  border-color: #c4b5a3;
+  color: #5f4b32;
+}
+body.theme-sepia .dialog-btn:hover {
+  background-color: #d3c4b3;
+}
+body.theme-sepia .dialog-btn-primary {
+  background-color: #5f4b32;
+  color: #f4ecd8 !important;
+  border-color: #5f4b32;
+}
+body.theme-sepia .dialog-btn-primary:hover {
+  background-color: #785a34 !important;
+}
+body.theme-sepia .property-label {
+  color: #5f4b32;
+}
+body.theme-sepia .property-value {
+  color: #8c6d46;
+}
+body.theme-sepia .file-item.active {
+  background-color: #d3c4b3;
+  border-right-color: #5f4b32;
+}
+body.theme-sepia .file-actions-dropdown {
+  background: #f4ecd8;
+  border-color: #d3c4b3;
+}
+
+/* Preview specific themes */
+body.theme-dark .alert {
+  background-color: #333;
+}
+body.theme-dark mark.highlight {
+  background-color: #a3e635; /* lime-400 */
+  color: #1a1a1a !important;
+}
+body.theme-dark mark.highlight.active {
+  background-color: #2dd4bf; /* teal-400 */
+  color: #1a1a1a !important;
+}
+body.theme-sepia mark.highlight {
+  background-color: #fcd34d; /* amber-300 */
+}
+body.theme-sepia mark.highlight.active {
+  background-color: #ea580c; /* orange-600 */
+  color: #f4ecd8 !important;
+}

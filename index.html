@@ -11,13 +11,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://unpkg.com/shahneshan@2.0.1/dist/shahneshan.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
-  <script src="parsneshan.js"></script>
+  <script src="libs/parsneshan.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <link rel="stylesheet" id="hljs-light-theme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <link rel="stylesheet" id="hljs-dark-theme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
   <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="parsneshan.css">
 </head>
 <body>
   <div id="app">
@@ -272,7 +271,7 @@
             <a href="https://github.com/alirho/parsiNegar" target="_blank" class="github-link" title="گیت‌هاب">
               <i class="fab fa-github"></i>
             </a>
-            <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۱۲.۰</a>
+            <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۱۳.۰</a>
           </div>
         </div>
       </div>
@@ -337,172 +336,5 @@
   </div>
 
   <script type="module" src="js/app.js"></script>
-
-  <styles style="display: none;">
-    .markdown-printed{
-      margin: 0 auto;
-      max-width: 1200px;
-    }
-
-    .markdown-printed h1 {
-      font-size: 1.875rem;
-      font-weight: bold;
-      margin: 1.5rem 0 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .markdown-printed h2 {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin: 1.25rem 0 1rem;
-      padding-bottom: 0.25rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .markdown-printed h3 {
-      font-size: 1.25rem;
-      font-weight: bold;
-      margin: 1rem 0 0.75rem;
-    }
-
-    .markdown-printed h4 {
-      font-size: 1.125rem;
-      font-weight: bold;
-      margin: 0.75rem 0 0.5rem;
-    }
-
-    .markdown-printed p {
-      margin-bottom: 1rem;
-    }
-
-    .markdown-printed ul {
-      margin: 0 1.25rem 1rem;
-      list-style-type: disc;
-    }
-
-    .markdown-printed ol {
-      margin: 0 1.25rem 1rem;
-      list-style-type: decimal;
-    }
-
-    .markdown-printed li {
-      margin-bottom: 0.25rem;
-    }
-
-    .markdown-printed blockquote {
-      border-right: 4px solid #d1d5db;
-      padding-right: 1rem;
-      margin: 1rem 0;
-      font-style: italic;
-      color: #4b5563;
-    }
-
-    .markdown-printed code {
-      background: #f3f4f6;
-      padding: 0.125rem 0.25rem;
-      border-radius: 0.25rem;
-      font-size: 0.875rem;
-    }
-
-    .markdown-printed pre {
-      background: #f3f4f6;
-      padding: 1rem;
-      border-radius: 0.375rem;
-      margin: 1rem 0;
-      overflow-x: auto;
-      direction: ltr;
-    }
-
-    .markdown-printed pre code {
-      background: transparent;
-      padding: 0;
-    }
-
-    .markdown-printed a {
-      color: #0f766e;
-      text-decoration: none;
-    }
-
-    .markdown-printed a:hover {
-      text-decoration: underline;
-    }
-
-    .markdown-printed img {
-      max-width: 100%;
-      height: auto;
-      margin: 1rem 0;
-      border-radius: 0.375rem;
-    }
-
-    .markdown-printed table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1rem 0;
-    }
-
-    .markdown-printed th,
-    .markdown-printed td {
-      border: 1px solid #d1d5db;
-      padding: 0.5rem 1rem;
-    }
-
-    .markdown-printed th {
-      background: #f3f4f6;
-      font-weight: bold;
-    }
-
-    .task-list {
-      display: flex;
-      align-items: flex-start;
-      margin: 0.25rem 0;
-    }
-
-    .task-list input[type]="checkbox"] {
-      margin: 0.25rem 0.5rem 0 0;
-    }
-
-    .persian h1{
-      font-size: 16px;
-      margin: 0;
-      padding-bottom: 0;
-      border-bottom: 0;
-    }
-
-    body.theme-dark .alert {
-      background-color: #333;
-    }
-
-    ol, ul{
-      list-style-type: persian;
-    }
-      
-    ol p, ul p{
-      margin-bottom: 0 !important;
-    }
-
-    .poet {
-      max-width: fit-content;
-      justify-self: center;
-    }
-
-    .stanza{
-      width: 225px;
-      height: 32px;
-      text-align: justify !important;
-      display: inline-block;
-    }
-
-    .stanza:after {
-      content: "";
-      display: inline-block;
-      width: 100%;	
-    }
-
-    pre:has(.javascript, .rust){
-      direction: ltr;
-      text-align: left;
-    }
-  </styles>
 </body>
 </html>

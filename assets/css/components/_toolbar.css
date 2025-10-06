@@ -1,0 +1,36 @@
+/* Toolbar */
+#toolbar {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  position: sticky;
+  top: 32px; /* Height of menu bar */
+  z-index: 10;
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.toolbar-right {
+  justify-content: flex-end;
+}
+
+#toolbar .divider {
+  height: 1.5rem;
+  width: 1px;
+  background: #d1d5db;
+  margin: 0 0.25rem;
+}
+
+#toolbar button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}

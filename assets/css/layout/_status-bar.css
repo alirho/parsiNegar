@@ -1,0 +1,39 @@
+/* Status Bar */
+#statusBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #f3f4f6;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
+.status-left {
+  display: flex;
+  gap: 1rem;
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+}
+
+.filename-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.filename-input:hover,
+.filename-input:focus {
+  background: rgba(0, 0, 0, 0.05);
+}

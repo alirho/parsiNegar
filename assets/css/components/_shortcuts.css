@@ -1,0 +1,29 @@
+/* Shortcuts Menu */
+#shortcutsMenu {
+  position: absolute;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  min-width: 200px;
+  display: none;
+}
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.shortcut-item:hover,
+.shortcut-item.selected {
+  background: rgba(0, 0, 0, 0.05);
+}
+.shortcut-item i {
+  width: 1.5rem;
+  text-align: center;
+}

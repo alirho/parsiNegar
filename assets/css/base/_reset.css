@@ -1,0 +1,9 @@
+/* Reset */
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+h1,h2,h3 { 
+  scroll-margin-top: 2em; /* Keep this here as it's a global override */
+}

@@ -1,0 +1,198 @@
+/* Settings & Dialog Modals */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 28rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* Settings Panel Specifics */
+.setting-group {
+  margin-bottom: 1.5rem;
+}
+.setting-group:last-of-type {
+  margin-bottom: 0;
+}
+.setting-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+.theme-options,
+.display-options {
+  display: flex;
+  gap: 1rem;
+}
+.setting-group select {
+  width: 100%;
+}
+.setting-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+.footer-branding {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.footer-logo {
+  display: inline-block;
+  background-color: #1f2937;
+  -webkit-mask-image: url(../../../pic/logo.svg);
+  mask-image: url(../../../pic/logo.svg);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  width: 45px;
+  height: 45px;
+}
+.footer-app-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.github-link {
+  color: #374151;
+  font-size: 1.5rem;
+  text-decoration: none;
+}
+.version-link {
+  color: #0f766e;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.version-link:hover,
+.github-link:hover {
+  text-decoration: underline;
+}
+
+/* Custom Dialog Specifics */
+#customDialog .modal-content {
+  max-width: 400px;
+}
+#dialogMessage {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+#dialogInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  outline: none;
+}
+#dialogInput.hidden {
+  display: none;
+}
+#dialogInput:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 1px #0f766e;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+.dialog-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  background-color: #fff;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.dialog-btn:hover {
+  background-color: #f3f4f6;
+}
+.dialog-btn-primary {
+  background-color: #0f766e;
+  color: white !important;
+  border-color: #0f766e;
+}
+.dialog-btn-primary:hover {
+  background-color: #0d9488 !important;
+}
+
+/* File Properties Modal Specifics */
+#propertiesContainer {
+  display: flex;
+  flex-direction: column;
+}
+.property-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.property-item:first-child {
+  padding-top: 0;
+}
+.property-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.property-label {
+  font-weight: bold;
+  color: #374151;
+}
+.property-value {
+  color: #6b7280;
+  text-align: left;
+  direction: ltr;
+}

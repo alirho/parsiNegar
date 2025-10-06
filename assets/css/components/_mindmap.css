@@ -1,0 +1,93 @@
+/* --- Mind Map Styles --- */
+.mindmap-container {
+  width: 100%;
+  min-height: 400px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+  overflow: hidden;
+  position: relative;
+  background: #f9fafb;
+}
+.mindmap-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+  user-select: none;
+}
+.mindmap-svg.grabbing {
+  cursor: grabbing;
+}
+.mindmap-node .mindmap-node-shape {
+  transition: fill 0.2s, stroke 0.2s;
+}
+.mindmap-node.border-rectangle .mindmap-node-shape,
+.mindmap-node.border-ellipse .mindmap-node-shape {
+  stroke: #0f766e;
+  stroke-width: 1.5px;
+  fill: #fff;
+}
+.mindmap-node.border-none .mindmap-node-shape {
+  fill: transparent;
+  stroke: none;
+}
+.mindmap-node:hover .mindmap-node-shape {
+  fill: #f0fdfa;
+}
+.mindmap-node.border-none:hover .mindmap-node-content {
+  border-radius: 8px;
+  background-color: #f0fdfa;
+}
+.mindmap-node-content {
+  color: #1f2937;
+  font-size: 14px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+.mindmap-node-content p { margin: 0; }
+.mindmap-node-content a { color: #0f766e; text-decoration: none; }
+.mindmap-node-content a:hover { text-decoration: underline; }
+.mindmap-node-content code { background: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875em; }
+.mindmap-connector {
+  stroke: #9ca3af;
+  stroke-width: 1.5px;
+  fill: none;
+}
+.mindmap-collapse-btn { cursor: pointer; }
+.mindmap-collapse-btn circle { fill: #0f766e; stroke: #fff; stroke-width: 1.5px; transition: fill 0.2s; }
+.mindmap-collapse-btn:hover circle { fill: #0d9488; }
+.mindmap-collapse-btn text { fill: #fff; font-size: 14px; font-weight: bold; text-anchor: middle; dominant-baseline: central; user-select: none; }
+
+.mindmap-resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.mindmap-resize-handle::after {
+  content: '';
+  width: 40px;
+  height: 4px;
+  background-color: #d1d5db;
+  border-radius: 2px;
+  transition: background-color 0.2s;
+}
+.mindmap-resize-handle:hover::after {
+  background-color: #9ca3af;
+}
+
+/* Theme specific overrides are in base/_themes.css */

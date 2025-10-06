@@ -1,0 +1,119 @@
+/* استایل‌های جعبه‌های توضیحی */
+.admonition {
+  padding: 15px;
+  margin: 1.5em 0;
+  border-right: 5px solid #ddd;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  color: #333;
+}
+.admonition-title {
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.admonition.note {
+  border-color: #58a6ff;
+}
+.admonition.note .admonition-title {
+  color: #58a6ff;
+}
+.admonition.tip {
+  border-color: #3fb950;
+}
+.admonition.tip .admonition-title {
+  color: #3fb950;
+}
+.admonition.warning {
+  border-color: #d29922;
+}
+.admonition.warning .admonition-title {
+  color: #d29922;
+}
+.admonition.important {
+  border-color: #a371f7;
+}
+.admonition.important .admonition-title {
+  color: #a371f7;
+}
+.admonition.caution {
+  border-color: #f85149;
+}
+.admonition.caution .admonition-title {
+  color: #f85149;
+}
+.task-list-item {
+  list-style-type: none;
+}
+.task-list-item-checkbox {
+  margin-left: 0.5em;
+}
+.task-list-item input:checked+span {
+  text-decoration: line-through;
+  color: #888;
+}
+.poetry-container {
+  margin: 2em auto;
+  padding: 1em 0;
+  max-width: 800px;
+}
+.poetry-stanza {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+  margin-bottom: 1.2em;
+  text-align: center;
+}
+.poetry-verse {
+  margin: 0;
+  font-family: 'Vazirmatn', 'Tahoma', serif;
+  font-size: 1.1em;
+  line-height: 1.8;
+  color: #333;
+  padding: 0 1em;
+}
+@media (max-width: 600px) {
+  .poetry-stanza {
+    grid-template-columns: 1fr;
+    gap: 0.5em;
+  }
+}
+li[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+li[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+table[dir="rtl"] th,
+table[dir="rtl"] td {
+  text-align: right;
+}
+table[dir="ltr"] th,
+table[dir="ltr"] td {
+  text-align: left;
+}
+
+/* Custom styles from old main.css that fit here */
+.persian h1{
+  font-size: 16px;
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.poet {
+  max-width: fit-content;
+  justify-self: center;
+}
+.stanza{
+  width: 225px;
+  height: 32px;
+  text-align: justify !important;
+  display: inline-block;
+}
+.stanza:after {
+  content: "";
+  display: inline-block;
+  width: 100%;	
+}

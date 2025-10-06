@@ -1,0 +1,70 @@
+/* Content */
+#content {
+  display: flex;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+#editorContainer, #previewContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Prevent flex item from growing beyond its basis due to long content */
+}
+
+#editorContainer {
+  border-left: 1px solid #e5e7eb;
+  position: relative;
+}
+
+#editorWrapper {
+  position: relative;
+  flex: 1;
+}
+
+#editorBackdrop, #editor {
+  padding: 1rem;
+  border: none;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow: auto;
+}
+
+#editorBackdrop {
+  z-index: 1;
+  color: inherit;
+  pointer-events: none;
+}
+
+#editor {
+  z-index: 2;
+  background: transparent;
+  caret-color: #1f2937;
+}
+
+#editor.searching {
+  color: transparent;
+}
+
+#preview {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background: white;
+}
+
+#previewContainer.fullscreen {
+  margin: 0 auto;
+  max-width: 1200px;
+}

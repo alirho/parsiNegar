@@ -1,0 +1,24 @@
+/* Base */
+body {
+  font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+  direction: rtl;
+  color: #1f2937;
+  line-height: 1.5;
+  background: #fff; /* Default background */
+}
+
+/* Custom scrollbar for better aesthetics */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
