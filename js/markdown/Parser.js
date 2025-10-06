@@ -19,17 +19,23 @@ function configureMarked() {
 
     const renderer = new window.marked.Renderer();
 
-    // افزودن id به تگ‌های عنوان برای فهرست مطالب
-    renderer.heading = (text, level, raw) => {
-        const id = slugifyHeading(raw);
-        return `<h${level} id="${id}">${text}</h${level}>`;
+    // افزودن id به تگ‌های عنوان برای فهرست مطالب (با سینتکس جدید marked.js)
+    // در نسخه‌های جدید، یک آبجکت token به جای پارامترهای جداگانه ارسال می‌شود.
+    renderer.heading = function(token) {
+        // `this.parser` به نمونه پارسر داخلی marked اشاره دارد
+        const text = this.parser.parseInline(token.tokens);
+        const id = slugifyHeading(token.text); // از متن خام برای ساخت id استفاده می‌کنیم
+        return `<h${token.depth} id="${id}">${text}</h${token.depth}>`;
     };
 
-    // مدیریت بلوک‌های کد برای هایلایت و نمودار Mermaid
-    renderer.code = (code, lang) => {
+    // مدیریت بلوک‌های کد برای هایلایت و نمودار Mermaid (با سینتکس جدید marked.js)
+    renderer.code = function(token) {
+        const code = token.text;
+        const lang = token.lang;
         if (lang === 'mermaid') {
             return `<div class="mermaid">${code}</div>`;
         }
+        // `highlightCode` تابعی است که از قبل تعریف کرده‌ایم
         return highlightCode(code, lang);
     };
 

@@ -45,6 +45,10 @@ export function formatFileSize(bytes) {
  * @returns {string} - رشته تبدیل شده
  */
 export function slugifyHeading(text) {
+    if (typeof text !== 'string') {
+        return 'heading';
+    }
+
     const cleanedText = text
         .toLowerCase()
         .replace(/<[^>]*>/g, '') // حذف تگ‌های HTML

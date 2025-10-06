@@ -814,3 +814,32 @@ Please report this to https://github.com/markedjs/marked.
     init http://127.0.0.1:8000/js/features/Settings.js:135
 Parser.js:114:21
 ```
+
+## پرامپت ۶۴
+حالا خطای زیر نمایش داده می‌شه:
+
+```js
+خطا در هایلایت کردن کد: TypeError: e.replace is not a function
+    t https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js:15
+    f https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js:250
+    h https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js:186
+    highlightCode http://127.0.0.1:8000/js/markdown/Highlighter.js:52
+    code http://127.0.0.1:8000/js/markdown/Parser.js:33
+    parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
+    parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
+    parseMarkdown https://cdn.jsdelivr.net/npm/marked/marked.min.js:66
+    k https://cdn.jsdelivr.net/npm/marked/marked.min.js:67
+    parse http://127.0.0.1:8000/js/markdown/Parser.js:111
+    updatePreview http://127.0.0.1:8000/js/features/Preview.js:207
+    emit http://127.0.0.1:8000/js/core/EventBus.js:28
+    emit http://127.0.0.1:8000/js/core/EventBus.js:26
+    setValue http://127.0.0.1:8000/js/core/Editor.js:201
+    loadInitialContent http://127.0.0.1:8000/js/app.js:51
+    ParsiNegarApp http://127.0.0.1:8000/js/app.js:22
+    <anonymous> http://127.0.0.1:8000/js/app.js:119
+    EventListener.handleEvent* http://127.0.0.1:8000/js/app.js:118
+Highlighter.js:55:21
+```
+
+## پرامپت ۶۵
+با انتخاب مفسر `marked` عنوان در بخش پیش‌نمایش به صورت [object Object] نمایش داده می‌شن.

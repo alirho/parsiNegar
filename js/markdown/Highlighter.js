@@ -46,16 +46,19 @@ export function configureMermaidTheme(theme) {
  * @returns {string} - کد هایلایت شده در تگ‌های HTML
  */
 export function highlightCode(code, lang) {
+    // اطمینان از اینکه `code` یک رشته است تا از خطا در highlight.js جلوگیری شود
+    const codeString = String(code || '');
+
     if (typeof window.hljs !== 'undefined') {
         const language = hljs.getLanguage(lang) ? lang : 'plaintext';
         try {
-            const highlighted = hljs.highlight(code, { language, ignoreIllegals: true }).value;
+            const highlighted = hljs.highlight(codeString, { language, ignoreIllegals: true }).value;
             return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
         } catch (e) {
             console.error('خطا در هایلایت کردن کد:', e);
         }
     }
     // بازگشت به حالت ساده در صورت عدم وجود hljs یا خطا
-    const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escapedCode = codeString.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     return `<pre><code>${escapedCode}</code></pre>`;
 }
