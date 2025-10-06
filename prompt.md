@@ -737,20 +737,20 @@ project/
 │   ├── app.js               (Entry point - initialize)
 │   ├── config.js            (تنظیمات عمومی)
 │   ├── core/
-│   │   ├── Editor.js        (کلاس اصلی ادیتور)
-│   │   ├── EventBus.js      (مدیریت رویدادها)
-│   │   └── State.js         (مدیریت state)
+│   │   ├── editor.js        (کلاس اصلی ادیتور)
+│   │   ├── eventBus.js      (مدیریت رویدادها)
+│   │   └── state.js         (مدیریت state)
 │   ├── features/
-│   │   ├── Toolbar.js       (مدیریت نوار ابزار)
-│   │   ├── Preview.js       (پیش‌نمایش زنده)
-│   │   ├── FileManager.js   (ذخیره، باز کردن، export)
-│   │   ├── Search.js        (جستجو و جایگزینی)
-│   │   ├── AutoSave.js      (ذخیره خودکار)
-│   │   ├── Shortcuts.js     (کلیدهای میانبر)
-│   │   └── Modal.js         (مدیریت مودال‌ها)
+│   │   ├── toolbar.js       (مدیریت نوار ابزار)
+│   │   ├── preview.js       (پیش‌نمایش زنده)
+│   │   ├── fileManager.js   (ذخیره، باز کردن، export)
+│   │   ├── search.js        (جستجو و جایگزینی)
+│   │   ├── autoSave.js      (ذخیره خودکار)
+│   │   ├── shortcuts.js     (کلیدهای میانبر)
+│   │   └── modal.js         (مدیریت مودال‌ها)
 │   ├── markdown/
-│   │   ├── Parser.js        (تبدیل MD به HTML)
-│   │   ├── Highlighter.js   (هایلایت سینتکس)
+│   │   ├── parser.js        (تبدیل MD به HTML)
+│   │   ├── highlighter.js   (هایلایت سینتکس)
 │   │   └── RTL.js           (تشخیص و مدیریت راست‌چین)
 │   └── utils/
 │       ├── dom.js           (کارهای DOM)
@@ -801,18 +801,18 @@ dom.js:9
 خطا در پردازش با مفسر marked: TypeError: text.toLowerCase is not a function
 Please report this to https://github.com/markedjs/marked.
     slugifyHeading http://127.0.0.1:8000/js/utils/helpers.js:49
-    heading http://127.0.0.1:8000/js/markdown/Parser.js:24
+    heading http://127.0.0.1:8000/js/markdown/parser.js:24
     parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
     parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
     parseMarkdown https://cdn.jsdelivr.net/npm/marked/marked.min.js:66
     k https://cdn.jsdelivr.net/npm/marked/marked.min.js:67
-    parse http://127.0.0.1:8000/js/markdown/Parser.js:111
-    updatePreview http://127.0.0.1:8000/js/features/Preview.js:207
-    init http://127.0.0.1:8000/js/features/Preview.js:250
-    emit http://127.0.0.1:8000/js/core/EventBus.js:28
-    emit http://127.0.0.1:8000/js/core/EventBus.js:26
-    init http://127.0.0.1:8000/js/features/Settings.js:135
-Parser.js:114:21
+    parse http://127.0.0.1:8000/js/markdown/parser.js:111
+    updatePreview http://127.0.0.1:8000/js/features/preview.js:207
+    init http://127.0.0.1:8000/js/features/preview.js:250
+    emit http://127.0.0.1:8000/js/core/eventBus.js:28
+    emit http://127.0.0.1:8000/js/core/eventBus.js:26
+    init http://127.0.0.1:8000/js/features/settings.js:135
+parser.js:114:21
 ```
 
 ## پرامپت ۶۴
@@ -823,22 +823,22 @@ Parser.js:114:21
     t https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js:15
     f https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js:250
     h https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js:186
-    highlightCode http://127.0.0.1:8000/js/markdown/Highlighter.js:52
-    code http://127.0.0.1:8000/js/markdown/Parser.js:33
+    highlightCode http://127.0.0.1:8000/js/markdown/highlighter.js:52
+    code http://127.0.0.1:8000/js/markdown/parser.js:33
     parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
     parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
     parseMarkdown https://cdn.jsdelivr.net/npm/marked/marked.min.js:66
     k https://cdn.jsdelivr.net/npm/marked/marked.min.js:67
-    parse http://127.0.0.1:8000/js/markdown/Parser.js:111
-    updatePreview http://127.0.0.1:8000/js/features/Preview.js:207
-    emit http://127.0.0.1:8000/js/core/EventBus.js:28
-    emit http://127.0.0.1:8000/js/core/EventBus.js:26
-    setValue http://127.0.0.1:8000/js/core/Editor.js:201
+    parse http://127.0.0.1:8000/js/markdown/parser.js:111
+    updatePreview http://127.0.0.1:8000/js/features/preview.js:207
+    emit http://127.0.0.1:8000/js/core/eventBus.js:28
+    emit http://127.0.0.1:8000/js/core/eventBus.js:26
+    setValue http://127.0.0.1:8000/js/core/editor.js:201
     loadInitialContent http://127.0.0.1:8000/js/app.js:51
     ParsiNegarApp http://127.0.0.1:8000/js/app.js:22
     <anonymous> http://127.0.0.1:8000/js/app.js:119
     EventListener.handleEvent* http://127.0.0.1:8000/js/app.js:118
-Highlighter.js:55:21
+highlighter.js:55:21
 ```
 
 ## پرامپت ۶۵
@@ -864,7 +864,7 @@ Highlighter.js:55:21
     ype https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js:6
     fLt https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js:6
     Cqt https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js:88
-Preview.js:28:25
+preview.js:28:25
 ```
 
 ## پرامپتت ۷۱
@@ -880,7 +880,7 @@ Preview.js:28:25
 در زمان گرفتن خروجی HTML خطای زیر در کنسول نمایش داده می‌شه:
 ```js
 Uncaught TypeError: can't access property "textContent", document.querySelector(...) is null
-    exportAsHtml http://127.0.0.1:8000/js/features/FileManager.js:144
+    exportAsHtml http://127.0.0.1:8000/js/features/fileManager.js:144
 ```
 
 ## پرامپت ۷۵
@@ -893,3 +893,9 @@ Uncaught TypeError: can't access property "textContent", document.querySelector(
 
 ## پرامپت ۷۷
 در تم تیره پس‌زمینه کد و بلوک کد با کل تم هماهنگ نیست. همچنین رنگ فونت‌ها در بخش تنظیمات دیده نمی‌شه.
+
+## پرامپت ۷۸
+در مفسر پارس‌نشان مشکلات زیر را بر طرف کن:
+1. در بخش فهرست مطالب، عنوان‌ها به درستی قرار نمی‌گیرند.
+2. با انتخاب تم تیره، رنگ فونت قالب شعر با پس‌زمینه هم‌خوانی ندارد.
+3. پس زمینه جعبه‌های توضیحی با تم‌های تیره و سپیا هماهنگ نیست.

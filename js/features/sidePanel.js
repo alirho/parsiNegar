@@ -53,17 +53,28 @@ function activateTab(tabName) {
 // --- منطق فهرست مطالب (TOC) ---
 
 function extractHeadings() {
-    const content = document.getElementById('editor').value; // Get fresh content
+    const content = document.getElementById('editor').value;
     const headings = [];
-    const tokens = Parser.getTokens(content); // Use parser's lexer
+    const tokens = Parser.getTokens(content);
 
     tokens.forEach((token, i) => {
-        const isHeading = token.type === 'heading_open' || token.type === 'heading';
-        if (isHeading) {
-            const textToken = token.type === 'heading_open' ? tokens[i + 1] : token;
-            const text = textToken.content || textToken.text;
+        if (token.type === 'heading_open') { // ParsNeshan / markdown-it
+            const textToken = tokens[i + 1];
+            if (textToken && textToken.type === 'inline' && textToken.children) {
+                const text = textToken.children
+                    .filter(child => child.type === 'text')
+                    .map(child => child.content)
+                    .join('');
+                headings.push({
+                    level: parseInt(token.tag.substring(1), 10),
+                    text: text,
+                    id: slugifyHeading(text)
+                });
+            }
+        } else if (token.type === 'heading') { // Marked
+            const text = token.text;
             headings.push({
-                level: token.level || token.depth,
+                level: token.depth,
                 text: text,
                 id: slugifyHeading(text)
             });
@@ -77,9 +88,15 @@ function buildTocStructure(headings) {
     const stack = [root];
     headings.forEach(heading => {
         const node = { ...heading, children: [] };
-        while (stack[stack.length - 1].level >= heading.level) {
+        while (stack.length > 1 && stack[stack.length - 1].level >= heading.level) {
             stack.pop();
         }
+        // اطمینان از اینکه هیچ‌وقت روت اصلی pop نمی‌شود
+        if(stack[stack.length - 1].level >= heading.level) {
+            // این حالت نباید اتفاق بیفتد مگر اینکه سطح عنوان 0 یا کمتر باشد
+            // اما برای اطمینان، آن را به روت اضافه می‌کنیم
+        }
+        
         stack[stack.length - 1].children.push(node);
         stack.push(node);
     });

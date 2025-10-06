@@ -317,10 +317,23 @@ body.theme-dark mark.highlight.active {
   background-color: #2dd4bf; /* teal-400 */
   color: #1a1a1a !important;
 }
+body.theme-dark .admonition {
+  background-color: #2d2d2d;
+  color: #e5e5e5;
+}
+body.theme-dark .poetry-verse {
+  color: #e5e5e5;
+}
+
+
 body.theme-sepia mark.highlight {
   background-color: #fcd34d; /* amber-300 */
 }
 body.theme-sepia mark.highlight.active {
   background-color: #ea580c; /* orange-600 */
   color: #f4ecd8 !important;
+}
+body.theme-sepia .admonition {
+  background-color: #e8dcca;
+  color: #5f4b32;
 }
