@@ -31,6 +31,24 @@ function downloadFile(blob, filename) {
 
 // --- مدیریت رویدادها ---
 
+/**
+ * بارگذاری محتوای یک فایل در ویرایشگر و به‌روزرسانی وضعیت برنامه
+ * @param {object} file - آبجکت فایل از IndexedDB
+ */
+function loadFile(file) {
+    if (!file) return;
+
+    state.currentFileId = file.id;
+    elements.filename.value = removeFileExtension(file.id);
+    editorInstance.setValue(file.content, { resetHistory: true });
+    
+    // آخرین وضعیت را در localStorage نیز به‌روزرسانی می‌کنیم
+    localStorage.setItem('parsiNegarLastState', JSON.stringify({
+        content: file.content,
+        filename: file.id,
+    }));
+}
+
 // ایجاد فایل جدید
 async function newFile() {
   editorInstance.setValue('', { resetHistory: true });
@@ -248,4 +266,6 @@ export function init(editor) {
 
   // گوش دادن به رویدادها از ماژول‌های دیگر
   EventBus.on('file:loadReadme', loadReadme);
+  EventBus.on('file:load', loadFile);
+  EventBus.on('file:new', newFile);
 }

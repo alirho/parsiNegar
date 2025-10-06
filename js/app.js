@@ -26,13 +26,15 @@ class ParsiNegarApp {
    * مقداردهی اولیه تمام کامپوننت‌ها و ماژول‌های برنامه
    */
   initComponents() {
-    initSettings(); // تنظیمات باید اول بارگذاری شود تا قالب و فونت‌ها درست اعمال شوند
+    // ماژول‌هایی که به رویدادهای اولیه گوش می‌دهند باید اول مقداردهی شوند
+    initSidePanel();
+    
+    initSettings(); // تنظیمات باید بعد از SidePanel بارگذاری شود تا رویدادها دریافت شوند
     initPreview();
     initToolbar(this.editor);
     initAutoSave(this.editor);
     initFileManager(this.editor);
     initSearch(this.editor);
-    initSidePanel();
     initStatusBar();
 
     // رویدادهای متفرقه
