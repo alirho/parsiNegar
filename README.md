@@ -1,6 +1,6 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.12.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.13.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -19,7 +19,7 @@
 ## ویژگی‌ها
 
 - پشتیبانی کامل از زبان فارسی و نوشتار راست به چپ (RTL)
-- پشتیبانی از مفسر [شه‌نشان](https://github.com/barnevis/ShahNeshan) و [marked](https://github.com/markedjs/marked)
+- پشتیبانی از مفسر [شه‌نشان](https://github.com/barnevis/ShahNeshan) و [marked](https://github.com/markedjs/marked) و [parsNeshan](github.com/alirho/parsneshan)
 - نمایش زنده و همزمان با نوشتن
 - نمایش آمار متن (تعداد نویسه، کلمه، خط و حجم فایل)
 - قابلیت تغییر فونت
