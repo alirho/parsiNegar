@@ -10,11 +10,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://unpkg.com/shahneshan@2.0.1/dist/shahneshan.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+  <script src="parsneshan.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <link rel="stylesheet" id="hljs-light-theme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <link rel="stylesheet" id="hljs-dark-theme" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="parsneshan.css">
 </head>
 <body>
   <div id="app">
@@ -96,6 +99,7 @@
           <a href="#">راهنما</a>
           <ul class="submenu">
             <li><a href="#" id="helpBtn"><i class="fas fa-book"></i> راهنمای پارسی‌نگار</a></li>
+            <li><a href="#" id="parsneshanHelpBtn"><i class="fas fa-book-open"></i> راهنمای پارس‌نشان</a></li>
             <li><a href="https://www.markdownguide.org/basic-syntax/" target="_blank"><i class="fas fa-external-link-alt"></i> راهنمای Markdown</a></li>
             <li><a href="https://mermaid.js.org/intro/" target="_blank"><i class="fas fa-external-link-alt"></i> راهنمای Mermaid.js</a></li>
           </ul>
@@ -232,6 +236,7 @@
           <select id="markdownParser">
             <option value="marked">Marked</option>
             <option value="shahneshan">شه‌نشان</option>
+            <option value="parsneshan">پارس‌نشان</option>
           </select>
         </div>
         

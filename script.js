@@ -216,6 +216,7 @@ const dialogCloseBtn = document.getElementById('dialogCloseBtn');
 
 // App State
 let currentFileId = 'نام فایل';
+let parsneshanParser;
 
 // Search State
 let isSearchActive = false;
@@ -242,6 +243,7 @@ const exportHtmlBtn = document.getElementById('exportHtmlBtn');
 const exportPdfBtn = document.getElementById('exportPdfBtn');
 const exportAllZipBtn = document.getElementById('exportAllZipBtn');
 const helpBtn = document.getElementById('helpBtn');
+const parsneshanHelpBtn = document.getElementById('parsneshanHelpBtn');
 
 // --- Custom Dialog Functions ---
 function showCustomDialog(options) {
@@ -455,17 +457,38 @@ function slugifyHeading(text) {
 }
 
 function extractHeadings() {
-  const tokens = marked.lexer(editor.value);
+  const parser = markdownParserSelect.value;
+  const content = editor.value;
   const headings = [];
-  tokens.forEach(token => {
-    if (token.type === 'heading') {
-      headings.push({
-        level: token.depth,
-        text: token.text, // Use the parsed text content
-        id: slugifyHeading(token.text)
-      });
+  let tokens;
+
+  if (parser === 'parsneshan' && parsneshanParser) {
+    tokens = parsneshanParser.parse(content, {});
+    for (let i = 0; i < tokens.length; i++) {
+      if (tokens[i].type === 'heading_open') {
+        const headingToken = tokens[i];
+        const textToken = tokens[i + 1];
+        if (textToken && textToken.type === 'inline') {
+          headings.push({
+            level: parseInt(headingToken.tag.substring(1), 10),
+            text: textToken.content,
+            id: slugifyHeading(textToken.content)
+          });
+        }
+      }
     }
-  });
+  } else {
+    tokens = marked.lexer(content);
+    tokens.forEach(token => {
+      if (token.type === 'heading') {
+        headings.push({
+          level: token.depth,
+          text: token.text,
+          id: slugifyHeading(token.text)
+        });
+      }
+    });
+  }
   return headings;
 }
 
@@ -827,6 +850,10 @@ helpBtn.addEventListener('click', () => {
   loadReadme();
 });
 
+parsneshanHelpBtn.addEventListener('click', () => {
+  loadParsNeshanGuide();
+});
+
 // Format menu items
 document.querySelectorAll('.submenu [data-format]').forEach(item => {
   item.addEventListener('click', (e) => {
@@ -944,10 +971,50 @@ marked.setOptions({
   gfm: true,
   breaks: true,
   headerIds: false,
-  // Use `parseInline` for simpler token sets without block-level elements like paragraphs.
-  // This is especially useful for things like table cells or, in our case, mind map nodes.
-  // However, we are calling `marked.parseInline` directly where needed.
 });
+
+// --- Initialize ParsNeshan Parser ---
+if (window.createParsNeshan && window.markdownit) {
+    parsneshanParser = createParsNeshan({
+        html: true,
+        highlight: function (str, lang) {
+            if (lang && hljs.getLanguage(lang)) {
+                try {
+                    return hljs.highlight(str, { language: lang, ignoreIllegals: true }).value;
+                } catch (__) {}
+            }
+            return ''; // Let markdown-it handle escaping
+        }
+    });
+
+    // Override fence rule for Mermaid.js
+    const defaultFenceRenderer = parsneshanParser.renderer.rules.fence || function(tokens, idx, options, env, self) {
+        return self.renderToken(tokens, idx, options);
+    };
+    parsneshanParser.renderer.rules.fence = function(tokens, idx, options, env, self) {
+        const token = tokens[idx];
+        const info = token.info ? token.info.trim().split(/\s+/g)[0] : '';
+        if (info === 'mermaid') {
+            return `<div class="mermaid">${token.content}</div>`;
+        }
+        return defaultFenceRenderer(tokens, idx, options, env, self);
+    };
+
+    // Override heading rule to add IDs for TOC
+    const defaultHeadingOpenRenderer = parsneshanParser.renderer.rules.heading_open || function(tokens, idx, options, env, self) {
+        return self.renderToken(tokens, idx, options);
+    };
+    parsneshanParser.renderer.rules.heading_open = function(tokens, idx, options, env, self) {
+        const token = tokens[idx];
+        const textToken = tokens[idx + 1];
+        if (textToken && textToken.type === 'inline') {
+            const id = slugifyHeading(textToken.content);
+            token.attrSet('id', id);
+        }
+        return defaultHeadingOpenRenderer(tokens, idx, options, env, self);
+    };
+}
+
 
 // Load README.md content
 async function loadReadme() {
@@ -966,11 +1033,94 @@ async function loadReadme() {
   }
 }
 
+// Load ParsNeshan guide content
+async function loadParsNeshanGuide() {
+    const content = `# راهنمای پارس‌نشان
+
+«پارس‌نشان» یک مفسر مارک‌داون قدرتمند برای زبان فارسی است که ویژگی‌های خاصی را به مارک‌داون استاندارد اضافه می‌کند.
+
+## جعبه‌های توضیحی
+
+برای جلب توجه خواننده به نکات مهم از جعبه‌های توضیحی استفاده کنید.
+
+...توجه
+این یک پیام توجه است. شما می‌توانید **قالب‌بندی‌های** مارک‌دوان را *درون* این جعبه‌ها نیز استفاده کنید.
+...
+
+...هشدار
+مراقب باشید! این یک عملیات حساس است.
+...
+
+...نکته
+این یک نکته مفید برای کاربران است.
+...
+
+...مهم
+این بخش را حتما مطالعه کنید.
+...
+
+...احتیاط
+تغییر دادن این تنظیمات ممکن است باعث از کار افتادن برنامه شود.
+...
+
+## نمایش شعر
+
+اشعار را با قالب‌بندی کلاسیک و خوانا نمایش دهید.
+
+...شعر
+بنی آدم اعضای یکدیگرند
+که در آفرینش ز یک گوهرند
+
+چو عضوی به درد آورد روزگار
+دگر عضوها را نماند قرار
+...
+
+## هایلایت متن
+
+برای تاکید روی کلمات یا عبارات کلیدی، آن‌ها را هایلایت کنید.
+
+این یک متن ==بسیار مهم== است که باید دیده شود.
+
+## لیست مرتب با اعداد فارسی
+
+نیازی نیست اعداد را به انگلیسی تایپ کنید. «پارس‌نشان» به طور خودکار لیست‌های مرتب با اعداد فارسی را تشخیص می‌دهد.
+
+۱. آیتم اول
+۲. آیتم دوم
+   ۱. آیتم تودرتو
+۳. آیتم سوم
+
+## بازبینه (Checklist)
+
+لیست کارها را به راحتی ایجاد کنید.
+
+- [x] اولین کار انجام شد
+- [ ] دومین کار باقی مانده است
+- [ ] سومین کار
+
+## تشخیص خودکار جهت متن
+
+پاراگراف‌ها به طور خودکار راست‌چین یا چپ‌چین می‌شوند.
+
+این یک پاراگراف فارسی است و باید راست‌چین باشد.
+
+This is an English paragraph and it should be left-aligned.
+`;
+    editor.value = content;
+    filename.value = 'راهنمای پارس‌نشان';
+    currentFileId = 'راهنمای پارس‌نشان.md';
+    await updatePreview();
+    await saveFileToDB(currentFileId, content);
+}
+
+
 // Parse markdown based on selected parser
 function parseMarkdown(markdown) {
   const parser = markdownParserSelect.value;
   if (parser === 'shahneshan') {
     return window.shahneshan.markdownToOutput(markdown);
+  } else if (parser === 'parsneshan' && parsneshanParser) {
+    return parsneshanParser.render(markdown);
   } else {
     return marked.parse(markdown);
   }
