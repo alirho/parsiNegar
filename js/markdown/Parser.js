@@ -135,5 +135,28 @@ export const Parser = {
         }
         // پیش‌فرض: استفاده از marked.lexer
         return window.marked.lexer(markdown);
+    },
+
+    /**
+     * تبدیل متن مارک‌داون inline به HTML با استفاده از مفسر انتخاب شده
+     * @param {string} text - متنی که باید پردازش شود
+     * @returns {string} - رشته HTML پردازش شده
+     */
+    parseInline(text) {
+        const selectedParser = elements.markdownParserSelect.value;
+        try {
+            if (selectedParser === 'parsneshan' && parsneshanParser) {
+                return parsneshanParser.renderInline(text);
+            }
+            // `shahneshan` کتابخانه جداگانه‌ای برای رندر inline ندارد، پس از `marked` استفاده می‌کنیم
+            if (window.marked) {
+                return window.marked.parseInline(text);
+            }
+        } catch (error) {
+            console.error(`خطا در پردازش inline با مفسر ${selectedParser}:`, error);
+            // در صورت خطا، متن را escape می‌کنیم تا به صورت خام نمایش داده شود
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+        return text; // بازگشت به متن اصلی در صورت نبود هیچ مفسری
     }
 };

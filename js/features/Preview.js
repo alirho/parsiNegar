@@ -41,14 +41,13 @@ async function renderMermaidDiagrams() {
  * @param {string} rawContent - محتوای خام نقشه ذهنی
  */
 function createInteractiveMindMap(container, rawContent) {
-    // این تابع بسیار طولانی و پیچیده است و منطق آن بدون تغییر از فایل اصلی منتقل شده است
     const { config, dataText } = parseMindmapConfigAndData(rawContent);
     const rootData = parseMindmapData(dataText, config);
     if (!rootData) {
-      container.innerHTML = '<p>ساختار نقشه ذهنی نامعتبر است.</p>';
-      return;
+        container.innerHTML = '<p style="padding: 1rem; text-align: center;">ساختار نقشه ذهنی نامعتبر است.</p>';
+        return;
     }
-    // ... (ادامه کد طولانی رندر نقشه ذهنی از فایل اصلی)
+
     const NODE_PADDING_X = 20;
     const NODE_PADDING_Y = 10;
     const LEVEL_WIDTH = 200;
@@ -62,39 +61,75 @@ function createInteractiveMindMap(container, rawContent) {
     svg.classList.add('mindmap-svg');
 
     let transform = { x: 0, y: 0, k: 1 };
-    function applyTransform() { g.setAttribute('transform', `translate(${transform.x}, ${transform.y}) scale(${transform.k})`); }
+
+    function applyTransform() {
+        g.setAttribute('transform', `translate(${transform.x}, ${transform.y}) scale(${transform.k})`);
+    }
+
     function redrawMindmap() {
         g.innerHTML = '';
         const mindmapMeasurementDiv = qs('#app > div[style*="visibility: hidden"]');
+
         function measureNodes(node) {
-            mindmapMeasurementDiv.innerHTML = window.marked.parseInline(node.text || ' ');
+            mindmapMeasurementDiv.innerHTML = Parser.parseInline(node.text || ' ');
             node.width = mindmapMeasurementDiv.offsetWidth;
             node.height = mindmapMeasurementDiv.offsetHeight;
             if (!node.isCollapsed) node.children.forEach(measureNodes);
         }
         measureNodes(rootData);
 
-        // ... بقیه منطق layout و draw از فایل اصلی ...
         if (config.layout === 'two-sided') {
-            // ...
+            const rightChildren = rootData.children.filter((_, i) => i % 2 === 0);
+            const leftChildren = rootData.children.filter((_, i) => i % 2 !== 0);
+            let rightY = 0, leftY = 0;
+
+            function doLayoutBranch(node, depth, isRight) {
+                const direction = isRight ? 1 : -1;
+                const rootWidthOffset = (rootData.width / 2) + 40;
+                node.x = direction * (depth * LEVEL_WIDTH * 0.75 + rootWidthOffset);
+                if (node.isCollapsed || node.children.length === 0) {
+                    if (isRight) {
+                        node.y = rightY;
+                        rightY += node.height + VERTICAL_GAP;
+                    } else {
+                        node.y = leftY;
+                        leftY += node.height + VERTICAL_GAP;
+                    }
+                } else {
+                    node.children.forEach(child => doLayoutBranch(child, depth + 1, isRight));
+                    node.y = (node.children[0].y + node.children[node.children.length - 1].y) / 2;
+                }
+            }
+            rightChildren.forEach(child => doLayoutBranch(child, 1, true));
+            leftChildren.forEach(child => doLayoutBranch(child, 1, false));
+            const totalHeight = Math.max(rightY, leftY);
+            const rightShift = (totalHeight - rightY) / 2;
+            const leftShift = (totalHeight - leftY) / 2;
+            const shiftYs = (node, shift) => {
+                node.y += shift;
+                if (!node.isCollapsed) node.children.forEach(child => shiftYs(child, shift));
+            };
+            rightChildren.forEach(node => shiftYs(node, rightShift));
+            leftChildren.forEach(node => shiftYs(node, leftShift));
+            rootData.x = 0;
+            rootData.y = totalHeight / 2;
         } else {
             let y = 0;
             function doLayoutRTL(node, depth) {
                 node.x = -depth * LEVEL_WIDTH;
                 if (node.isCollapsed || node.children.length === 0) {
-                  node.y = y;
-                  y += node.height + VERTICAL_GAP;
+                    node.y = y;
+                    y += node.height + VERTICAL_GAP;
                 } else {
-                  node.children.forEach(child => doLayoutRTL(child, depth + 1));
-                  node.y = (node.children[0].y + node.children[node.children.length - 1].y) / 2;
+                    node.children.forEach(child => doLayoutRTL(child, depth + 1));
+                    node.y = (node.children[0].y + node.children[node.children.length - 1].y) / 2;
                 }
             }
             doLayoutRTL(rootData, 0);
         }
-        
+
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         function draw(node, parent = null) {
-            // ... (کد کامل رسم گره‌ها و خطوط اتصال)
             if (parent) {
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.classList.add('mindmap-connector');
@@ -103,25 +138,140 @@ function createInteractiveMindMap(container, rawContent) {
                 const endX = node.x + (node.x > parent.x ? -node.width / 2 : node.width / 2);
                 const endY = node.y + node.height / 2;
                 const c1X = startX + (endX - startX) / 2;
-                const c1Y = startY;
                 const c2X = startX + (endX - startX) / 2;
-                const c2Y = endY;
-                path.setAttribute('d', `M ${startX},${startY} C ${c1X},${c1Y} ${c2X},${c2Y} ${endX},${endY}`);
+                path.setAttribute('d', `M ${startX},${startY} C ${c1X},${startY} ${c2X},${endY} ${endX},${endY}`);
                 g.insertBefore(path, g.firstChild);
             }
-            // ...
             const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            // ... (کد ساخت گره)
-             g.appendChild(nodeGroup);
-
-            if (!node.isCollapsed) {
-                node.children.forEach(child => draw(child, node));
+            nodeGroup.classList.add('mindmap-node', `border-${config.border}`);
+            nodeGroup.setAttribute('transform', `translate(${node.x - node.width / 2}, ${node.y})`);
+            let shape;
+            if (config.border === 'ellipse') {
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+                shape.setAttribute('rx', node.width / 2);
+                shape.setAttribute('ry', node.height / 2);
+                shape.setAttribute('cx', node.width / 2);
+                shape.setAttribute('cy', node.height / 2);
+            } else {
+                shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                shape.setAttribute('width', node.width);
+                shape.setAttribute('height', node.height);
+                if (config.border === 'rectangle') shape.setAttribute('rx', 8);
             }
+            shape.classList.add('mindmap-node-shape');
+            if (config.border === 'none') shape.classList.add('shape-none');
+            const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+            fo.setAttribute('width', node.width);
+            fo.setAttribute('height', node.height);
+            const div = document.createElement('div');
+            div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+            div.className = 'mindmap-node-content';
+            div.innerHTML = Parser.parseInline(node.text || ' ');
+            fo.appendChild(div);
+            nodeGroup.appendChild(shape);
+            nodeGroup.appendChild(fo);
+            g.appendChild(nodeGroup);
+            if (node.children.length > 0) {
+                const btn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                btn.classList.add('mindmap-collapse-btn');
+                let btnX = (config.layout === 'two-sided' && node.x < (parent?.x ?? 0)) ? 0 : node.width;
+                btn.setAttribute('transform', `translate(${btnX}, ${node.height / 2})`);
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('r', 8);
+                const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textEl.textContent = node.isCollapsed ? '+' : '−';
+                btn.appendChild(circle);
+                btn.appendChild(textEl);
+                nodeGroup.appendChild(btn);
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    node.isCollapsed = !node.isCollapsed;
+                    redrawMindmap();
+                });
+            }
+            const currentX = node.x - node.width / 2;
+            minX = Math.min(minX, currentX);
+            maxX = Math.max(maxX, currentX + node.width);
+            minY = Math.min(minY, node.y);
+            maxY = Math.max(maxY, node.y + node.height);
+            if (!node.isCollapsed) node.children.forEach(child => draw(child, node));
         }
         draw(rootData);
+        recenterAndScale(minX, maxX, minY, maxY, config);
     }
+
+    function recenterAndScale(minX, maxX, minY, maxY, config) {
+        const graphWidth = maxX - minX;
+        const graphHeight = maxY - minY;
+        const viewWidth = container.clientWidth;
+        const viewHeight = container.clientHeight;
+        if (viewWidth <= 0 || viewHeight <= 0 || graphWidth <= 0 || graphHeight <= 0) return;
+        const scale = Math.min(viewWidth / (graphWidth + NODE_PADDING_X * 4), viewHeight / (graphHeight + NODE_PADDING_Y * 4), 1);
+        const centerX = minX + graphWidth / 2;
+        const centerY = minY + graphHeight / 2;
+        let tx = (viewWidth / 2) - (centerX * scale);
+        const ty = (viewHeight / 2) - (centerY * scale);
+        if (config.layout === 'rtl') {
+            tx = viewWidth - (maxX * scale) - (NODE_PADDING_X * 2);
+        }
+        transform = { x: tx, y: ty, k: scale };
+        applyTransform();
+    }
+
     redrawMindmap();
-    // ... (کد کامل مدیریت panning, zoom, resize)
+
+    let isPanning = false;
+    let startPoint = { x: 0, y: 0 };
+    svg.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isPanning = true;
+        svg.classList.add('grabbing');
+        startPoint = { x: e.clientX, y: e.clientY };
+    });
+    svg.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        e.preventDefault();
+        const endPoint = { x: e.clientX, y: e.clientY };
+        transform.x += endPoint.x - startPoint.x;
+        transform.y += endPoint.y - startPoint.y;
+        startPoint = endPoint;
+        applyTransform();
+    });
+    const stopPanning = () => {
+        isPanning = false;
+        svg.classList.remove('grabbing');
+    };
+    svg.addEventListener('mouseup', stopPanning);
+    svg.addEventListener('mouseleave', stopPanning);
+    svg.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        const newScale = Math.max(0.1, Math.min(3, transform.k * (1 + delta)));
+        const svgRect = svg.getBoundingClientRect();
+        const mouseInSvg = { x: e.clientX - svgRect.left, y: e.clientY - svgRect.top };
+        transform.x = mouseInSvg.x - (mouseInSvg.x - transform.x) * (newScale / transform.k);
+        transform.y = mouseInSvg.y - (mouseInSvg.y - transform.y) * (newScale / transform.k);
+        transform.k = newScale;
+        applyTransform();
+    });
+    
+    const resizeHandle = document.createElement('div');
+    resizeHandle.classList.add('mindmap-resize-handle');
+    container.appendChild(resizeHandle);
+    const onMouseMove = (e) => {
+        container.style.height = `${Math.max(200, e.clientY - container.getBoundingClientRect().top)}px`;
+    };
+    const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        redrawMindmap();
+    };
+    resizeHandle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
 }
 
 
