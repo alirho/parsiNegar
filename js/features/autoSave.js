@@ -1,5 +1,5 @@
-import { EventBus } from '../core/EventBus.js';
-import { state } from '../core/State.js';
+import { EventBus } from '../core/eventBus.js';
+import { state } from '../core/state.js';
 import { debounce } from '../utils/helpers.js';
 import { saveFileToDB } from '../utils/storage.js';
 

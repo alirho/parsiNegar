@@ -1,7 +1,7 @@
 import { elements } from '../utils/dom.js';
-import { state } from '../core/State.js';
+import { state } from '../core/state.js';
 import { shortcuts } from '../config.js';
-import { EventBus } from '../core/EventBus.js';
+import { EventBus } from '../core/eventBus.js';
 
 /**
  * ماژول مدیریت میانبرهای نوشتاری (/)

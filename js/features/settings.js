@@ -1,8 +1,8 @@
 import { elements } from '../utils/dom.js';
-import { EventBus } from '../core/EventBus.js';
+import { EventBus } from '../core/eventBus.js';
 import * as storage from '../utils/storage.js';
-import { customConfirm, customAlert } from './Modal.js';
-import { setHljsTheme, configureMermaidTheme } from '../markdown/Highlighter.js';
+import { customConfirm, customAlert } from './modal.js';
+import { setHljsTheme, configureMermaidTheme } from '../markdown/highlighter.js';
 
 /**
  * ماژول مدیریت تنظیمات برنامه

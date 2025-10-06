@@ -1,10 +1,10 @@
 import { elements } from '../utils/dom.js';
-import { EventBus } from '../core/EventBus.js';
-import { state } from '../core/State.js';
+import { EventBus } from '../core/eventBus.js';
+import { state } from '../core/state.js';
 import * as storage from '../utils/storage.js';
 import { removeFileExtension, slugifyHeading } from '../utils/helpers.js';
-import { customConfirm, customPrompt, customAlert } from './Modal.js';
-import { Parser } from '../markdown/Parser.js';
+import { customConfirm, customPrompt, customAlert } from './modal.js';
+import { Parser } from '../markdown/parser.js';
 
 /**
  * ماژول پنل کناری (فهرست مطالب و لیست فایل‌ها)

@@ -1,9 +1,9 @@
 import { elements } from '../utils/dom.js';
-import { EventBus } from '../core/EventBus.js';
-import { state } from '../core/State.js';
+import { EventBus } from '../core/eventBus.js';
+import { state } from '../core/state.js';
 import * as storage from '../utils/storage.js';
 import { removeFileExtension } from '../utils/helpers.js';
-import { customAlert, customConfirm, customPrompt } from './Modal.js';
+import { customAlert, customConfirm, customPrompt } from './modal.js';
 
 /**
  * ماژول مدیریت فایل

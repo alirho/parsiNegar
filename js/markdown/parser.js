@@ -1,6 +1,6 @@
 import { elements } from '../utils/dom.js';
 import { slugifyHeading } from '../utils/helpers.js';
-import { highlightCode } from './Highlighter.js';
+import { highlightCode } from './highlighter.js';
 
 /**
  * ماژول مفسر مارک‌داون

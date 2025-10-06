@@ -1,15 +1,15 @@
 import { elements } from './utils/dom.js';
-import { Editor } from './core/Editor.js';
-import { init as initPreview } from './features/Preview.js';
-import { init as initToolbar } from './features/Toolbar.js';
-import { init as initAutoSave } from './features/AutoSave.js';
-import { init as initFileManager } from './features/FileManager.js';
-import { init as initSearch } from './features/Search.js';
-import { init as initSettings } from './features/Settings.js';
-import { init as initSidePanel } from './features/SidePanel.js';
-import { init as initStatusBar } from './features/StatusBar.js';
-import { EventBus } from './core/EventBus.js';
-import { state } from './core/State.js';
+import { Editor } from './core/editor.js';
+import { init as initPreview } from './features/preview.js';
+import { init as initToolbar } from './features/toolbar.js';
+import { init as initAutoSave } from './features/autoSave.js';
+import { init as initFileManager } from './features/fileManager.js';
+import { init as initSearch } from './features/search.js';
+import { init as initSettings } from './features/settings.js';
+import { init as initSidePanel } from './features/sidePanel.js';
+import { init as initStatusBar } from './features/statusBar.js';
+import { EventBus } from './core/eventBus.js';
+import { state } from './core/state.js';
 
 /**
  * کلاس اصلی برنامه پارسی‌نگار

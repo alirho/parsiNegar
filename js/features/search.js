@@ -1,6 +1,6 @@
 import { elements } from '../utils/dom.js';
-import { EventBus } from '../core/EventBus.js';
-import { state } from '../core/State.js';
+import { EventBus } from '../core/eventBus.js';
+import { state } from '../core/state.js';
 import { debounce } from '../utils/helpers.js';
 
 /**

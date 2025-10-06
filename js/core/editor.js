@@ -1,6 +1,6 @@
-import { EventBus } from './EventBus.js';
+import { EventBus } from './eventBus.js';
 import { pairs } from '../config.js';
-import { init as initShortcuts } from '../features/Shortcuts.js';
+import { init as initShortcuts } from '../features/shortcuts.js';
 
 /**
  * کلاس مدیریت ویرایشگر متن

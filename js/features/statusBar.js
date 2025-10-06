@@ -1,5 +1,5 @@
 import { elements } from '../utils/dom.js';
-import { EventBus } from '../core/EventBus.js';
+import { EventBus } from '../core/eventBus.js';
 import { formatFileSize } from '../utils/helpers.js';
 
 /**
