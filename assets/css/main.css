@@ -4,30 +4,30 @@
  */
 
 /* 1. Base Styles */
-@import url('base/_reset.css');
-@import url('base/_fonts.css');
-@import url('base/_base.css');
-@import url('base/_themes.css');
+@import url('./base/_reset.css');
+@import url('./base/_fonts.css');
+@import url('./base/_base.css');
+@import url('./base/_themes.css');
 
 /* 2. Layout Styles */
-@import url('layout/_app.css');
-@import url('layout/_content.css');
-@import url('layout/_side-panel.css');
-@import url('layout/_status-bar.css');
+@import url('./layout/_app.css');
+@import url('./layout/_content.css');
+@import url('./layout/_side-panel.css');
+@import url('./layout/_status-bar.css');
 
 /* 3. Component Styles */
-@import url('components/_menu-bar.css');
-@import url('components/_toolbar.css');
-@import url('components/_buttons.css');
-@import url('components/_modal.css');
-@import url('components/_search.css');
-@import url('components/_shortcuts.css');
-@import url('components/_file-list.css');
-@import url('components/_toc.css');
-@import url('components/_mindmap.css');
+@import url('./components/_menu-bar.css');
+@import url('./components/_toolbar.css');
+@import url('./components/_buttons.css');
+@import url('./components/_modal.css');
+@import url('./components/_search.css');
+@import url('./components/_shortcuts.css');
+@import url('./components/_file-list.css');
+@import url('./components/_toc.css');
+@import url('./components/_mindmap.css');
 
 /* 4. Preview and Output Styles */
-@import url('preview/_markdown.css');
-@import url('preview/_code.css');
-@import url('preview/_parsneshan.css');
-@import url('preview/_print.css');
+@import url('./preview/_markdown.css');
+@import url('./preview/_code.css');
+@import url('./preview/_parsneshan.css');
+@import url('./preview/_print.css');
