@@ -849,3 +849,20 @@ Highlighter.js:55:21
 
 ## پرامپت ۶۷
 در نقشه‌ذهنی المان‌ها در وسط صفحه قرار ندارند و با ماوس هم نمی‌شه اون‌ها رو جابجا کرد.
+
+## پرامپت ۶۸
+لوگوی پارسی‌نگار در تنظیمات و نوار منو نمایش داده نمی‌شه.
+
+## پرامپت ۶۹
+مشکل بر طرف نشد و لوگو نمایش داده نمی‌شه.
+
+## پرامپت ۷۰
+در زمان افزودن نمودار خطای زیر نمایش داده می‌شه:
+
+```js
+خطا در رندر Mermaid: DOMException: Element.querySelector: '#dmermaid-svg-1759750358336-0.8784355473276053' is not a valid selector
+    ype https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js:6
+    fLt https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js:6
+    Cqt https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js:88
+Preview.js:28:25
+```

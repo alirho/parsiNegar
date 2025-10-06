@@ -19,7 +19,7 @@ async function renderMermaidDiagrams() {
         const mermaidElements = elements.preview.querySelectorAll('.mermaid');
         for (const el of mermaidElements) {
             const code = el.textContent;
-            const id = `mermaid-svg-${Date.now()}-${Math.random()}`;
+            const id = `mermaid-svg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             el.textContent = 'در حال رندر شدن...';
             try {
                 const { svg } = await mermaid.render(id, code);
