@@ -723,3 +723,94 @@ Please report this to https://github.com/markedjs/marked.
 این هم محتوای فایل README مفسر پارس‌نشان:
 
 ## پرامپت ۶۱
+لطفاً پروژه را به صورت ماژولار با رعایت شرایط زیر بازنویسی کن:
+
+1. ساختار فولدر پیشنهادی:
+```
+project/
+├── index.html
+├── assets/
+│   ├── css/          
+│   │   └── main.css
+│   └── fonts/                (فونت‌های فارسی)
+├── js/
+│   ├── app.js               (Entry point - initialize)
+│   ├── config.js            (تنظیمات عمومی)
+│   ├── core/
+│   │   ├── Editor.js        (کلاس اصلی ادیتور)
+│   │   ├── EventBus.js      (مدیریت رویدادها)
+│   │   └── State.js         (مدیریت state)
+│   ├── features/
+│   │   ├── Toolbar.js       (مدیریت نوار ابزار)
+│   │   ├── Preview.js       (پیش‌نمایش زنده)
+│   │   ├── FileManager.js   (ذخیره، باز کردن، export)
+│   │   ├── Search.js        (جستجو و جایگزینی)
+│   │   ├── AutoSave.js      (ذخیره خودکار)
+│   │   ├── Shortcuts.js     (کلیدهای میانبر)
+│   │   └── Modal.js         (مدیریت مودال‌ها)
+│   ├── markdown/
+│   │   ├── Parser.js        (تبدیل MD به HTML)
+│   │   ├── Highlighter.js   (هایلایت سینتکس)
+│   │   └── RTL.js           (تشخیص و مدیریت راست‌چین)
+│   └── utils/
+│       ├── dom.js           (کارهای DOM)
+│       ├── storage.js       (localStorage/sessionStorage)
+│       ├── helpers.js       (توابع عمومی)
+│       └── validators.js    (اعتبارسنجی)
+└── libs/                    (کتابخانه مارک‌دون محلی)
+```
+
+2. نحوه import در HTML:
+```html
+<!-- فقط app.js را import کن -->
+<script type="module" src="js/app.js"></script>
+
+<!-- CSS ها -->
+<link rel="stylesheet" href="assets/css/main.css">
+```
+3. نکات مهم:
+
+- **از async/await برای عملیات ناهمزمان استفاده کن**
+- **از try/catch برای مدیریت خطا استفاده کن**
+- **هر فایل فقط یک مسئولیت داشته باشد (Single Responsibility)**
+- **از نام‌گذاری فارسی در کامنت‌ها استفاده کن**
+- **eventListener ها را به صورت متمرکز مدیریت کن**
+
+4. محدودیت‌ها:
+
+- از هیچ کتابخانه جدیدی استفاده نکن
+- ساختار HTML اصلی را تغییر نده (فقط script tags)
+- از ES6 Modules استفاده کن
+- سازگار با مرورگرهای مدرن باشد
+- Performance را حفظ کن
+
+## پرامپت ۶۲
+در کنسول مرورگر خطای زیر نمایش داده می‌شه:
+
+```js
+Uncaught DOMException: Document.querySelector: 'a:contains("افزودن")' is not a valid selector
+    qs http://127.0.0.1:8000/js/utils/dom.js:9
+    <anonymous> http://127.0.0.1:8000/js/utils/dom.js:57
+dom.js:9
+```
+
+## پرامپت ۶۳
+در زمان انتخاب مفسر `marked` خطای زیر در کنسول نمایش داده می‌شه:
+
+```js
+خطا در پردازش با مفسر marked: TypeError: text.toLowerCase is not a function
+Please report this to https://github.com/markedjs/marked.
+    slugifyHeading http://127.0.0.1:8000/js/utils/helpers.js:49
+    heading http://127.0.0.1:8000/js/markdown/Parser.js:24
+    parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
+    parse https://cdn.jsdelivr.net/npm/marked/marked.min.js:65
+    parseMarkdown https://cdn.jsdelivr.net/npm/marked/marked.min.js:66
+    k https://cdn.jsdelivr.net/npm/marked/marked.min.js:67
+    parse http://127.0.0.1:8000/js/markdown/Parser.js:111
+    updatePreview http://127.0.0.1:8000/js/features/Preview.js:207
+    init http://127.0.0.1:8000/js/features/Preview.js:250
+    emit http://127.0.0.1:8000/js/core/EventBus.js:28
+    emit http://127.0.0.1:8000/js/core/EventBus.js:26
+    init http://127.0.0.1:8000/js/features/Settings.js:135
+Parser.js:114:21
+```
