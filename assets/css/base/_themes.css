@@ -62,6 +62,10 @@ body.theme-dark .modal-content {
   background: #2d2d2d;
   color: #e5e5e5;
 }
+body.theme-dark .modal-header h2,
+body.theme-dark .setting-group label {
+  color: inherit;
+}
 body.theme-dark .modal-header,
 body.theme-dark .modal-footer,
 body.theme-dark .setting-footer {
@@ -297,6 +301,13 @@ body.theme-sepia .file-actions-dropdown {
 /* Preview specific themes */
 body.theme-dark .alert {
   background-color: #333;
+}
+body.theme-dark .markdown-preview code,
+body.theme-dark .markdown-preview pre {
+  background-color: #2d2d2d;
+}
+body.theme-dark .markdown-preview th {
+    background-color: #374151;
 }
 body.theme-dark mark.highlight {
   background-color: #a3e635; /* lime-400 */

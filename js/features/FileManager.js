@@ -29,6 +29,62 @@ function downloadFile(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * واکشی و ترکیب فایل‌های CSS خاص مورد نیاز برای خروجی HTML تمیز.
+ * این شامل استایل‌های پایه، پیش‌نمایش و تم فعال هایلایت کد است.
+ * همچنین URLهای نسبی درون CSS واکشی شده را به مسیرهای مطلق تبدیل می‌کند.
+ * @returns {Promise<string>} یک رشته واحد حاوی تمام قوانین CSS لازم.
+ */
+async function getPreviewStyles() {
+    const cssUrls = [
+        'assets/css/base/_reset.css',
+        'assets/css/base/_fonts.css',
+        'assets/css/base/_base.css',
+        'assets/css/base/_themes.css',
+        'assets/css/preview/_markdown.css',
+        'assets/css/preview/_code.css',
+        'assets/css/preview/_parsneshan.css',
+        'assets/css/preview/_print.css',
+    ];
+
+    // به صورت پویا URL شیوه‌نامه تم فعال highlight.js را اضافه می‌کند
+    const activeHljsThemeLink = document.querySelector('link[id^="hljs-"]:not([disabled])');
+    if (activeHljsThemeLink) {
+        cssUrls.push(activeHljsThemeLink.href);
+    }
+
+    const fetchAndProcessCss = async (url) => {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.warn(`واکشی شیوه‌نامه برای خروجی ناموفق بود: ${url}`);
+                return '';
+            }
+            const text = await response.text();
+            // URL پایه برای حل مسیرهای نسبی، URL خود فایل CSS است.
+            const baseUrl = new URL(url, document.baseURI).href;
+            return text.replace(/url\((?!['"]?(?:data:|https:|http:|ftp:|\/\/))['"]?(.+?)['"]?\)/g, (match, relativeUrl) => {
+                try {
+                    // حل URL نسبی در برابر URL فایل CSS
+                    const absoluteUrl = new URL(relativeUrl, baseUrl);
+                    return `url('${absoluteUrl.href}')`;
+                } catch (e) {
+                    console.warn(`امکان حل URL وجود ندارد "${relativeUrl}" در شیوه‌نامه ${url}`);
+                    return match; // اگر حل ناموفق بود، اصلی را برگردان
+                }
+            });
+        } catch (error) {
+            console.error(`خطا در واکشی یا پردازش شیوه‌نامه ${url}:`, error);
+            return '';
+        }
+    };
+
+    const allCssPromises = cssUrls.map(fetchAndProcessCss);
+    const allCssStrings = await Promise.all(allCssPromises);
+    return allCssStrings.join('\n');
+}
+
+
 // --- مدیریت رویدادها ---
 
 /**
@@ -94,16 +150,20 @@ async function handleFileSelect(e) {
 async function renameCurrentFile() {
     const oldId = state.currentFileId;
     const oldNameWithoutExt = removeFileExtension(oldId);
-    const newNameWithoutExt = await customPrompt('نام جدید فایل را وارد کنید:', oldNameWithoutExt, 'تغییر نام فایل');
+    const newNameWithoutExt = elements.filename.value.trim();
 
-    if (!newNameWithoutExt || newNameWithoutExt.trim() === '' || newNameWithoutExt === oldNameWithoutExt) {
+    if (!newNameWithoutExt || newNameWithoutExt === 'نام فایل' || newNameWithoutExt === oldNameWithoutExt) {
+        elements.filename.value = oldNameWithoutExt; // Revert if invalid
         return;
     }
 
-    const ext = oldId.endsWith('.md') ? '.md' : (oldId.endsWith('.txt') ? '.txt' : '.md');
-    const newId = newNameWithoutExt.trim() + ext;
+    const extMatch = oldId.match(/\.\w+$/);
+    const ext = (oldId !== 'نام فایل' && extMatch) ? extMatch[0] : '.md';
+    const newId = newNameWithoutExt + ext;
 
-    if (newId === oldId) return;
+    if (newId === oldId) {
+        return;
+    }
 
     const existingFile = await storage.getFileFromDB(newId);
     if (existingFile) {
@@ -111,19 +171,18 @@ async function renameCurrentFile() {
         elements.filename.value = oldNameWithoutExt;
         return;
     }
-
+  
     const contentToSave = editorInstance.getValue();
     let creationDate = new Date();
 
     if (oldId !== 'نام فایل') {
         const oldFile = await storage.getFileFromDB(oldId);
-        if(oldFile) creationDate = oldFile.creationDate || oldFile.lastModified;
+        if (oldFile) creationDate = oldFile.creationDate || oldFile.lastModified;
         await storage.deleteFileFromDB(oldId);
     }
 
     await storage.saveFileToDB(newId, contentToSave, { creationDate });
     state.currentFileId = newId;
-    elements.filename.value = newNameWithoutExt;
 
     EventBus.emit('file:renamed', { oldId, newId });
     EventBus.emit('file:listChanged');
@@ -139,9 +198,9 @@ function exportAsMarkdown() {
   downloadFile(blob, filename);
 }
 
-function exportAsHtml() {
+async function exportAsHtml() {
   const theme = document.querySelector('input[name="theme"]:checked').value;
-  const styles = document.querySelector('styles').textContent;
+  const styles = await getPreviewStyles();
   const htmlContent = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -227,7 +286,77 @@ async function loadReadme() {
 }
 
 async function loadParsneshanGuide() {
-    const content = `# راهنمای پارس‌نشان...`; // محتوای کامل راهنما
+    const content = `# راهنمای پارس‌نشان
+
+«پارس‌نشان» یک مفسر مارک‌داون قدرتمند برای زبان فارسی است که ویژگی‌های خاصی را به مارک‌داون استاندارد اضافه می‌کند.
+
+## جعبه‌های توضیحی
+
+برای جلب توجه خواننده به نکات مهم از جعبه‌های توضیحی استفاده کنید.
+
+...توجه
+این یک پیام توجه است. شما می‌توانید **قالب‌بندی‌های** مارک‌دوان را *درون* این جعبه‌ها نیز استفاده کنید.
+...
+
+...هشدار
+مراقب باشید! این یک عملیات حساس است.
+...
+
+...نکته
+این یک نکته مفید برای کاربران است.
+...
+
+...مهم
+این بخش را حتما مطالعه کنید.
+...
+
+...احتیاط
+تغییر دادن این تنظیمات ممکن است باعث از کار افتادن برنامه شود.
+...
+
+## نمایش شعر
+
+اشعار را با قالب‌بندی کلاسیک و خوانا نمایش دهید.
+
+...شعر
+بنی آدم اعضای یکدیگرند
+که در آفرینش ز یک گوهرند
+
+چو عضوی به درد آورد روزگار
+دگر عضوها را نماند قرار
+...
+
+## هایلایت متن
+
+برای تاکید روی کلمات یا عبارات کلیدی، آن‌ها را هایلایت کنید.
+
+این یک متن ==بسیار مهم== است که باید دیده شود.
+
+## لیست مرتب با اعداد فارسی
+
+نیازی نیست اعداد را به انگلیسی تایپ کنید. «پارس‌نشان» به طور خودکار لیست‌های مرتب با اعداد فارسی را تشخیص می‌دهد.
+
+۱. آیتم اول
+۲. آیتم دوم
+   ۱. آیتم تودرتو
+۳. آیتم سوم
+
+## بازبینه (Checklist)
+
+لیست کارها را به راحتی ایجاد کنید.
+
+- [x] اولین کار انجام شد
+- [ ] دومین کار باقی مانده است
+- [ ] سومین کار
+
+## تشخیص خودکار جهت متن
+
+پاراگراف‌ها به طور خودکار راست‌چین یا چپ‌چین می‌شوند.
+
+این یک پاراگراف فارسی است و باید راست‌چین باشد.
+
+This is an English paragraph and it should be left-aligned.
+`;
     state.currentFileId = 'راهنمای پارس‌نشان.md';
     elements.filename.value = 'راهنمای پارس‌نشان';
     editorInstance.setValue(content, { resetHistory: true });
