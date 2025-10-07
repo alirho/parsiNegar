@@ -26,12 +26,12 @@
         <li>
           <a href="#">فایل</a>
           <ul class="submenu">
-            <li><a href="#" id="newFileBtn"><i class="fas fa-file"></i> فایل نو</a></li>
-            <li><a href="#" id="loadFileBtn"><i class="fas fa-folder-open"></i> بارگذاری فایل</a></li>
+            <li><a href="#" id="newFileBtn"><i class="fas fa-file"></i><span>فایل نو</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>N</kbd></span></a></li>
+            <li><a href="#" id="loadFileBtn"><i class="fas fa-folder-open"></i><span>بارگذاری فایل</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>O</kbd></span></a></li>
             <li class="has-submenu">
               <a href="#"><i class="fas fa-file-export"></i> خروجی گرفتن</a>
               <ul class="submenu">
-                <li><a href="#" id="exportMdBtn"><i class="fas fa-file-alt"></i> Markdown</a></li>
+                <li><a href="#" id="exportMdBtn"><i class="fas fa-file-alt"></i><span>Markdown</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>E</kbd></span></a></li>
                 <li><a href="#" id="exportHtmlBtn"><i class="fas fa-file-code"></i> HTML</a></li>
                 <li><a href="#" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF</a></li>
                 <li><a href="#" id="exportAllZipBtn"><i class="fas fa-file-archive"></i> تمامی فایل‌ها (zip)</a></li>
@@ -74,13 +74,13 @@
             <li>
               <label>
                 <input type="checkbox" id="showToc">
-                <i class="fas fa-list"></i> فهرست مطالب
+                <i class="fas fa-list"></i><span>فهرست مطالب</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd></span>
               </label>
             </li>
             <li>
               <label>
                 <input type="checkbox" id="showFiles">
-                <i class="fas fa-folder-tree"></i> فایل‌ها
+                <i class="fas fa-folder-tree"></i><span>فایل‌ها</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd></span>
               </label>
             </li>
             <li>
@@ -103,7 +103,7 @@
             <li><a href="#" data-format="checklist"><i class="fas fa-tasks"></i><span>بازبینه</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd></span></a></li>
             <li><a href="#" data-format="quote"><i class="fas fa-quote-right"></i><span>نقل‌قول</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd></span></a></li>
             <li><a href="#" data-format="code"><i class="fas fa-code"></i><span>کد</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>`</kbd></span></a></li>
-            <li><a href="#" data-format="table"><i class="fas fa-table"></i><span>جدول</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd></span></a></li>
+            <li><a href="#" data-format="table"><i class="fas fa-table"></i><span>جدول</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>I</kbd></span></a></li>
             <li><a href="#" data-format="image"><i class="fas fa-image"></i><span>تصویر</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd></span></a></li>
             <li><a href="#" data-format="link"><i class="fas fa-link"></i><span>پیوند</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>K</kbd></span></a></li>
             <li><a href="#" data-format="highlight"><i class="fas fa-highlighter"></i><span>برجسته</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd></span></a></li>
@@ -127,6 +127,7 @@
           <ul class="submenu">
             <li><a href="#" id="helpBtn"><i class="fas fa-book"></i> راهنمای پارسی‌نگار</a></li>
             <li><a href="#" id="parsneshanHelpBtn"><i class="fas fa-book-open"></i> راهنمای پارس‌نشان</a></li>
+            <li><a href="#" id="keyboardShortcutsBtn"><i class="fas fa-keyboard"></i><span>راهنمای کلیدها</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>K</kbd></span></a></li>
             <li><a href="https://www.markdownguide.org/basic-syntax/" target="_blank"><i class="fas fa-external-link-alt"></i> راهنمای Markdown</a></li>
             <li><a href="https://mermaid.js.org/intro/" target="_blank"><i class="fas fa-external-link-alt"></i> راهنمای Mermaid.js</a></li>
           </ul>
@@ -183,7 +184,7 @@
         <span class="divider"></span>
         <button data-action="link" title="پیوند (Ctrl+K)"><i class="fas fa-link"></i></button>
         <button data-action="image" title="تصویر (Ctrl+Shift+I)"><i class="fas fa-image"></i></button>
-        <button data-action="table" title="جدول (Ctrl+Alt+T)"><i class="fas fa-table"></i></button>
+        <button data-action="table" title="جدول (Ctrl+Alt+I)"><i class="fas fa-table"></i></button>
         <span class="divider"></span>
         <div class="toolbar-dropdown-container">
           <button class="toolbar-dropdown-toggle" title="جعبه‌های توضیحی"><i class="fas fa-box"></i></button>
@@ -378,6 +379,70 @@
       </div>
     </div>
   </div>
+
+  <div id="shortcutsHelpModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>راهنمای کلیدهای میانبر</h2>
+        <button id="closeShortcutsHelpBtn"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcuts-container">
+          <div class="shortcuts-column">
+            <h3>مدیریت فایل</h3>
+            <table class="shortcuts-table">
+              <tr><td>فایل نو</td><td>Ctrl + N</td></tr>
+              <tr><td>بارگذاری فایل</td><td>Ctrl + O</td></tr>
+              <tr><td>خروجی Markdown</td><td>Ctrl + E</td></tr>
+            </table>
+            <h3>ویرایش</h3>
+            <table class="shortcuts-table">
+              <tr><td>واگرد</td><td>Ctrl + Z</td></tr>
+              <tr><td>ازنو</td><td>Ctrl + Y</td></tr>
+              <tr><td>برش</td><td>Ctrl + X</td></tr>
+              <tr><td>رونوشت</td><td>Ctrl + C</td></tr>
+              <tr><td>چسباندن</td><td>Ctrl + V</td></tr>
+              <tr><td>انتخاب همه</td><td>Ctrl + A</td></tr>
+              <tr><td>جست‌وجو</td><td>Ctrl + F</td></tr>
+              <tr><td>جست‌وجو و جایگزینی</td><td>Ctrl + H</td></tr>
+            </table>
+            <h3>نمایش</h3>
+            <table class="shortcuts-table">
+              <tr><td>نمایش/پنهان کردن پیش‌نمایش</td><td>Ctrl + Alt + P</td></tr>
+              <tr><td>نمایش/پنهان کردن پنل فایل‌ها</td><td>Ctrl + Alt + F</td></tr>
+              <tr><td>نمایش/پنهان کردن فهرست مطالب</td><td>Ctrl + Alt + T</td></tr>
+              <tr><td>راهنمای کلیدها</td><td>Ctrl + Alt + K</td></tr>
+            </table>
+          </div>
+          <div class="shortcuts-column">
+            <h3>قالب‌بندی متن</h3>
+            <table class="shortcuts-table">
+              <tr><td>پررنگ</td><td>Ctrl + B</td></tr>
+              <tr><td>مورب</td><td>Ctrl + I</td></tr>
+              <tr><td>خط‌زده</td><td>Ctrl + U</td></tr>
+              <tr><td>پیوند</td><td>Ctrl + K</td></tr>
+              <tr><td>کد تک‌خطی</td><td>Ctrl + `</td></tr>
+              <tr><td>عنوان ۱</td><td>Ctrl + 1</td></tr>
+              <tr><td>عنوان ۲</td><td>Ctrl + 2</td></tr>
+              <tr><td>عنوان ۳</td><td>Ctrl + 3</td></tr>
+              <tr><td>عنوان ۴</td><td>Ctrl + 4</td></tr>
+              <tr><td>لیست مرتب</td><td>Ctrl + Shift + L</td></tr>
+              <tr><td>لیست نامرتب</td><td>Ctrl + Shift + U</td></tr>
+              <tr><td>بازبینه</td><td>Ctrl + Shift + T</td></tr>
+              <tr><td>بلوک کد</td><td>Ctrl + Shift + C</td></tr>
+              <tr><td>نقل‌قول</td><td>Ctrl + Shift + Q</td></tr>
+              <tr><td>تصویر</td><td>Ctrl + Shift + I</td></tr>
+              <tr><td>جدول</td><td>Ctrl + Alt + I</td></tr>
+              <tr><td>نقشه‌ذهنی</td><td>Ctrl + Shift + M</td></tr>
+              <tr><td>برجسته کردن</td><td>Ctrl + Shift + H</td></tr>
+              <tr><td>شعر</td><td>Ctrl + Shift + P</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <script type="module" src="js/app.js"></script>
 </body>

@@ -68,3 +68,23 @@
   margin: 0 auto;
   max-width: 1200px;
 }
+
+/* Editor-only view */
+#content.preview-hidden #previewContainer {
+  display: none;
+}
+
+#content.preview-hidden #editorContainer {
+  border-left: none;
+}
+
+/* Preview-only mode (fullscreen preview) */
+#content.preview-only #editorContainer,
+#content.preview-only #sidePanel {
+  display: none;
+}
+
+/* Preview-only view */
+#content.editor-hidden #editorContainer {
+  display: none;
+}

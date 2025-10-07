@@ -119,6 +119,57 @@ class ParsiNegarApp {
         elements.editorBackdrop.scrollLeft = elements.editor.scrollLeft;
     });
     elements.preview.addEventListener('scroll', () => syncScroll(elements.preview, elements.editor));
+
+    // مدیریت مودال راهنمای کلیدهای میانبر
+    elements.keyboardShortcutsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        elements.shortcutsHelpModal.classList.remove('hidden');
+    });
+    elements.closeShortcutsHelpBtn.addEventListener('click', () => {
+        elements.shortcutsHelpModal.classList.add('hidden');
+    });
+
+    // مدیریت کلیدهای میانبر عمومی
+    document.addEventListener('keydown', (e) => {
+        const isCtrl = e.ctrlKey || e.metaKey;
+        const isAlt = e.altKey;
+
+        if (isCtrl && !isAlt) {
+            switch (e.code) { // Use e.code for layout-independent shortcuts
+                case 'KeyN':
+                    e.preventDefault();
+                    elements.newFileBtn.click();
+                    break;
+                case 'KeyO':
+                    e.preventDefault();
+                    elements.loadFileBtn.click();
+                    break;
+                case 'KeyE':
+                    e.preventDefault();
+                    elements.exportMdBtn.click();
+                    break;
+            }
+        } else if (isCtrl && isAlt) {
+            switch (e.code) { // Use e.code for layout-independent shortcuts
+                case 'KeyP':
+                    e.preventDefault();
+                    elements.content.classList.toggle('editor-hidden'); // Toggle preview-only mode
+                    break;
+                case 'KeyF':
+                    e.preventDefault();
+                    elements.showFilesCheckbox.click();
+                    break;
+                case 'KeyT':
+                    e.preventDefault();
+                    elements.showTocCheckbox.click();
+                    break;
+                case 'KeyK':
+                    e.preventDefault();
+                    elements.shortcutsHelpModal.classList.remove('hidden');
+                    break;
+            }
+        }
+    });
   }
 }
 

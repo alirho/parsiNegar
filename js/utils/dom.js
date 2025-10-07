@@ -69,6 +69,7 @@ export const elements = {
   exportAllZipBtn: qs('#exportAllZipBtn'),
   helpBtn: qs('#helpBtn'),
   parsneshanHelpBtn: qs('#parsneshanHelpBtn'),
+  keyboardShortcutsBtn: qs('#keyboardShortcutsBtn'),
   undoMenuBtn: qs('#undoMenuBtn'),
   redoMenuBtn: qs('#redoMenuBtn'),
   cutMenuBtn: qs('#cutMenuBtn'),
@@ -126,6 +127,8 @@ export const elements = {
   propCharsCount: qs('#propCharsCount'),
   propWordsCount: qs('#propWordsCount'),
   propLinesCount: qs('#propLinesCount'),
+  shortcutsHelpModal: qs('#shortcutsHelpModal'),
+  closeShortcutsHelpBtn: qs('#closeShortcutsHelpBtn'),
 
   // هایلایتر
   hljsLightTheme: qs('#hljs-light-theme'),

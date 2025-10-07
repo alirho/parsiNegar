@@ -75,7 +75,7 @@ export class Editor {
             }
         } else if (!shift && alt) {
             switch (e.code) {
-                case 'KeyT': command = 'table'; break;
+                case 'KeyI': command = 'table'; break; // Changed from KeyT
             }
         } else if (!shift && !alt) {
             switch (e.code) {

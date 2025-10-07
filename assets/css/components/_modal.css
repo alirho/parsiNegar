@@ -196,3 +196,68 @@
   text-align: left;
   direction: ltr;
 }
+
+/* Keyboard Shortcuts Modal Specifics */
+#shortcutsHelpModal .modal-content {
+  max-width: 650px; /* Wider for the table */
+}
+#shortcutsHelpModal .modal-body {
+  padding-top: 0.5rem;
+}
+.shortcuts-container {
+  display: flex;
+  gap: 2rem;
+}
+.shortcuts-column {
+  flex: 1;
+  min-width: 0;
+}
+.shortcuts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.shortcuts-container h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.shortcuts-container h3:first-child {
+  margin-top: 0;
+}
+.shortcuts-table td {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+.shortcuts-table tr:last-child td {
+  border-bottom: none;
+}
+.shortcuts-table td:last-child {
+  text-align: left;
+  direction: ltr;
+  color: #4b5563;
+}
+
+/* Theme overrides for shortcuts modal */
+body.theme-dark .shortcuts-container h3 {
+  border-bottom-color: #404040;
+}
+body.theme-dark .shortcuts-table td {
+  border-bottom-color: #374151;
+}
+body.theme-dark .shortcuts-table td:last-child {
+  color: #9ca3af;
+}
+
+body.theme-sepia .shortcuts-container h3 {
+  border-bottom-color: #d3c4b3;
+}
+body.theme-sepia .shortcuts-table td {
+  border-bottom-color: #e8dcca;
+}
+body.theme-sepia .shortcuts-table td:last-child {
+  color: #8c6d46;
+}
