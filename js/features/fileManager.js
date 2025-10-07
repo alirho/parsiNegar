@@ -377,4 +377,5 @@ export function init(editor) {
   // گوش دادن به رویدادها از ماژول‌های دیگر
   EventBus.on('file:load', loadFile);
   EventBus.on('file:new', newFile);
+  EventBus.on('file:loadReadme', () => loadHelpFile('README.md', 'راهنمای کاربر'));
 }
