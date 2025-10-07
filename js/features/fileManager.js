@@ -358,6 +358,7 @@ export function init(editor) {
 
   // رویدادهای منوی راهنما
   elements.userGuideBtn.addEventListener('click', () => loadHelpFile('docs/userGuide.md', 'راهنمای کاربر'));
+  elements.markdownGuideBtn.addEventListener('click', () => loadHelpFile('docs/markdownGuide.md', 'راهنمای مارک‌داون'));
   elements.technicalDocBtn.addEventListener('click', () => loadHelpFile('docs/technical.md', 'مستندات فنی'));
 
   // رویدادهای منوی ویرایش

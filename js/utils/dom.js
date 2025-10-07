@@ -68,6 +68,7 @@ export const elements = {
   exportPdfBtn: qs('#exportPdfBtn'),
   exportAllZipBtn: qs('#exportAllZipBtn'),
   userGuideBtn: qs('#userGuideBtn'),
+  markdownGuideBtn: qs('#markdownGuideBtn'),
   technicalDocBtn: qs('#technicalDocBtn'),
   keyboardShortcutsBtn: qs('#keyboardShortcutsBtn'),
   undoMenuBtn: qs('#undoMenuBtn'),
