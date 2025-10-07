@@ -19,6 +19,11 @@ export const shortcuts = [
     { name: 'پیوند', icon: 'fa-link', text: '[]()', filter: 'پیوند', shortcut: 'Ctrl+K' },
     { name: 'برجسته', icon: 'fa-highlighter', text: '====', filter: 'برجسته', shortcut: 'Ctrl+Shift+H' },
     { name: 'شعر', icon: 'fa-feather-alt', text: '...شعر\n\n...', filter: 'شعر', shortcut: 'Ctrl+Shift+P' },
+    { name: 'جعبه توجه', icon: 'fa-info-circle', text: '...توجه\n\n...', filter: 'جعبه توجه' },
+    { name: 'جعبه هشدار', icon: 'fa-exclamation-triangle', text: '...هشدار\n\n...', filter: 'جعبه هشدار' },
+    { name: 'جعبه نکته', icon: 'fa-lightbulb', text: '...نکته\n\n...', filter: 'جعبه نکته' },
+    { name: 'جعبه مهم', icon: 'fa-star', text: '...مهم\n\n...', filter: 'جعبه مهم' },
+    { name: 'جعبه احتیاط', icon: 'fa-shield-alt', text: '...احتیاط\n\n...', filter: 'جعبه احتیاط' },
     { name: 'نمودار', icon: 'fa-sitemap', text: '```mermaid\nflowchart LR\n  A[شروع] --> B{تصمیم}\n  B -->|بله| C[ادامه]\n  B -->|خیر| D[توقف]\n```', filter: 'نمودار' },
     { name: 'نقشه‌ذهنی', icon: 'fa-brain', text: '...نقشه‌ذهنی\n- گره مرکزی\n  - گره یک\n  - گره دو\n  - گره سه\n  - گره چهار\n  - گره پنج\n  - گره شش\n...', filter: 'نقشه‌ذهنی', shortcut: 'Ctrl+Shift+M' }
 ];

@@ -309,7 +309,30 @@ export class Editor {
             case 'table': newText = '| ستون ۱ | ستون ۲ |\n|---|---|\n| محتوا | محتوا |'; finalSelection = [start + newText.length, start + newText.length]; break;
             case 'chart': newText = '```mermaid\nflowchart LR\n  A --> B\n```'; finalSelection = [start + newText.length, start + newText.length]; break;
             case 'mindmap': newText = '...نقشه‌ذهنی\n- ریشه\n  - شاخه\n...'; finalSelection = [start + newText.length, start + newText.length]; break;
-            case 'poetry': newText = `...شعر\n${selectedText}\n...`; finalSelection = [start, start + newText.length]; break;
+            case 'poetry':
+                newText = `...شعر\n${selectedText}\n...`;
+                finalSelection = [start + `...شعر\n`.length, start + `...شعر\n`.length + selectedText.length];
+                break;
+            case 'admonition-note':
+                newText = `...توجه\n${selectedText}\n...`;
+                finalSelection = [start + `...توجه\n`.length, start + `...توجه\n`.length + selectedText.length];
+                break;
+            case 'admonition-warning':
+                newText = `...هشدار\n${selectedText}\n...`;
+                finalSelection = [start + `...هشدار\n`.length, start + `...هشدار\n`.length + selectedText.length];
+                break;
+            case 'admonition-tip':
+                newText = `...نکته\n${selectedText}\n...`;
+                finalSelection = [start + `...نکته\n`.length, start + `...نکته\n`.length + selectedText.length];
+                break;
+            case 'admonition-important':
+                newText = `...مهم\n${selectedText}\n...`;
+                finalSelection = [start + `...مهم\n`.length, start + `...مهم\n`.length + selectedText.length];
+                break;
+            case 'admonition-caution':
+                newText = `...احتیاط\n${selectedText}\n...`;
+                finalSelection = [start + `...احتیاط\n`.length, start + `...احتیاط\n`.length + selectedText.length];
+                break;
         }
         
         if (newText) {
