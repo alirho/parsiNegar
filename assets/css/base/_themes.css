@@ -63,7 +63,8 @@ body.theme-dark .modal-content {
   color: #e5e5e5;
 }
 body.theme-dark .modal-header h2,
-body.theme-dark .setting-group label {
+body.theme-dark .setting-group label,
+body.theme-dark .github-link {
   color: inherit;
 }
 body.theme-dark .modal-header,
@@ -308,6 +309,10 @@ body.theme-dark .markdown-preview pre {
 }
 body.theme-dark .markdown-preview th {
     background-color: #374151;
+}
+body.theme-dark .markdown-preview blockquote {
+  border-color: #4b5563;
+  color: #d1d5db;
 }
 body.theme-dark mark.highlight {
   background-color: #a3e635; /* lime-400 */
