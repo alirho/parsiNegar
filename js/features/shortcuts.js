@@ -89,10 +89,23 @@ function handleInputForShortcuts() {
     const cursorPos = editorInstance.el.selectionStart;
     const textBeforeCursor = editorInstance.getValue().substring(0, cursorPos);
     const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
-    
-    if (lastSlashIndex !== -1 && lastSlashIndex === textBeforeCursor.search(/\S|$/)) {
-        const query = textBeforeCursor.substring(lastSlashIndex + 1);
-        showShortcutsMenu(query);
+
+    if (lastSlashIndex === -1) {
+        hideShortcutsMenu();
+        return;
+    }
+
+    // Check if the slash is at the beginning of the string or preceded by whitespace.
+    const isAtStart = lastSlashIndex === 0;
+    const isAfterWhitespace = lastSlashIndex > 0 && /\s/.test(textBeforeCursor[lastSlashIndex - 1]);
+
+    // Check if there's any whitespace between the slash and the cursor,
+    // which would invalidate the shortcut.
+    const queryPart = textBeforeCursor.substring(lastSlashIndex + 1);
+    const hasWhitespaceAfter = /\s/.test(queryPart);
+
+    if ((isAtStart || isAfterWhitespace) && !hasWhitespaceAfter) {
+        showShortcutsMenu(queryPart);
     } else {
         hideShortcutsMenu();
     }
