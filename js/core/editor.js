@@ -1,6 +1,7 @@
 import { EventBus } from './eventBus.js';
 import { pairs } from '../config.js';
 import { init as initShortcuts } from '../features/shortcuts.js';
+import { state } from './state.js';
 
 /**
  * کلاس مدیریت ویرایشگر متن
@@ -43,10 +44,60 @@ export class Editor {
     
     // رویداد keydown برای مدیریت کلیدهای خاص مانند Tab, Enter, Backspace
     _onKeyDown(e) {
+        if (this._handleKeyboardShortcuts(e)) return;
+        if (state.isShortcutMenuVisible) return;
         if (this._handleTab(e)) return;
         if (this._handleAutoPairing(e)) return;
         if (this._handleEnterKey(e)) return;
         if (this._handleBackspace(e)) return;
+    }
+
+    // مدیریت کلیدهای میانبر قالب‌بندی
+    _handleKeyboardShortcuts(e) {
+        const isCtrl = e.ctrlKey || e.metaKey;
+        if (!isCtrl) return false;
+
+        const shift = e.shiftKey;
+        const alt = e.altKey;
+        let command = null;
+
+        if (shift && !alt) {
+            switch (e.code) {
+                case 'KeyL': command = 'orderedList'; break;
+                case 'KeyU': command = 'unorderedList'; break;
+                case 'KeyT': command = 'checklist'; break;
+                case 'KeyC': command = 'blockCode'; break;
+                case 'KeyQ': command = 'quote'; break;
+                case 'KeyI': command = 'image'; break;
+                case 'KeyM': command = 'mindmap'; break;
+                case 'KeyH': command = 'highlight'; break;
+                case 'KeyP': command = 'poetry'; break;
+            }
+        } else if (!shift && alt) {
+            switch (e.code) {
+                case 'KeyT': command = 'table'; break;
+            }
+        } else if (!shift && !alt) {
+            switch (e.code) {
+                case 'KeyB': command = 'bold'; break;
+                case 'KeyI': command = 'italic'; break;
+                case 'KeyU': command = 'strike'; break;
+                case 'KeyK': command = 'link'; break;
+                case 'Backquote': command = 'inlineCode'; break;
+                case 'Digit1': command = 'heading1'; break;
+                case 'Digit2': command = 'heading2'; break;
+                case 'Digit3': command = 'heading3'; break;
+                case 'Digit4': command = 'heading4'; break;
+            }
+        }
+
+        if (command) {
+            e.preventDefault();
+            this.applyFormat(command);
+            return true;
+        }
+
+        return false;
     }
 
     // مدیریت کلید Tab برای تورفتگی
@@ -183,6 +234,25 @@ export class Editor {
         return null;
     }
 
+    // اعمال فرمت عنوان
+    _applyHeadingFormat(level) {
+        const start = this.el.selectionStart;
+        const value = this.el.value;
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        let lineEnd = value.indexOf('\n', start);
+        if (lineEnd === -1) lineEnd = value.length;
+
+        const currentLine = value.substring(lineStart, lineEnd);
+        const content = currentLine.replace(/^#+\s*/, '');
+        const newHeading = '#'.repeat(level) + ' ';
+        const newLine = newHeading + content;
+
+        this.el.value = value.substring(0, lineStart) + newLine + value.substring(lineEnd);
+        this.el.setSelectionRange(start + (newLine.length - currentLine.length), start + (newLine.length - currentLine.length));
+        this.el.focus();
+        EventBus.emit('editor:contentChanged', this.el.value);
+    }
+
     // API عمومی کلاس
 
     // گرفتن محتوای فعلی ویرایشگر
@@ -203,51 +273,43 @@ export class Editor {
     
     // اعمال فرمت مارک‌داون
     applyFormat(action) {
+        if (action.startsWith('heading')) {
+            const level = parseInt(action.replace('heading', ''), 10);
+            this._applyHeadingFormat(level);
+            return;
+        }
+
         const start = this.el.selectionStart;
         const end = this.el.selectionEnd;
         const selectedText = this.el.value.substring(start, end);
         let newText = '';
-        let newCursorPos = start;
-        let finalSelection = [0, 0];
+        let finalSelection = [start, end];
 
         switch (action) {
-            case 'bold':
-                newText = `**${selectedText}**`;
-                finalSelection = [start + 2, end + 2];
-                break;
-            case 'italic':
-                newText = `*${selectedText}*`;
-                finalSelection = [start + 1, end + 1];
-                break;
-            case 'strike':
-                newText = `~~${selectedText}~~`;
-                finalSelection = [start + 2, end + 2];
-                break;
-            case 'heading':
-                const lineStart = this.el.value.lastIndexOf('\n', start - 1) + 1;
-                this.el.value = this.el.value.substring(0, lineStart) + '## ' + this.el.value.substring(lineStart);
-                this.el.setSelectionRange(lineStart + 3, lineStart + 3);
-                break;
+            case 'bold': newText = `**${selectedText}**`; finalSelection = [start + 2, end + 2]; break;
+            case 'italic': newText = `*${selectedText}*`; finalSelection = [start + 1, end + 1]; break;
+            case 'strike': newText = `~~${selectedText}~~`; finalSelection = [start + 2, end + 2]; break;
+            case 'highlight': newText = `==${selectedText}==`; finalSelection = [start + 2, end + 2]; break;
+            case 'heading': this._applyHeadingFormat(2); return;
             case 'unorderedList': newText = `- ${selectedText}`; finalSelection = [start + 2, end + 2]; break;
             case 'orderedList': newText = `1. ${selectedText}`; finalSelection = [start + 3, end + 3]; break;
             case 'checklist': newText = `- [ ] ${selectedText}`; finalSelection = [start + 6, end + 6]; break;
             case 'quote': newText = `> ${selectedText}`; finalSelection = [start + 2, end + 2]; break;
             case 'code':
                 newText = selectedText.includes('\n') ? `\`\`\`\n${selectedText}\n\`\`\`` : `\`${selectedText}\``;
-                const wrapperLength = selectedText.includes('\n') ? 4 : 1;
-                finalSelection = [start + wrapperLength, end + wrapperLength];
+                finalSelection = [start + (selectedText.includes('\n') ? 4 : 1), end + (selectedText.includes('\n') ? 4 : 1)];
                 break;
+            case 'inlineCode': newText = `\`${selectedText}\``; finalSelection = [start + 1, end + 1]; break;
+            case 'blockCode': newText = `\`\`\`\n${selectedText}\n\`\`\``; finalSelection = [start + 4, end + 4]; break;
             case 'link':
                 newText = `[${selectedText}]()`;
-                finalSelection = [start + 1, end + 1];
-                if (selectedText) {
-                    finalSelection = [end + 3, end + 3];
-                }
+                finalSelection = selectedText ? [end + 3, end + 3] : [start + 1, end + 1];
                 break;
-             case 'image': newText = `![]()`; finalSelection = [start + 4, start + 4]; break;
-             case 'table': newText = '| ستون ۱ | ستون ۲ |\n|---|---|\n| محتوا | محتوا |'; finalSelection = [start, start + newText.length]; break;
-             case 'chart': newText = '```mermaid\nflowchart LR\n  A --> B\n```'; finalSelection = [start, start + newText.length]; break;
-             case 'mindmap': newText = '...نقشه‌ذهنی\n- ریشه\n  - شاخه\n...'; finalSelection = [start, start + newText.length]; break;
+            case 'image': newText = `![]()`; finalSelection = [start + 4, start + 4]; break;
+            case 'table': newText = '| ستون ۱ | ستون ۲ |\n|---|---|\n| محتوا | محتوا |'; finalSelection = [start + newText.length, start + newText.length]; break;
+            case 'chart': newText = '```mermaid\nflowchart LR\n  A --> B\n```'; finalSelection = [start + newText.length, start + newText.length]; break;
+            case 'mindmap': newText = '...نقشه‌ذهنی\n- ریشه\n  - شاخه\n...'; finalSelection = [start + newText.length, start + newText.length]; break;
+            case 'poetry': newText = `...شعر\n${selectedText}\n...`; finalSelection = [start, start + newText.length]; break;
         }
         
         if (newText) {

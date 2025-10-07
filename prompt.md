@@ -905,3 +905,28 @@ Uncaught TypeError: can't access property "textContent", document.querySelector(
 1. پارس‌نشان مفسر پیش‌فرض باشه
 2. در تم تیره نقل‌قول با استایل هماهنگ نیست.
 3. در تم تیره، لوگوی گیت‌‌هاب در بخش تنظیمات با تم سازگار نیست
+
+## پرامپت ۸۰
+می‌خوام برای نشانه‌گذاری‌های مارک‌داون کلیدهای میانبر اضاف کنی:
+1. پررنگ Ctrl + B  (Bold)
+2. کج Ctrl + I (Italic)
+3. زیرخط Ctrl + U (Underline)
+4. پیوند Ctrl + K (Link)
+5. کد تک‌خطی Ctrl + ` (Inline Code)
+6. عنوان یک Ctrl + 1
+7. عنوان دو Ctrl + 2
+8. عنوان سه Ctrl + 3
+9. عنوان چهار Ctrl + 4
+10. لیست مرتب Ctrl + Shift + L
+11. لیست نامرتب Ctrl + Shift + U
+12. بازبینه Ctrl + Shift + T  (Task List)
+13. بلوک کد Ctrl + Shift + C (Code Block)
+14. نقل‌قول Ctrl + Shift + Q (Quote)
+15. تصویر Ctrl + Shift + I (Image)
+16. جدول Ctrl + Shift + T (Table)
+17. نقشه ذهنی Ctrl + Shift + M  (Mind Map)
+18. برجسته کردن Ctrl + Shift + H (highlight)
+19. شعر Ctrl + Shift + P
+دقت کن که این میانبر‌ها با مرروگر تداخل نداشته باشه. در منوی افزودن و میان‌بر نوشتاری هم کلیدهای میانبر را نمایش بده.
+
+در انتخاب زبان فارسی هم پشتیبانی بشن.

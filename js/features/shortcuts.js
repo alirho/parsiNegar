@@ -20,12 +20,19 @@ function showShortcutsMenu(query = '') {
     
     state.selectedShortcutIndex = 0;
 
-    elements.shortcutsMenu.innerHTML = filteredShortcuts.map((shortcut, index) => `
-        <div class="shortcut-item ${index === state.selectedShortcutIndex ? 'selected' : ''}" data-index="${index}" data-filter="${shortcut.filter}">
-            <i class="fas ${shortcut.icon}"></i>
-            <span>${shortcut.name}</span>
-        </div>
-    `).join('');
+    elements.shortcutsMenu.innerHTML = filteredShortcuts.map((shortcut, index) => {
+        const shortcutHint = shortcut.shortcut
+            ? `<span class="shortcut-hint">${shortcut.shortcut.replace(/\+/g, ' + ')}</span>`
+            : '';
+        
+        return `
+            <div class="shortcut-item ${index === state.selectedShortcutIndex ? 'selected' : ''}" data-index="${index}" data-filter="${shortcut.filter}">
+                <i class="fas ${shortcut.icon}"></i>
+                <span>${shortcut.name}</span>
+                ${shortcutHint}
+            </div>
+        `;
+    }).join('');
 
     // محاسبه موقعیت منو
     const cursorPos = editorInstance.el.selectionStart;
@@ -67,7 +74,7 @@ function insertShortcut(shortcut) {
         editorInstance.setValue(newText);
 
         const newCursorPos = lastSlashIndex + shortcut.text.length;
-        if(shortcut.filter === 'پررنگ' || shortcut.filter === 'مورب' || shortcut.filter === 'خط زده' || shortcut.filter === 'کد تک‌خطی'){
+        if(shortcut.filter === 'پررنگ' || shortcut.filter === 'مورب' || shortcut.filter === 'خط زده' || shortcut.filter === 'کد تک‌خطی' || shortcut.filter === 'برجسته'){
             editorInstance.el.setSelectionRange(newCursorPos - (shortcut.text.length / 2), newCursorPos - (shortcut.text.length / 2));
         } else if (shortcut.filter === 'پیوند' || shortcut.filter === 'تصویر') {
              editorInstance.el.setSelectionRange(newCursorPos - 1, newCursorPos - 1);
