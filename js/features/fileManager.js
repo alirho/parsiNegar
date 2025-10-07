@@ -270,99 +270,24 @@ async function exportAllAsZip() {
 }
 
 // --- بارگذاری راهنما ---
-async function loadReadme() {
+async function loadHelpFile(filePath, fileName) {
     try {
-        const response = await fetch('./README.md');
-        if (!response.ok) throw new Error('فایل یافت نشد');
+        const response = await fetch(filePath);
+        if (!response.ok) throw new Error(`فایل ${filePath} یافت نشد`);
         const content = await response.text();
-        state.currentFileId = 'README.md';
-        elements.filename.value = 'README';
+        const fileId = `${fileName}.md`;
+        state.currentFileId = fileId;
+        elements.filename.value = fileName;
         editorInstance.setValue(content, { resetHistory: true });
-        await storage.saveFileToDB('README.md', content);
+        // ذخیره فایل راهنما در DB برای دسترسی آفلاین
+        await storage.saveFileToDB(fileId, content);
         EventBus.emit('file:listChanged');
     } catch (error) {
-        console.error('خطا در بارگذاری README.md:', error);
+        console.error(`خطا در بارگذاری ${filePath}:`, error);
+        customAlert(`محتوای راهنما یافت نشد.`, 'خطا');
     }
 }
 
-async function loadParsneshanGuide() {
-    const content = `# راهنمای پارس‌نشان
-
-«پارس‌نشان» یک مفسر مارک‌داون قدرتمند برای زبان فارسی است که ویژگی‌های خاصی را به مارک‌داون استاندارد اضافه می‌کند.
-
-## جعبه‌های توضیحی
-
-برای جلب توجه خواننده به نکات مهم از جعبه‌های توضیحی استفاده کنید.
-
-...توجه
-این یک پیام توجه است. شما می‌توانید **قالب‌بندی‌های** مارک‌دوان را *درون* این جعبه‌ها نیز استفاده کنید.
-...
-
-...هشدار
-مراقب باشید! این یک عملیات حساس است.
-...
-
-...نکته
-این یک نکته مفید برای کاربران است.
-...
-
-...مهم
-این بخش را حتما مطالعه کنید.
-...
-
-...احتیاط
-تغییر دادن این تنظیمات ممکن است باعث از کار افتادن برنامه شود.
-...
-
-## نمایش شعر
-
-اشعار را با قالب‌بندی کلاسیک و خوانا نمایش دهید.
-
-...شعر
-بنی آدم اعضای یکدیگرند
-که در آفرینش ز یک گوهرند
-
-چو عضوی به درد آورد روزگار
-دگر عضوها را نماند قرار
-...
-
-## هایلایت متن
-
-برای تاکید روی کلمات یا عبارات کلیدی، آن‌ها را هایلایت کنید.
-
-این یک متن ==بسیار مهم== است که باید دیده شود.
-
-## لیست مرتب با اعداد فارسی
-
-نیازی نیست اعداد را به انگلیسی تایپ کنید. «پارس‌نشان» به طور خودکار لیست‌های مرتب با اعداد فارسی را تشخیص می‌دهد.
-
-۱. آیتم اول
-۲. آیتم دوم
-   ۱. آیتم تودرتو
-۳. آیتم سوم
-
-## بازبینه (Checklist)
-
-لیست کارها را به راحتی ایجاد کنید.
-
-- [x] اولین کار انجام شد
-- [ ] دومین کار باقی مانده است
-- [ ] سومین کار
-
-## تشخیص خودکار جهت متن
-
-پاراگراف‌ها به طور خودکار راست‌چین یا چپ‌چین می‌شوند.
-
-این یک پاراگراف فارسی است و باید راست‌چین باشد.
-
-This is an English paragraph and it should be left-aligned.
-`;
-    state.currentFileId = 'راهنمای پارس‌نشان.md';
-    elements.filename.value = 'راهنمای پارس‌نشان';
-    editorInstance.setValue(content, { resetHistory: true });
-    await storage.saveFileToDB(state.currentFileId, content);
-    EventBus.emit('file:listChanged');
-}
 
 // --- مدیریت کلیپ‌بورد ---
 function handleCut() {
@@ -432,8 +357,8 @@ export function init(editor) {
   elements.downloadPdfBtn.addEventListener('click', exportAsPdf);
 
   // رویدادهای منوی راهنما
-  elements.helpBtn.addEventListener('click', loadReadme);
-  elements.parsneshanHelpBtn.addEventListener('click', loadParsneshanGuide);
+  elements.userGuideBtn.addEventListener('click', () => loadHelpFile('docs/userGuide.md', 'راهنمای کاربر'));
+  elements.technicalDocBtn.addEventListener('click', () => loadHelpFile('docs/technical.md', 'مستندات فنی'));
 
   // رویدادهای منوی ویرایش
   elements.undoMenuBtn.addEventListener('click', (e) => { e.preventDefault(); editorInstance.undo(); });
@@ -449,7 +374,6 @@ export function init(editor) {
   elements.filename.addEventListener('change', renameCurrentFile);
 
   // گوش دادن به رویدادها از ماژول‌های دیگر
-  EventBus.on('file:loadReadme', loadReadme);
   EventBus.on('file:load', loadFile);
   EventBus.on('file:new', newFile);
 }
