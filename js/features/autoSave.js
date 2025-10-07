@@ -1,7 +1,7 @@
 import { EventBus } from '../core/eventBus.js';
 import { state } from '../core/state.js';
 import { debounce } from '../utils/helpers.js';
-import { saveFileToDB } from '../utils/storage.js';
+import { saveFileToDB, getFileFromDB } from '../utils/storage.js';
 
 /**
  * ماژول ذخیره‌سازی خودکار
@@ -21,8 +21,13 @@ const debouncedSave = debounce(async (editor) => {
 
         // اگر فایل نام معتبری داشت، آن را در IndexedDB هم ذخیره کن
         if (state.currentFileId && state.currentFileId.trim() !== '' && state.currentFileId !== 'نام فایل') {
-            await saveFileToDB(state.currentFileId, currentContent);
-            EventBus.emit('file:saved', state.currentFileId);
+            const existingFile = await getFileFromDB(state.currentFileId);
+            // تنها در صورتی فایل را ذخیره می‌کنیم که محتوای آن واقعاً تغییر کرده باشد.
+            // این کار از به‌روزرسانی بی‌دلیل lastModified و تغییر ترتیب فایل‌ها هنگام باز کردن جلوگیری می‌کند.
+            if (!existingFile || existingFile.content !== currentContent) {
+                await saveFileToDB(state.currentFileId, currentContent);
+                EventBus.emit('file:saved', state.currentFileId);
+            }
         }
     } catch (e) {
         console.error("خطا در ذخیره‌سازی خودکار:", e);
