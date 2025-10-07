@@ -34,3 +34,59 @@
 #toolbar button:hover {
   background: rgba(0, 0, 0, 0.05);
 }
+
+/* Toolbar Dropdown */
+.toolbar-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.toolbar-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 20;
+  padding: 0.25rem 0;
+  margin-top: 0.25rem;
+}
+
+.toolbar-dropdown-menu.hidden {
+  display: none;
+}
+
+.toolbar-dropdown-menu a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.toolbar-dropdown-menu a:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+/* Theme overrides for the dropdown */
+body.theme-dark .toolbar-dropdown-menu {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+body.theme-dark .toolbar-dropdown-menu a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-sepia .toolbar-dropdown-menu {
+  background: #f4ecd8;
+  border-color: #d3c4b3;
+}
+body.theme-sepia .toolbar-dropdown-menu a:hover {
+  background: #e8dcca;
+}

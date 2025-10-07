@@ -37,6 +37,29 @@ export function init(editor) {
         });
     });
 
+    // منطق جدید برای منوهای کشویی نوار ابزار
+    elements.toolbar.querySelectorAll('.toolbar-dropdown-container').forEach(container => {
+        const toggle = container.querySelector('.toolbar-dropdown-toggle');
+        const menu = container.querySelector('.toolbar-dropdown-menu');
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // بستن سایر منوهای کشویی
+            document.querySelectorAll('.toolbar-dropdown-menu').forEach(m => {
+                if (m !== menu) m.classList.add('hidden');
+            });
+            menu.classList.toggle('hidden');
+        });
+
+        menu.querySelectorAll('a[data-action]').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleFormatAction(item.dataset.action);
+                menu.classList.add('hidden'); // بستن منو پس از انتخاب
+            });
+        });
+    });
+
     // رویداد دکمه‌های واگرد و ازنو
     elements.undoBtn.addEventListener('click', () => editorInstance.undo());
     elements.redoBtn.addEventListener('click', () => editorInstance.redo());

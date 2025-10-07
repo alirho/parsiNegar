@@ -92,6 +92,12 @@ class ParsiNegarApp {
             elements.shortcutsMenu.style.display = 'none';
             state.isShortcutMenuVisible = false;
         }
+        // بستن منوی کشویی نوار ابزار
+        if (!e.target.closest('.toolbar-dropdown-container')) {
+            document.querySelectorAll('.toolbar-dropdown-menu:not(.hidden)').forEach(dropdown => {
+                dropdown.classList.add('hidden');
+            });
+        }
     });
 
     // همگام‌سازی اسکرول بین ادیتور و پیش‌نمایش
