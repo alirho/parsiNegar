@@ -69,6 +69,14 @@ export const elements = {
   exportAllZipBtn: qs('#exportAllZipBtn'),
   helpBtn: qs('#helpBtn'),
   parsneshanHelpBtn: qs('#parsneshanHelpBtn'),
+  undoMenuBtn: qs('#undoMenuBtn'),
+  redoMenuBtn: qs('#redoMenuBtn'),
+  cutMenuBtn: qs('#cutMenuBtn'),
+  copyMenuBtn: qs('#copyMenuBtn'),
+  pasteMenuBtn: qs('#pasteMenuBtn'),
+  selectAllMenuBtn: qs('#selectAllMenuBtn'),
+  findMenuBtn: qs('#findMenuBtn'),
+  replaceMenuBtn: qs('#replaceMenuBtn'),
   fileInput: qs('#fileInput'),
 
   // تنظیمات

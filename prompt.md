@@ -936,3 +936,37 @@ Uncaught TypeError: can't access property "textContent", document.querySelector(
 
 ## پرامپت ۸۲
 موارد بالا را به نوار ابزار هم اضافه کن.
+
+## پرامپت ۸۳
+یک منوی جدید با نام «ویرایش» پس از منوی «فایل» اضافه کن و گزینه‌های زیر را در اون قرار بده:
+1. واگرد Ctrl + Z (Undo)
+2. ازنو Ctrl + Y (Redo)
+3. برش Ctrl + X (Cut)
+4. رونوشت Ctrl + C (Copy)
+5. چسباندن Ctrl + V (Paste)
+6. انتخاب همه Ctrl + A (Select All)
+7. جست‌وجو Ctrl + F (Find)
+8. جست‌وجو و جایگزینی Ctrl + H (Replace)
+
+## پرامپت ۸۴
+در زمان انتخاب گزینه چسباندن از منوی «ویرایش» خطای زیر نمایش داده می‌شه:
+
+```js
+Failed to paste text:  DOMException: Clipboard read operation is not allowed. fileManager.js:404:17
+    handlePaste http://127.0.0.1:8000/js/features/fileManager.js:404
+```
+
+## پرامپت ۸۵
+حالا خطای زیر نمایش داده می‌شه:
+
+```js
+Failed to paste text:  Error: execCommand returned false
+    handlePaste http://127.0.0.1:8000/js/features/fileManager.js:396
+    init http://127.0.0.1:8000/js/features/fileManager.js:440
+    init http://127.0.0.1:8000/js/features/fileManager.js:440
+    initComponents http://127.0.0.1:8000/js/app.js:36
+    ParsiNegarApp http://127.0.0.1:8000/js/app.js:21
+    <anonymous> http://127.0.0.1:8000/js/app.js:127
+    EventListener.handleEvent* http://127.0.0.1:8000/js/app.js:126
+fileManager.js:399:17
+```

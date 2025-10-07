@@ -200,9 +200,15 @@ export function init(editor) {
     });
 
     document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        const isCtrl = e.ctrlKey || e.metaKey;
+        if (isCtrl && e.key === 'f') {
             e.preventDefault();
             openSearchBar();
+        }
+        if (isCtrl && e.key === 'h') {
+             e.preventDefault();
+             openSearchBar();
+             elements.replaceInput.focus();
         }
         if (e.key === 'Escape' && state.isSearchActive) {
             e.preventDefault();
@@ -211,4 +217,10 @@ export function init(editor) {
     });
 
     EventBus.on('search:rerun', () => performSearch(false));
+    EventBus.on('search:open', (options = {}) => {
+        openSearchBar();
+        if (options.focusReplace) {
+            elements.replaceInput.focus();
+        }
+    });
 }

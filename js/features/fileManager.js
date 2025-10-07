@@ -364,6 +364,51 @@ This is an English paragraph and it should be left-aligned.
     EventBus.emit('file:listChanged');
 }
 
+// --- مدیریت کلیپ‌بورد ---
+function handleCut() {
+    editorInstance.el.focus();
+    try {
+        if (!document.execCommand('cut')) {
+            console.warn('document.execCommand("cut") failed. This is common in some browsers due to security restrictions.');
+            customAlert('برش متن با خطا مواجه شد. لطفا از میانبر Ctrl+X استفاده کنید.', 'خطا');
+        }
+    } catch (err) {
+        console.error('An unexpected error occurred during cut: ', err);
+        customAlert('یک خطای غیرمنتظره هنگام برش رخ داد. لطفا از میانبر Ctrl+X استفاده کنید.', 'خطا');
+    }
+}
+
+function handleCopy() {
+    editorInstance.el.focus();
+    try {
+        if (!document.execCommand('copy')) {
+            console.warn('document.execCommand("copy") failed. This is common in some browsers due to security restrictions.');
+            customAlert('رونوشت متن با خطا مواجه شد. لطفا از میانبر Ctrl+C استفاده کنید.', 'خطا');
+        }
+    } catch (err) {
+        console.error('An unexpected error occurred during copy: ', err);
+        customAlert('یک خطای غیرمنتظره هنگام رونوشت رخ داد. لطفا از میانبر Ctrl+C استفاده کنید.', 'خطا');
+    }
+}
+
+function handlePaste() {
+    editorInstance.el.focus();
+    try {
+        if (!document.execCommand('paste')) {
+            console.warn('document.execCommand("paste") failed. This is common in some browsers due to security restrictions.');
+            customAlert('چسباندن متن با خطا مواجه شد. مرورگر شما اجازه این کار را نمی‌دهد. لطفا از میانبر Ctrl+V استفاده کنید.', 'خطا');
+        }
+    } catch (err) {
+        console.error('An unexpected error occurred during paste: ', err);
+        customAlert('یک خطای غیرمنتظره هنگام چسباندن رخ داد. لطفا از میانبر Ctrl+V استفاده کنید.', 'خطا');
+    }
+}
+
+function handleSelectAll() {
+    editorInstance.el.focus();
+    editorInstance.el.select();
+}
+
 // --- مقداردهی اولیه ---
 
 export function init(editor) {
@@ -389,6 +434,16 @@ export function init(editor) {
   // رویدادهای منوی راهنما
   elements.helpBtn.addEventListener('click', loadReadme);
   elements.parsneshanHelpBtn.addEventListener('click', loadParsneshanGuide);
+
+  // رویدادهای منوی ویرایش
+  elements.undoMenuBtn.addEventListener('click', (e) => { e.preventDefault(); editorInstance.undo(); });
+  elements.redoMenuBtn.addEventListener('click', (e) => { e.preventDefault(); editorInstance.redo(); });
+  elements.cutMenuBtn.addEventListener('click', (e) => { e.preventDefault(); handleCut(); });
+  elements.copyMenuBtn.addEventListener('click', (e) => { e.preventDefault(); handleCopy(); });
+  elements.pasteMenuBtn.addEventListener('click', (e) => { e.preventDefault(); handlePaste(); });
+  elements.selectAllMenuBtn.addEventListener('click', (e) => { e.preventDefault(); handleSelectAll(); });
+  elements.findMenuBtn.addEventListener('click', (e) => { e.preventDefault(); EventBus.emit('search:open'); });
+  elements.replaceMenuBtn.addEventListener('click', (e) => { e.preventDefault(); EventBus.emit('search:open', { focusReplace: true }); });
 
   // رویداد تغییر نام فایل از طریق اینپوت
   elements.filename.addEventListener('change', renameCurrentFile);

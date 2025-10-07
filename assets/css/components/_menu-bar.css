@@ -113,6 +113,22 @@
   margin: 0;
 }
 
+/* Menu Separator */
+.submenu li.separator {
+  padding: 0;
+  margin: 0.25rem 0;
+}
+.submenu li.separator hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+body.theme-dark .submenu li.separator hr {
+  border-top-color: #404040;
+}
+body.theme-sepia .submenu li.separator hr {
+  border-top-color: #d3c4b3;
+}
+
 /* Keyboard Shortcut Hints */
 .shortcut-hint {
   margin-right: auto;
