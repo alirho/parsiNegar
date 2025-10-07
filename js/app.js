@@ -153,7 +153,7 @@ class ParsiNegarApp {
             switch (e.code) { // Use e.code for layout-independent shortcuts
                 case 'KeyP':
                     e.preventDefault();
-                    elements.content.classList.toggle('editor-hidden'); // Toggle preview-only mode
+                    elements.content.classList.toggle('preview-only'); // Toggle preview-only mode
                     break;
                 case 'KeyF':
                     e.preventDefault();

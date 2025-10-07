@@ -109,11 +109,11 @@ body.theme-dark #dialogInput:focus {
   border-color: #5eead4;
   box-shadow: 0 0 0 1px #5eead4;
 }
-body.theme-dark #searchBar .divider,
-body.theme-dark .property-item,
-body.theme-dark .modal-footer {
+body.theme-dark #searchBar .divider {
   background: #404040;
-  border-color: #404040;
+}
+body.theme-dark .property-item {
+  border-bottom-color: #404040;
 }
 body.theme-dark #shortcutsMenu {
   background: #2d2d2d;
@@ -258,11 +258,11 @@ body.theme-sepia #dialogInput:focus {
   border-color: #5f4b32;
   box-shadow: 0 0 0 1px #5f4b32;
 }
-body.theme-sepia #searchBar .divider,
-body.theme-sepia .property-item,
-body.theme-sepia .modal-footer {
+body.theme-sepia #searchBar .divider {
   background: #d3c4b3;
-  border-color: #d3c4b3;
+}
+body.theme-sepia .property-item {
+  border-bottom-color: #d3c4b3;
 }
 body.theme-sepia #shortcutsMenu {
   background: #f4ecd8;

@@ -12,7 +12,6 @@ export class Editor {
         this.el = element;
         this.history = [''];
         this.historyIndex = 0;
-        this.lastEnterTime = 0; // برای تشخیص دابل-اینتر در لیست‌ها
 
         this._init();
     }
@@ -175,33 +174,59 @@ export class Editor {
         return false;
     }
 
-    // مدیریت کلید Enter برای ادامه دادن لیست‌ها
+    // مدیریت کلید Enter برای ادامه دادن یا شکستن لیست‌ها
     _handleEnterKey(e) {
         if (e.key !== 'Enter') return false;
-
+    
         const cursorPos = this.el.selectionStart;
-        const lineStart = this.el.value.lastIndexOf('\n', cursorPos - 1) + 1;
-        const currentLine = this.el.value.substring(lineStart, cursorPos);
-        const prefix = this._getListPrefix(currentLine);
-
-        if (prefix) {
+        const text = this.el.value;
+        const lineStart = text.lastIndexOf('\n', cursorPos - 1) + 1;
+        
+        // دریافت محتوای کامل خط فعلی، صرف نظر از موقعیت مکان‌نما
+        let lineEnd = text.indexOf('\n', lineStart);
+        if (lineEnd === -1) {
+            lineEnd = text.length;
+        }
+        const currentLine = text.substring(lineStart, lineEnd);
+        const trimmedLine = currentLine.trim();
+    
+        // بررسی اینکه آیا خط فعلی یک آیتم لیست خالی است یا خیر
+        const isUnorderedEmpty = ['-', '*', '+'].includes(trimmedLine);
+        const isOrderedEmpty = /^[0-9۰-۹]+\.$/.test(trimmedLine);
+        const isChecklistEmpty = /^[-*+]\s*\[\s?x?\]$/i.test(trimmedLine);
+    
+        if (isUnorderedEmpty || isOrderedEmpty || isChecklistEmpty) {
+            // کاربر در یک آیتم لیست خالی Enter زده است. از لیست خارج شو.
             e.preventDefault();
-            const now = Date.now();
-            if (now - this.lastEnterTime < 500 && currentLine.trim().match(/^(\s*([-*+]|([0-9۰-۹]+\.))\s*)$/)) {
-                // دابل-اینتر: شکستن لیست
-                this.el.value = this.el.value.substring(0, lineStart -1) + this.el.value.substring(cursorPos);
-                this.el.setSelectionRange(lineStart, lineStart);
-            } else {
-                // ادامه دادن لیست
-                const textToInsert = '\n' + prefix;
-                this.el.value = this.el.value.substring(0, cursorPos) + textToInsert + this.el.value.substring(cursorPos);
-                this.el.setSelectionRange(cursorPos + textToInsert.length, cursorPos + textToInsert.length);
-            }
-            this.lastEnterTime = now;
+            
+            const beforeLine = text.substring(0, lineStart);
+            const afterText = text.substring(lineEnd); // شامل \n در صورت وجود
+            
+            this.el.value = beforeLine + afterText;
+            this.el.setSelectionRange(lineStart, lineStart);
+    
             EventBus.emit('editor:contentChanged', this.el.value);
             return true;
         }
-        this.lastEnterTime = 0;
+        
+        // این یک آیتم لیست غیرخالی است. لیست را ادامه بده.
+        const currentLineToCursor = text.substring(lineStart, cursorPos);
+        const prefix = this._getListPrefix(currentLineToCursor);
+        if (prefix) {
+            e.preventDefault();
+            
+            const textAfterCursor = text.substring(cursorPos);
+            const textToInsert = '\n' + prefix;
+            
+            this.el.value = text.substring(0, cursorPos) + textToInsert + textAfterCursor;
+            
+            const newCursorPos = cursorPos + textToInsert.length;
+            this.el.setSelectionRange(newCursorPos, newCursorPos);
+            
+            EventBus.emit('editor:contentChanged', this.el.value);
+            return true;
+        }
+    
         return false;
     }
     
@@ -290,7 +315,6 @@ export class Editor {
             case 'italic': newText = `*${selectedText}*`; finalSelection = [start + 1, end + 1]; break;
             case 'strike': newText = `~~${selectedText}~~`; finalSelection = [start + 2, end + 2]; break;
             case 'highlight': newText = `==${selectedText}==`; finalSelection = [start + 2, end + 2]; break;
-            case 'heading': this._applyHeadingFormat(2); return;
             case 'unorderedList': newText = `- ${selectedText}`; finalSelection = [start + 2, end + 2]; break;
             case 'orderedList': newText = `1. ${selectedText}`; finalSelection = [start + 3, end + 3]; break;
             case 'checklist': newText = `- [ ] ${selectedText}`; finalSelection = [start + 6, end + 6]; break;

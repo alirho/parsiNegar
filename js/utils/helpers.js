@@ -19,6 +19,17 @@ export function debounce(func, wait) {
 }
 
 /**
+ * تبدیل اعداد انگلیسی به فارسی در یک رشته
+ * @param {string|number} value - مقدار برای تبدیل
+ * @returns {string} - رشته با اعداد فارسی
+ */
+function toPersianDigits(value) {
+    const strValue = String(value);
+    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return strValue.replace(/[0-9]/g, (w) => persianDigits[+w]);
+}
+
+/**
  * حذف پسوند فایل از نام آن
  * @param {string} name - نام فایل
  * @returns {string} - نام فایل بدون پسوند
@@ -34,9 +45,9 @@ export function removeFileExtension(name) {
  * @returns {string} - رشته فرمت‌شده
  */
 export function formatFileSize(bytes) {
-    if (bytes < 1024) return `${bytes} بایت`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} کیلوبایت`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} مگابایت`;
+    if (bytes < 1024) return `${toPersianDigits(bytes)} بایت`;
+    if (bytes < 1024 * 1024) return `${toPersianDigits((bytes / 1024).toFixed(1))} کیلوبایت`;
+    return `${toPersianDigits((bytes / (1024 * 1024)).toFixed(1))} مگابایت`;
 }
 
 /**
