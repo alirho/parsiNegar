@@ -24,8 +24,9 @@ function updateSearchCount() {
 
 function updateReplaceButtonsState() {
     const hasSearchTerm = elements.searchInput.value !== '';
-    const hasReplaceTerm = elements.replaceInput.value !== '';
-    const canReplace = hasSearchTerm && hasReplaceTerm;
+    // The ability to replace should only depend on having a search term.
+    // Replacing with an empty string (deleting) is a valid action.
+    const canReplace = hasSearchTerm;
     
     elements.replaceBtn.disabled = !canReplace || currentMatchIndex < 0 || !matches[currentMatchIndex]?.dataset.start;
     elements.replaceAllBtn.disabled = !canReplace || !matches.some(m => m.dataset.start);
