@@ -44,6 +44,7 @@ export class Editor {
     // رویداد keydown برای مدیریت کلیدهای خاص مانند Tab, Enter, Backspace
     _onKeyDown(e) {
         if (this._handleKeyboardShortcuts(e)) return;
+        if (this._handleMoveLines(e)) return;
         if (state.isShortcutMenuVisible) return;
         if (this._handleTab(e)) return;
         if (this._handleAutoPairing(e)) return;
@@ -97,6 +98,66 @@ export class Editor {
         }
 
         return false;
+    }
+
+    // مدیریت جابجایی خطوط با Alt + Arrow keys
+    _handleMoveLines(e) {
+        if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) {
+            return false;
+        }
+    
+        e.preventDefault();
+    
+        const value = this.el.value;
+        const start = this.el.selectionStart;
+        const end = this.el.selectionEnd;
+        const direction = e.key === 'ArrowUp' ? -1 : 1;
+    
+        // پیدا کردن خطوط کامل شامل متن انتخاب شده
+        const lineStartPos = value.lastIndexOf('\n', start - 1) + 1;
+        
+        const effectiveEnd = (start === end) ? start : end - 1;
+        let lineEndPos = value.indexOf('\n', effectiveEnd);
+        if (lineEndPos === -1) {
+            lineEndPos = value.length;
+        }
+    
+        const selectedBlock = value.substring(lineStartPos, lineEndPos);
+    
+        if (direction === -1) { // حرکت به بالا
+            if (lineStartPos === 0) return true; // در بالاترین نقطه است
+    
+            const prevLineStartPos = value.lastIndexOf('\n', lineStartPos - 2) + 1;
+            const prevBlock = value.substring(prevLineStartPos, lineStartPos - 1); // -1 برای حذف \n پایانی
+            
+            const before = value.substring(0, prevLineStartPos);
+            const after = value.substring(lineEndPos);
+    
+            this.el.value = before + selectedBlock + '\n' + prevBlock + after;
+            this.el.setSelectionRange(prevLineStartPos, prevLineStartPos + selectedBlock.length);
+    
+        } else { // حرکت به پایین
+            if (lineEndPos === value.length) return true; // در پایین‌ترین نقطه است
+    
+            let nextLineEndPos = value.indexOf('\n', lineEndPos + 1);
+            if (nextLineEndPos === -1) {
+                nextLineEndPos = value.length;
+            }
+            
+            const nextBlock = value.substring(lineEndPos + 1, nextLineEndPos);
+            
+            const before = value.substring(0, lineStartPos);
+            const after = value.substring(nextLineEndPos);
+    
+            this.el.value = before + nextBlock + '\n' + selectedBlock + after;
+    
+            const newStart = start + nextBlock.length + 1;
+            const newEnd = end + nextBlock.length + 1;
+            this.el.setSelectionRange(newStart, newEnd);
+        }
+    
+        EventBus.emit('editor:contentChanged', this.el.value);
+        return true;
     }
 
     // مدیریت کلید Tab برای تورفتگی
