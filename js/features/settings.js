@@ -27,16 +27,39 @@ function saveSettings() {
     return settings;
 }
 
+/**
+ * Determines the system's preferred theme and applies it to the app.
+ * Notifies other components of the effective theme change for re-rendering.
+ */
+function applyAndNotifySystemTheme() {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const systemTheme = prefersDark ? 'dark' : 'light';
+    
+    document.body.className = `theme-${systemTheme}`;
+    setHljsTheme(systemTheme);
+    configureMermaidTheme(systemTheme);
+
+    EventBus.emit('settings:changed', { theme: systemTheme });
+}
+
 // تابع برای بارگذاری و اعمال تنظیمات از localStorage
 function loadSettings() {
     const settings = JSON.parse(localStorage.getItem('parsiNegarSettings') || '{}');
 
     // اعمال قالب (Theme)
-    if (settings.theme) {
-        document.body.className = `theme-${settings.theme}`;
-        (elements.themeRadios.find(r => r.value === settings.theme) || {}).checked = true;
-        setHljsTheme(settings.theme);
-        configureMermaidTheme(settings.theme);
+    const savedTheme = settings.theme || 'device';
+    (elements.themeRadios.find(r => r.value === savedTheme) || {}).checked = true;
+    
+    if (savedTheme === 'device') {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const systemTheme = prefersDark ? 'dark' : 'light';
+        document.body.className = `theme-${systemTheme}`;
+        setHljsTheme(systemTheme);
+        configureMermaidTheme(systemTheme);
+    } else {
+        document.body.className = `theme-${savedTheme}`;
+        setHljsTheme(savedTheme);
+        configureMermaidTheme(savedTheme);
     }
 
     // اعمال اندازه فونت
@@ -107,18 +130,29 @@ export function init() {
     elements.settingsBtn.addEventListener('click', () => elements.settingsPanel.classList.remove('hidden'));
     elements.closeSettingsBtn.addEventListener('click', () => {
         elements.settingsPanel.classList.add('hidden');
-        saveSettings(); // ذخیره تنظیمات هنگام بستن پنل
     });
     
     // رویدادهای مربوط به تغییر تنظیمات
     elements.themeRadios.forEach(radio => radio.addEventListener('change', (e) => {
-        document.body.className = `theme-${e.target.value}`;
-        setHljsTheme(e.target.value);
-        configureMermaidTheme(e.target.value);
-        EventBus.emit('settings:changed', { theme: e.target.value });
+        const selectedTheme = e.target.value;
+        if (selectedTheme === 'device') {
+            applyAndNotifySystemTheme();
+        } else {
+            document.body.className = `theme-${selectedTheme}`;
+            setHljsTheme(selectedTheme);
+            configureMermaidTheme(selectedTheme);
+            EventBus.emit('settings:changed', { theme: selectedTheme });
+        }
         saveSettings();
     }));
     
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        const currentThemeSetting = elements.themeRadios.find(r => r.checked)?.value;
+        if (currentThemeSetting === 'device') {
+            applyAndNotifySystemTheme();
+        }
+    });
+
     elements.fontSizeSelect.addEventListener('change', (e) => {
         elements.editor.style.fontSize = `${e.target.value}px`;
         elements.editorBackdrop.style.fontSize = `${e.target.value}px`;
