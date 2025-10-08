@@ -25,6 +25,7 @@
 @import url('./components/_file-list.css');
 @import url('./components/_toc.css');
 @import url('./components/_mindmap.css');
+@import url('./components/_emoji.css');
 
 /* 4. Preview and Output Styles */
 @import url('./preview/_markdown.css');

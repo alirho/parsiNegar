@@ -73,3 +73,49 @@ export function slugifyHeading(text) {
         .replace(/-+/g, '-');
     return cleanedText || 'heading';
 }
+
+/**
+ * مختصات پیکسل مکان‌نمای ویرایشگر را محاسبه می‌کند.
+ * @param {HTMLTextAreaElement} editor - عنصر textarea ویرایشگر.
+ * @returns {{top: number, left: number, lineHeight: number}} - مختصات بالا و چپ و ارتفاع خط.
+ */
+export function getCursorCoordinates(editor) {
+    const editorWrapper = editor.parentElement;
+    if (!editorWrapper) return { top: 0, left: 0, lineHeight: 0 };
+
+    // یک div آینه برای محاسبات ایجاد می‌کنیم.
+    const mirror = document.createElement('div');
+    const style = window.getComputedStyle(editor);
+    const properties = [
+        'boxSizing', 'width', 'height', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
+        'letterSpacing', 'lineHeight', 'whiteSpace', 'wordWrap', 'direction', 'overflowWrap',
+        'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+        'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth'
+    ];
+    properties.forEach(prop => mirror.style[prop] = style[prop]);
+    mirror.style.position = 'absolute';
+    mirror.style.top = '0';
+    mirror.style.left = '0';
+    mirror.style.visibility = 'hidden';
+    mirror.style.pointerEvents = 'none';
+
+    editorWrapper.appendChild(mirror);
+
+    const cursorPos = editor.selectionStart;
+    const textToCursor = editor.value.substring(0, cursorPos);
+    
+    mirror.textContent = textToCursor;
+
+    // از یک span برای پیدا کردن انتهای متن استفاده می‌کنیم.
+    const marker = document.createElement('span');
+    marker.innerHTML = '&#8203;'; // یک فاصله با عرض صفر
+    mirror.appendChild(marker);
+
+    const top = marker.offsetTop - editor.scrollTop;
+    const left = marker.offsetLeft - editor.scrollLeft;
+    const lineHeight = parseFloat(style.lineHeight) || (parseFloat(style.fontSize) * 1.5);
+
+    editorWrapper.removeChild(mirror);
+
+    return { top, left, lineHeight };
+}

@@ -96,6 +96,7 @@ export class Editor {
                 case 'KeyC': command = 'blockCode'; break;
                 case 'KeyQ': command = 'quote'; break;
                 case 'KeyI': command = 'image'; break;
+                case 'KeyE': command = 'emoji'; break;
                 case 'KeyM': command = 'mindmap'; break;
                 case 'KeyH': command = 'highlight'; break;
                 case 'KeyP': command = 'poetry'; break;
@@ -395,6 +396,11 @@ export class Editor {
         if (action.startsWith('heading')) {
             const level = parseInt(action.replace('heading', ''), 10);
             this._applyHeadingFormat(level);
+            return;
+        }
+
+        if (action === 'emoji') {
+            EventBus.emit('emoji:show');
             return;
         }
 

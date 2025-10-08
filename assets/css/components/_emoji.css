@@ -1,0 +1,32 @@
+/* Emoji Picker Styles */
+#emojiPicker {
+  position: absolute;
+  z-index: 1001; /* Higher than shortcuts menu */
+}
+
+#emojiPicker.hidden {
+  display: none;
+}
+
+/* The emoji-picker-element library uses CSS classes for theming */
+body.theme-dark emoji-picker.dark {
+    --background: #2d2d2d;
+    --border-color: #404040;
+    --input-background: #1a1a1a;
+    --text-color: #e5e5e5;
+    --category-color: #9ca3af;
+    --indicator-color: #5eead4;
+    --hover-background: rgba(255, 255, 255, 0.1);
+    --search-icon-color: #9ca3af;
+}
+
+body.theme-sepia emoji-picker.light {
+    --background: #f4ecd8;
+    --border-color: #d3c4b3;
+    --input-background: #fbf5e9;
+    --text-color: #5f4b32;
+    --category-color: #8c6d46;
+    --indicator-color: #5f4b32;
+    --hover-background: #e8dcca;
+    --search-icon-color: #8c6d46;
+}

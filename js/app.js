@@ -149,8 +149,10 @@ class ParsiNegarApp {
                     }
                     break;
                 case 'KeyE':
-                    e.preventDefault();
-                    elements.exportMdBtn.click();
+                    if (!e.shiftKey) { // Ensure Ctrl+Shift+E is ignored
+                        e.preventDefault();
+                        elements.exportMdBtn.click();
+                    }
                     break;
             }
         } else if (isCtrl && isAlt) {

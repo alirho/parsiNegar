@@ -1,6 +1,8 @@
 import { elements } from '../utils/dom.js';
 import { state } from '../core/state.js';
 import { shortcuts } from '../config.js';
+import { getCursorCoordinates } from '../utils/helpers.js';
+import { EventBus } from '../core/eventBus.js';
 
 /**
  * ماژول مدیریت میانبرهای نوشتاری (/)
@@ -33,47 +35,7 @@ function showShortcutsMenu(query = '') {
         `;
     }).join('');
 
-    // --- NEW POSITIONING LOGIC ---
-    const editor = editorInstance.el;
-    const editorWrapper = editor.parentElement;
-
-    // Create a mirror div for calculations.
-    const mirror = document.createElement('div');
-    const style = window.getComputedStyle(editor);
-    const properties = [
-        'boxSizing', 'width', 'height', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
-        'letterSpacing', 'lineHeight', 'whiteSpace', 'wordWrap', 'direction',
-        'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-        'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth'
-    ];
-    properties.forEach(prop => mirror.style[prop] = style[prop]);
-    mirror.style.position = 'absolute';
-    mirror.style.top = '0';
-    mirror.style.left = '0';
-    mirror.style.visibility = 'hidden';
-    mirror.style.pointerEvents = 'none';
-
-    editorWrapper.appendChild(mirror);
-
-    const cursorPos = editor.selectionStart;
-    const textToCursor = editor.value.substring(0, cursorPos);
-    
-    // Use textContent to avoid HTML injection and properly handle spaces/newlines.
-    mirror.textContent = textToCursor;
-
-    // Use a span to find the end of the text.
-    const marker = document.createElement('span');
-    // A zero-width space is a good marker.
-    marker.innerHTML = '&#8203;';
-    mirror.appendChild(marker);
-
-    const top = marker.offsetTop - editor.scrollTop;
-    const left = marker.offsetLeft - editor.scrollLeft;
-    const lineHeight = parseFloat(style.lineHeight) || 0;
-
-    editorWrapper.removeChild(mirror);
-    // --- END OF NEW LOGIC ---
-
+    const { top, left, lineHeight } = getCursorCoordinates(editorInstance.el);
     const menu = elements.shortcutsMenu;
     menu.style.display = 'block';
     
@@ -125,21 +87,35 @@ function insertShortcut(shortcut) {
     const textBeforeCursor = editorInstance.getValue().substring(0, cursorPos);
     const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
 
-    if (lastSlashIndex !== -1) {
-        const query = textBeforeCursor.substring(lastSlashIndex);
-        const newText = editorInstance.getValue().substring(0, lastSlashIndex) + shortcut.text + editorInstance.getValue().substring(cursorPos);
-        
-        editorInstance.setValue(newText);
-
-        const newCursorPos = lastSlashIndex + shortcut.text.length;
-        if(shortcut.filter === 'پررنگ' || shortcut.filter === 'مورب' || shortcut.filter === 'خط زده' || shortcut.filter === 'کد تک‌خطی' || shortcut.filter === 'برجسته'){
-            editorInstance.el.setSelectionRange(newCursorPos - (shortcut.text.length / 2), newCursorPos - (shortcut.text.length / 2));
-        } else if (shortcut.filter === 'پیوند' || shortcut.filter === 'تصویر') {
-             editorInstance.el.setSelectionRange(newCursorPos - 3, newCursorPos - 3);
-        } else {
-             editorInstance.el.setSelectionRange(newCursorPos, newCursorPos);
-        }
+    if (lastSlashIndex === -1) {
+        hideShortcutsMenu();
+        return;
     }
+
+    const query = textBeforeCursor.substring(lastSlashIndex);
+    const newTextBefore = editorInstance.getValue().substring(0, lastSlashIndex);
+    const newTextAfter = editorInstance.getValue().substring(cursorPos);
+
+    if (shortcut.filter === 'شکلک') {
+        editorInstance.setValue(newTextBefore + newTextAfter);
+        editorInstance.el.setSelectionRange(lastSlashIndex, lastSlashIndex);
+        hideShortcutsMenu();
+        EventBus.emit('emoji:show');
+        return;
+    }
+
+    const newText = newTextBefore + shortcut.text + newTextAfter;
+    editorInstance.setValue(newText);
+
+    const newCursorPos = lastSlashIndex + shortcut.text.length;
+    if(shortcut.filter === 'پررنگ' || shortcut.filter === 'مورب' || shortcut.filter === 'خط زده' || shortcut.filter === 'کد تک‌خطی' || shortcut.filter === 'برجسته'){
+        editorInstance.el.setSelectionRange(newCursorPos - (shortcut.text.length / 2), newCursorPos - (shortcut.text.length / 2));
+    } else if (shortcut.filter === 'پیوند' || shortcut.filter === 'تصویر') {
+         editorInstance.el.setSelectionRange(newCursorPos - 3, newCursorPos - 3);
+    } else {
+         editorInstance.el.setSelectionRange(newCursorPos, newCursorPos);
+    }
+    
     hideShortcutsMenu();
 }
 
