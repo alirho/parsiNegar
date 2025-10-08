@@ -12,6 +12,7 @@ export class Editor {
         this.el = element;
         this.history = [''];
         this.historyIndex = 0;
+        this.historyTimeout = null;
 
         this._init();
     }
@@ -28,21 +29,26 @@ export class Editor {
         this.el.addEventListener('keydown', this._onKeyDown.bind(this));
     }
 
-    // رویداد input برای تشخیص تغییرات محتوا
+    // رویداد input برای تشخیص تغییرات محتوا و ثبت تاریخچه
     _onInput() {
-        const currentValue = this.el.value;
-        // ثبت در تاریخچه برای واگرد/ازنو
-        if (this.history[this.historyIndex] !== currentValue) {
-            this.history = this.history.slice(0, this.historyIndex + 1);
-            this.history.push(currentValue);
-            this.historyIndex++;
-        }
-        // ارسال رویداد برای به‌روزرسانی پیش‌نمایش و ذخیره خودکار
-        EventBus.emit('editor:contentChanged', currentValue);
+        // رویداد تغییر محتوا را برای پیش‌نمایش زنده فورا ارسال می‌کنیم
+        EventBus.emit('editor:contentChanged', this.el.value);
+
+        // ثبت تاریخچه را با تاخیر انجام می‌دهیم تا از ثبت نویسه به نویسه جلوگیری شود
+        clearTimeout(this.historyTimeout);
+        this.historyTimeout = setTimeout(() => {
+            const currentValue = this.el.value;
+            if (this.history[this.historyIndex] !== currentValue) {
+                this.history = this.history.slice(0, this.historyIndex + 1);
+                this.history.push(currentValue);
+                this.historyIndex++;
+            }
+        }, 400); // تاخیر ۴۰۰ میلی‌ثانیه‌ای
     }
     
     // رویداد keydown برای مدیریت کلیدهای خاص مانند Tab, Enter, Backspace
     _onKeyDown(e) {
+        if (this._handleUndoRedo(e)) return;
         if (this._handleKeyboardShortcuts(e)) return;
         if (this._handleMoveLines(e)) return;
         if (state.isShortcutMenuVisible) return;
@@ -50,6 +56,27 @@ export class Editor {
         if (this._handleAutoPairing(e)) return;
         if (this._handleEnterKey(e)) return;
         if (this._handleBackspace(e)) return;
+    }
+
+    // مدیریت کلیدهای میانبر واگرد و ازنو
+    _handleUndoRedo(e) {
+        const isCtrl = e.ctrlKey || e.metaKey;
+        if (!isCtrl) return false;
+
+        if (e.code === 'KeyZ' && !e.shiftKey) {
+            e.preventDefault();
+            this.undo();
+            return true;
+        }
+        
+        // Redo: Ctrl+Y (Windows/Linux) or Ctrl+Shift+Z (Mac/Windows)
+        if (e.code === 'KeyY' || (e.shiftKey && e.code === 'KeyZ')) {
+            e.preventDefault();
+            this.redo();
+            return true;
+        }
+
+        return false;
     }
 
     // مدیریت کلیدهای میانبر قالب‌بندی
@@ -156,7 +183,7 @@ export class Editor {
             this.el.setSelectionRange(newStart, newEnd);
         }
     
-        EventBus.emit('editor:contentChanged', this.el.value);
+        this.el.dispatchEvent(new Event('input', { bubbles: true }));
         return true;
     }
 
@@ -193,7 +220,7 @@ export class Editor {
             this.el.selectionStart = blockStart;
             this.el.selectionEnd = blockStart + newBlock.length;
         }
-        EventBus.emit('editor:contentChanged', this.el.value);
+        this.el.dispatchEvent(new Event('input', { bubbles: true }));
         return true;
     }
     
@@ -210,7 +237,7 @@ export class Editor {
                 this.el.value.substring(end);
             
             this.el.setSelectionRange(start + 1, end + 1);
-            EventBus.emit('editor:contentChanged', this.el.value);
+            this.el.dispatchEvent(new Event('input', { bubbles: true }));
             return true;
         }
         return false;
@@ -227,7 +254,7 @@ export class Editor {
                     e.preventDefault();
                     this.el.value = this.el.value.substring(0, start - 1) + this.el.value.substring(start + 1);
                     this.el.setSelectionRange(start - 1, start - 1);
-                    EventBus.emit('editor:contentChanged', this.el.value);
+                    this.el.dispatchEvent(new Event('input', { bubbles: true }));
                     return true;
                 }
             }
@@ -266,7 +293,7 @@ export class Editor {
             this.el.value = beforeLine + afterText;
             this.el.setSelectionRange(lineStart, lineStart);
     
-            EventBus.emit('editor:contentChanged', this.el.value);
+            this.el.dispatchEvent(new Event('input', { bubbles: true }));
             return true;
         }
         
@@ -284,7 +311,7 @@ export class Editor {
             const newCursorPos = cursorPos + textToInsert.length;
             this.el.setSelectionRange(newCursorPos, newCursorPos);
             
-            EventBus.emit('editor:contentChanged', this.el.value);
+            this.el.dispatchEvent(new Event('input', { bubbles: true }));
             return true;
         }
     
@@ -336,7 +363,7 @@ export class Editor {
         this.el.value = value.substring(0, lineStart) + newLine + value.substring(lineEnd);
         this.el.setSelectionRange(start + (newLine.length - currentLine.length), start + (newLine.length - currentLine.length));
         this.el.focus();
-        EventBus.emit('editor:contentChanged', this.el.value);
+        this.el.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     // API عمومی کلاس
@@ -349,12 +376,18 @@ export class Editor {
     // تنظیم محتوای ویرایشگر
     setValue(content, options = {}) {
         this.el.value = content;
+    
         if (options.resetHistory) {
+            clearTimeout(this.historyTimeout);
             this.history = [content];
             this.historyIndex = 0;
+            // For initial load or new file, just update UI, don't create history
+            EventBus.emit('editor:contentChanged', content);
+        } else {
+            // For programmatic changes like search-replace, dispatch 'input'
+            // to correctly update history and UI via the _onInput handler.
+            this.el.dispatchEvent(new Event('input', { bubbles: true }));
         }
-        // رویداد تغییر محتوا را برای به‌روزرسانی سایر بخش‌ها ارسال می‌کنیم
-        EventBus.emit('editor:contentChanged', content);
     }
     
     // اعمال فرمت مارک‌داون
@@ -504,11 +537,13 @@ export class Editor {
         }
 
         this.el.focus();
-        EventBus.emit('editor:contentChanged', this.el.value);
+        this.el.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     // واگرد (Undo)
     undo() {
+        // هرگونه ذخیره تاریخچه معلق را لغو می‌کنیم تا با عملیات واگرد تداخل نکند
+        clearTimeout(this.historyTimeout);
         if (this.historyIndex > 0) {
             this.historyIndex--;
             this.el.value = this.history[this.historyIndex];
@@ -518,6 +553,8 @@ export class Editor {
 
     // ازنو (Redo)
     redo() {
+        // هرگونه ذخیره تاریخچه معلق را لغو می‌کنیم
+        clearTimeout(this.historyTimeout);
         if (this.historyIndex < this.history.length - 1) {
             this.historyIndex++;
             this.el.value = this.history[this.historyIndex];
