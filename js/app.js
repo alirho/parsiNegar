@@ -137,12 +137,16 @@ class ParsiNegarApp {
         if (isCtrl && !isAlt) {
             switch (e.code) { // Use e.code for layout-independent shortcuts
                 case 'KeyN':
-                    e.preventDefault();
-                    elements.newFileBtn.click();
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        elements.newFileBtn.click();
+                    }
                     break;
                 case 'KeyO':
-                    e.preventDefault();
-                    elements.loadFileBtn.click();
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        elements.loadFileBtn.click();
+                    }
                     break;
                 case 'KeyE':
                     e.preventDefault();
