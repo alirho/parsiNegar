@@ -1,7 +1,8 @@
 import { EventBus } from '../core/eventBus.js';
 import { state } from '../core/state.js';
-import { debounce } from '../utils/helpers.js';
-import { saveFileToDB, getFileFromDB } from '../utils/storage.js';
+import { debounce, removeFileExtension } from '../utils/helpers.js';
+import { saveFileToDB, getFileFromDB, getUniqueFileName } from '../utils/storage.js';
+import { elements } from '../utils/dom.js';
 
 /**
  * ماژول ذخیره‌سازی خودکار
@@ -12,29 +13,54 @@ import { saveFileToDB, getFileFromDB } from '../utils/storage.js';
 const debouncedSave = debounce(async (editor) => {
     try {
         const currentContent = editor.getValue();
+        let fileIdToSave = state.currentFileId;
+        let isNewFile = false;
 
-        // ذخیره آخرین وضعیت در localStorage برای بازیابی سریع
+        // Handle new, unnamed files that now have content
+        if (fileIdToSave === 'نام فایل' && currentContent.trim() !== '') {
+            isNewFile = true;
+            let baseName = 'بی‌نام';
+            const firstLine = currentContent.split('\n')[0].trim();
+            // Matches markdown headings like # Title, ## Title, etc.
+            const headingMatch = firstLine.match(/^#+\s+(.+)/);
+
+            if (headingMatch && headingMatch[1]) {
+                baseName = headingMatch[1].trim();
+            }
+
+            const newFileId = await getUniqueFileName(baseName);
+            
+            state.currentFileId = newFileId;
+            elements.filename.value = removeFileExtension(newFileId);
+            fileIdToSave = newFileId;
+        }
+
+        // Always update localStorage
         localStorage.setItem('parsiNegarLastState', JSON.stringify({
             content: currentContent,
-            filename: state.currentFileId,
+            filename: fileIdToSave,
         }));
-
-        // اگر فایل نام معتبری داشت، آن را در IndexedDB هم ذخیره کن
-        if (state.currentFileId && state.currentFileId.trim() !== '' && state.currentFileId !== 'نام فایل') {
-            const existingFile = await getFileFromDB(state.currentFileId);
-            // تنها در صورتی فایل را ذخیره می‌کنیم که محتوای آن واقعاً تغییر کرده باشد.
-            // این کار از به‌روزرسانی بی‌دلیل lastModified و تغییر ترتیب فایل‌ها هنگام باز کردن جلوگیری می‌کند.
-            if (!existingFile || existingFile.content !== currentContent) {
-                await saveFileToDB(state.currentFileId, currentContent);
-                EventBus.emit('file:saved', state.currentFileId);
+        
+        // Save to IndexedDB if the file has a valid name
+        if (fileIdToSave !== 'نام فایل') {
+            const existingFile = await getFileFromDB(fileIdToSave);
+            
+            // Save if it's a brand new file, or if content has changed for an existing file
+            if (isNewFile || !existingFile || existingFile.content !== currentContent) {
+                await saveFileToDB(fileIdToSave, currentContent);
+                EventBus.emit('file:saved', fileIdToSave);
+                if (isNewFile) {
+                    EventBus.emit('file:listChanged'); // Update file list only for new files
+                }
             }
         }
+
     } catch (e) {
         console.error("خطا در ذخیره‌سازی خودکار:", e);
         // می‌توان یک رویداد خطا برای نمایش به کاربر نیز ارسال کرد
         // EventBus.emit('error:show', 'خطا در ذخیره‌سازی خودکار رخ داد.');
     }
-}, 500); // تأخیر ۵۰۰ میلی‌ثانیه‌ای
+}, 900); // تأخیر ۵۰۰ میلی‌ثانیه‌ای
 
 /**
  * مقداردهی اولیه ماژول ذخیره‌سازی خودکار

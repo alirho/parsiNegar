@@ -125,3 +125,25 @@ export async function clearFilesDB() {
         request.onerror = (event) => reject(event.target.error);
     });
 }
+
+/**
+ * یک نام فایل منحصر به فرد بر اساس نام پایه ایجاد می‌کند.
+ * پسوند ".md" را اضافه می‌کند. "baseName.md"، "baseName 1.md" و غیره را بررسی می‌کند.
+ * @param {string} baseName - نام پایه مورد نظر برای فایل.
+ * @returns {Promise<string>} - یک شناسه فایل منحصر به فرد.
+ */
+export async function getUniqueFileName(baseName) {
+    let finalName = baseName.trim();
+    if (!finalName) finalName = 'بی‌نام'; // نام پیش‌فرض
+
+    let uniqueId = `${finalName}.md`;
+    let counter = 1;
+    
+    // حلقه تا زمانی که نامی پیدا کنیم که در پایگاه داده وجود ندارد
+    while (await getFileFromDB(uniqueId)) {
+        uniqueId = `${finalName} ${counter}.md`;
+        counter++;
+    }
+    
+    return uniqueId;
+}
