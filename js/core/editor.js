@@ -304,66 +304,144 @@ export class Editor {
             return;
         }
 
-        const start = this.el.selectionStart;
-        const end = this.el.selectionEnd;
-        const selectedText = this.el.value.substring(start, end);
-        let newText = '';
-        let finalSelection = [start, end];
+        const listLikeActions = ['unorderedList', 'orderedList', 'checklist', 'quote'];
 
-        switch (action) {
-            case 'bold': newText = `**${selectedText}**`; finalSelection = [start + 2, end + 2]; break;
-            case 'italic': newText = `*${selectedText}*`; finalSelection = [start + 1, end + 1]; break;
-            case 'strike': newText = `~~${selectedText}~~`; finalSelection = [start + 2, end + 2]; break;
-            case 'highlight': newText = `==${selectedText}==`; finalSelection = [start + 2, end + 2]; break;
-            case 'unorderedList': newText = `- ${selectedText}`; finalSelection = [start + 2, end + 2]; break;
-            case 'orderedList': newText = `1. ${selectedText}`; finalSelection = [start + 3, end + 3]; break;
-            case 'checklist': newText = `- [ ] ${selectedText}`; finalSelection = [start + 6, end + 6]; break;
-            case 'quote': newText = `> ${selectedText}`; finalSelection = [start + 2, end + 2]; break;
-            case 'code':
-                newText = selectedText.includes('\n') ? `\`\`\`\n${selectedText}\n\`\`\`` : `\`${selectedText}\``;
-                finalSelection = [start + (selectedText.includes('\n') ? 4 : 1), end + (selectedText.includes('\n') ? 4 : 1)];
-                break;
-            case 'inlineCode': newText = `\`${selectedText}\``; finalSelection = [start + 1, end + 1]; break;
-            case 'blockCode': newText = `\`\`\`\n${selectedText}\n\`\`\``; finalSelection = [start + 4, end + 4]; break;
-            case 'link':
-                newText = `[${selectedText}]()`;
-                finalSelection = selectedText ? [end + 3, end + 3] : [start + 1, end + 1];
-                break;
-            case 'image': newText = `![]()`; finalSelection = [start + 4, start + 4]; break;
-            case 'table': newText = '| ستون ۱ | ستون ۲ |\n|---|---|\n| محتوا | محتوا |'; finalSelection = [start + newText.length, start + newText.length]; break;
-            case 'chart': newText = '```mermaid\nflowchart LR\n  A --> B\n```'; finalSelection = [start + newText.length, start + newText.length]; break;
-            case 'mindmap': newText = '...نقشه‌ذهنی\n- ریشه\n  - شاخه\n...'; finalSelection = [start + newText.length, start + newText.length]; break;
-            case 'poetry':
-                newText = `...شعر\n${selectedText}\n...`;
-                finalSelection = [start + `...شعر\n`.length, start + `...شعر\n`.length + selectedText.length];
-                break;
-            case 'admonition-note':
-                newText = `...توجه\n${selectedText}\n...`;
-                finalSelection = [start + `...توجه\n`.length, start + `...توجه\n`.length + selectedText.length];
-                break;
-            case 'admonition-warning':
-                newText = `...هشدار\n${selectedText}\n...`;
-                finalSelection = [start + `...هشدار\n`.length, start + `...هشدار\n`.length + selectedText.length];
-                break;
-            case 'admonition-tip':
-                newText = `...نکته\n${selectedText}\n...`;
-                finalSelection = [start + `...نکته\n`.length, start + `...نکته\n`.length + selectedText.length];
-                break;
-            case 'admonition-important':
-                newText = `...مهم\n${selectedText}\n...`;
-                finalSelection = [start + `...مهم\n`.length, start + `...مهم\n`.length + selectedText.length];
-                break;
-            case 'admonition-caution':
-                newText = `...احتیاط\n${selectedText}\n...`;
-                finalSelection = [start + `...احتیاط\n`.length, start + `...احتیاط\n`.length + selectedText.length];
-                break;
+        if (listLikeActions.includes(action)) {
+            const value = this.el.value;
+            const start = this.el.selectionStart;
+            const end = this.el.selectionEnd;
+
+            // Expand selection to cover full lines
+            const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+            let lineEnd = value.indexOf('\n', end);
+            if (lineEnd === -1) {
+                lineEnd = value.length;
+            }
+            if (end > lineStart && value[end - 1] === '\n') {
+                lineEnd = end - 1;
+            }
+
+            const selectedBlock = value.substring(lineStart, lineEnd);
+            const lines = selectedBlock.split('\n');
+
+            const unorderedRegex = /^\s*[-*+]\s+/;
+            const orderedRegex = /^\s*[0-9۰-۹]+\.\s+/;
+            const checklistRegex = /^\s*[-*+]\s+\[[ xX]?\]\s+/;
+            const quoteRegex = /^\s*>\s?/;
+
+            const nonEmptyLines = lines.filter(line => line.trim() !== '');
+            let isTogglingOff = false;
+            if (nonEmptyLines.length > 0) {
+                isTogglingOff = nonEmptyLines.every(line => {
+                    switch (action) {
+                        case 'unorderedList': return unorderedRegex.test(line);
+                        case 'orderedList': return orderedRegex.test(line);
+                        case 'checklist': return checklistRegex.test(line);
+                        case 'quote': return quoteRegex.test(line);
+                        default: return false;
+                    }
+                });
+            }
+
+            let newLines;
+            if (isTogglingOff) {
+                // Remove formatting
+                newLines = lines.map(line => {
+                    if (line.trim() === '') return line;
+                    switch (action) {
+                        case 'unorderedList': return line.replace(unorderedRegex, '');
+                        case 'orderedList': return line.replace(orderedRegex, '');
+                        case 'checklist': return line.replace(checklistRegex, '');
+                        case 'quote': return line.replace(quoteRegex, '');
+                        default: return line;
+                    }
+                });
+            } else {
+                // Apply formatting
+                let counter = 1;
+                newLines = lines.map(line => {
+                    if (line.trim() === '' && action !== 'quote') {
+                        return line;
+                    }
+                    // When applying, first clean up any other list-like format.
+                    let cleanLine = line
+                        .replace(checklistRegex, '') // More specific, check first
+                        .replace(unorderedRegex, '')
+                        .replace(orderedRegex, '')
+                        .replace(quoteRegex, '');
+
+                    switch (action) {
+                        case 'unorderedList': return `- ${cleanLine}`;
+                        case 'orderedList': return `${counter++}. ${cleanLine}`;
+                        case 'checklist': return `- [ ] ${cleanLine}`;
+                        case 'quote': return `> ${cleanLine}`;
+                        default: return line;
+                    }
+                });
+            }
+
+            const newBlock = newLines.join('\n');
+            this.el.value = value.substring(0, lineStart) + newBlock + value.substring(lineEnd);
+            this.el.setSelectionRange(lineStart, lineStart + newBlock.length);
+        } else {
+            // Logic for non-list actions (bold, italic, etc.)
+            const start = this.el.selectionStart;
+            const end = this.el.selectionEnd;
+            const selectedText = this.el.value.substring(start, end);
+            let newText = '';
+            let finalSelection = [start, end];
+
+            switch (action) {
+                case 'bold': newText = `**${selectedText}**`; finalSelection = [start + 2, end + 2]; break;
+                case 'italic': newText = `*${selectedText}*`; finalSelection = [start + 1, end + 1]; break;
+                case 'strike': newText = `~~${selectedText}~~`; finalSelection = [start + 2, end + 2]; break;
+                case 'highlight': newText = `==${selectedText}==`; finalSelection = [start + 2, end + 2]; break;
+                case 'code':
+                    newText = selectedText.includes('\n') ? `\`\`\`\n${selectedText}\n\`\`\`` : `\`${selectedText}\``;
+                    finalSelection = [start + (selectedText.includes('\n') ? 4 : 1), end + (selectedText.includes('\n') ? 4 : 1)];
+                    break;
+                case 'inlineCode': newText = `\`${selectedText}\``; finalSelection = [start + 1, end + 1]; break;
+                case 'blockCode': newText = `\`\`\`\n${selectedText}\n\`\`\``; finalSelection = [start + 4, end + 4]; break;
+                case 'link':
+                    newText = `[${selectedText}]()`;
+                    finalSelection = selectedText ? [end + 3, end + 3] : [start + 1, end + 1];
+                    break;
+                case 'image': newText = `![]()`; finalSelection = [start + 4, start + 4]; break;
+                case 'table': newText = '| ستون ۱ | ستون ۲ |\n|---|---|\n| محتوا | محتوا |'; finalSelection = [start + newText.length, start + newText.length]; break;
+                case 'chart': newText = '```mermaid\nflowchart LR\n  A --> B\n```'; finalSelection = [start + newText.length, start + newText.length]; break;
+                case 'mindmap': newText = '...نقشه‌ذهنی\n- ریشه\n  - شاخه\n...'; finalSelection = [start + newText.length, start + newText.length]; break;
+                case 'poetry':
+                    newText = `...شعر\n${selectedText}\n...`;
+                    finalSelection = [start + `...شعر\n`.length, start + `...شعر\n`.length + selectedText.length];
+                    break;
+                case 'admonition-note':
+                    newText = `...توجه\n${selectedText}\n...`;
+                    finalSelection = [start + `...توجه\n`.length, start + `...توجه\n`.length + selectedText.length];
+                    break;
+                case 'admonition-warning':
+                    newText = `...هشدار\n${selectedText}\n...`;
+                    finalSelection = [start + `...هشدار\n`.length, start + `...هشدار\n`.length + selectedText.length];
+                    break;
+                case 'admonition-tip':
+                    newText = `...نکته\n${selectedText}\n...`;
+                    finalSelection = [start + `...نکته\n`.length, start + `...نکته\n`.length + selectedText.length];
+                    break;
+                case 'admonition-important':
+                    newText = `...مهم\n${selectedText}\n...`;
+                    finalSelection = [start + `...مهم\n`.length, start + `...مهم\n`.length + selectedText.length];
+                    break;
+                case 'admonition-caution':
+                    newText = `...احتیاط\n${selectedText}\n...`;
+                    finalSelection = [start + `...احتیاط\n`.length, start + `...احتیاط\n`.length + selectedText.length];
+                    break;
+            }
+
+            if (newText) {
+                this.el.value = this.el.value.substring(0, start) + newText + this.el.value.substring(end);
+                this.el.setSelectionRange(finalSelection[0], finalSelection[1]);
+            }
         }
-        
-        if (newText) {
-            this.el.value = this.el.value.substring(0, start) + newText + this.el.value.substring(end);
-            this.el.setSelectionRange(finalSelection[0], finalSelection[1]);
-        }
-        
+
         this.el.focus();
         EventBus.emit('editor:contentChanged', this.el.value);
     }
