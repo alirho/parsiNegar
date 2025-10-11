@@ -342,6 +342,10 @@ export function init(editor) {
   // رویدادهای منوی پرونده
   elements.newFileBtn.addEventListener('click', newFile);
   elements.loadFileBtn.addEventListener('click', uploadFile);
+  elements.showFilesMenuBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    elements.showFilesCheckbox.click();
+  });
   elements.fileInput.addEventListener('change', handleFileSelect);
 
   // رویدادهای منوی خروجی

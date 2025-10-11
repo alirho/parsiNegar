@@ -63,6 +63,7 @@ export const elements = {
   fullscreenBtn: qs('#fullscreenBtn'),
   newFileBtn: qs('#newFileBtn'),
   loadFileBtn: qs('#loadFileBtn'),
+  showFilesMenuBtn: qs('#showFilesMenuBtn'),
   exportMdBtn: qs('#exportMdBtn'),
   exportHtmlBtn: qs('#exportHtmlBtn'),
   exportPdfBtn: qs('#exportPdfBtn'),
