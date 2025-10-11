@@ -197,30 +197,59 @@ export class Editor {
         const end = this.el.selectionEnd;
         const value = this.el.value;
         const indent = '  ';
-
-        if (start === end) {
-            // اگر متنی انتخاب نشده باشد، فقط دو فاصله اضافه کن
+    
+        // Case 1: Indent with no selection. Just add spaces.
+        if (!e.shiftKey && start === end) {
             this.el.value = value.substring(0, start) + indent + value.substring(end);
             this.el.setSelectionRange(start + indent.length, start + indent.length);
-        } else {
-            // اگر متنی انتخاب شده باشد، به ابتدای هر خط تورفتگی بده
-            const blockStart = value.lastIndexOf('\n', start - 1) + 1;
-            const blockEnd = value.indexOf('\n', end - 1) === -1 ? value.length : value.indexOf('\n', end - 1);
-            const selectedBlock = value.substring(blockStart, blockEnd);
-            let newBlock;
-
-            if (e.shiftKey) { // Shift+Tab برای بیرون‌رفتگی
-                newBlock = selectedBlock.split('\n').map(line => 
-                    line.startsWith(indent) ? line.substring(indent.length) : (line.startsWith(' ') ? line.substring(1) : line)
-                ).join('\n');
-            } else { // Tab برای تورفتگی
-                newBlock = selectedBlock.split('\n').map(line => indent + line).join('\n');
-            }
-            
-            this.el.value = value.substring(0, blockStart) + newBlock + value.substring(blockEnd);
-            this.el.selectionStart = blockStart;
-            this.el.selectionEnd = blockStart + newBlock.length;
+            this.el.dispatchEvent(new Event('input', { bubbles: true }));
+            return true;
         }
+    
+        // Case 2: Indent or Outdent one or more lines.
+        
+        // Find the full lines affected by the selection
+        const blockStart = value.lastIndexOf('\n', start - 1) + 1;
+        
+        // If the selection ends exactly on a newline, don't include the content of the next line.
+        const effectiveEnd = (end > blockStart && value[end - 1] === '\n') ? end - 1 : end;
+        let blockEnd = value.indexOf('\n', effectiveEnd);
+        if (blockEnd === -1) {
+            blockEnd = value.length;
+        }
+    
+        const selectedBlock = value.substring(blockStart, blockEnd);
+        const lines = selectedBlock.split('\n');
+        let newBlock;
+        let firstLineCharsChange = 0;
+    
+        if (e.shiftKey) { // Outdent logic
+            const newLines = lines.map((line, index) => {
+                let charsRemoved = 0;
+                if (line.startsWith(indent)) {
+                    charsRemoved = indent.length;
+                } else if (line.startsWith(' ')) {
+                    charsRemoved = 1;
+                }
+                
+                if (index === 0) {
+                    firstLineCharsChange = -charsRemoved;
+                }
+                return line.substring(charsRemoved);
+            });
+            newBlock = newLines.join('\n');
+        } else { // Indent logic (with selection)
+            newBlock = lines.map(line => indent + line).join('\n');
+            firstLineCharsChange = indent.length;
+        }
+        
+        this.el.value = value.substring(0, blockStart) + newBlock + value.substring(blockEnd);
+        
+        // Restore selection
+        const newStart = Math.max(blockStart, start + firstLineCharsChange);
+        const newEnd = end + (newBlock.length - selectedBlock.length);
+        this.el.setSelectionRange(newStart, newEnd);
+        
         this.el.dispatchEvent(new Event('input', { bubbles: true }));
         return true;
     }
