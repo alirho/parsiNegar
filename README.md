@@ -1,6 +1,6 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.14.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.16.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -21,7 +21,7 @@
 - پشتیبانی کامل از زبان فارسی و نوشتار راست به چپ (RTL)
 - پشتیبانی از مفسر [شه‌نشان](https://github.com/barnevis/ShahNeshan) و [marked](https://github.com/markedjs/marked) و [parsNeshan](github.com/alirho/parsneshan)
 - نمایش زنده و همزمان با نوشتن
-- نمایش آمار متن (تعداد نویسه، کلمه، خط و حجم فایل)
+- نمایش آمار متن (تعداد نویسه، کلمه، خط و حجم پرونده)
 - قابلیت تغییر فونت
 - قابلیت تغییر اندازه فونت
 - پشتیبانی از تم روشن، تاریک و  سپیا
@@ -56,7 +56,7 @@ git clone https://github.com/alirho/parsiNegar.git
 cd parsiNegar
 ```
 
-3. فایل `index.html` را در مرورگر خود باز کنید یا از یک سرور محلی استفاده کنید.
+3. پرونده `index.html` را در مرورگر خود باز کنید یا از یک سرور محلی استفاده کنید.
 
 ### راهنمای استفاده
 
@@ -85,7 +85,7 @@ cd parsiNegar
 - **[highlight.js](https://github.com/highlightjs/highlight.js):** برای هایلایت کردن سینتکس بلوک‌های کد در زبان‌های مختلف برنامه‌نویسی.
 - **[Mermaid.js](https://github.com/mermaid-js/mermaid):** ابزاری قدرتمند برای رسم نمودارها و دیاگرام‌ها از طریق متن.
 - **[html2pdf.js](https://github.com/eKoopmans/html2pdf.js):** برای پیاده‌سازی قابلیت خروجی گرفتن به فرمت PDF.
-- **[JSZip](https://github.com/Stuk/jszip):** برای ایجاد فایل‌های فشرده (`.zip`) جهت خروجی گرفتن از تمام اسناد.
+- **[JSZip](https://github.com/Stuk/jszip):** برای ایجاد پرونده‌های فشرده (`.zip`) جهت خروجی گرفتن از تمام اسناد.
 - **[emoji-picker-element](https://github.com/nolanlawson/emoji-picker-element):** یک وب کامپوننت سبک برای ارائه انتخابگر شکلک (Emoji).
 - **[Font Awesome](https://github.com/FortAwesome/Font-Awesome):** برای تامین مجموعه آیکون‌های استفاده شده در رابط کاربری.
 
