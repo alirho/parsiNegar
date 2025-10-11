@@ -19,15 +19,7 @@ const debouncedSave = debounce(async (editor) => {
         // Handle new, unnamed files that now have content
         if (fileIdToSave === 'نام فایل' && currentContent.trim() !== '') {
             isNewFile = true;
-            let baseName = 'بی‌نام';
-            const firstLine = currentContent.split('\n')[0].trim();
-            // Matches markdown headings like # Title, ## Title, etc.
-            const headingMatch = firstLine.match(/^#+\s+(.+)/);
-
-            if (headingMatch && headingMatch[1]) {
-                baseName = headingMatch[1].trim();
-            }
-
+            const baseName = 'بی‌نام'; // Always use 'بی‌نام' for new unnamed files
             const newFileId = await getUniqueFileName(baseName);
             
             state.currentFileId = newFileId;
