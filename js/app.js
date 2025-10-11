@@ -42,21 +42,21 @@ class ParsiNegarApp {
   }
 
   /**
-   * بارگذاری محتوای اولیه از localStorage یا نمایش فایل راهنما
+   * بارگذاری محتوای اولیه از localStorage یا نمایش پرونده راهنما
    */
   async loadInitialContent() {
     try {
       const lastStateJSON = localStorage.getItem('parsiNegarLastState');
       if (lastStateJSON) {
         const lastState = JSON.parse(lastStateJSON);
-        state.currentFileId = lastState.filename || 'نام فایل';
+        state.currentFileId = lastState.filename || 'نام پرونده';
         this.editor.setValue(lastState.content, { resetHistory: true });
       } else {
-        // اگر محتوای قبلی وجود نداشت، فایل راهنما را بارگذاری کن
+        // اگر محتوای قبلی وجود نداشت، پرونده راهنما را بارگذاری کن
         await EventBus.emit('file:loadReadme');
       }
     } catch (e) {
-      console.error("خطا در بارگذاری محتوای اولیه، فایل راهنما بارگذاری می‌شود.", e);
+      console.error("خطا در بارگذاری محتوای اولیه، پرونده راهنما بارگذاری می‌شود.", e);
       await EventBus.emit('file:loadReadme');
     }
     // اعلام می‌کنیم که محتوای اولیه بارگذاری شده است
@@ -81,7 +81,7 @@ class ParsiNegarApp {
 
     // بستن منوهای باز با کلیک در بیرون آن‌ها
     document.addEventListener('click', (e) => {
-        // بستن منوی کشویی فایل‌ها
+        // بستن منوی کشویی پرونده‌ها
         if (!e.target.closest('.file-actions-menu')) {
             elements.filesList.querySelectorAll('.file-actions-dropdown:not(.hidden)').forEach(dropdown => {
                 dropdown.classList.add('hidden');

@@ -25,17 +25,17 @@
       <ul class="menu">
         <li><a href="#" class="logo-link"><div id="menuLogo" title="لوگوی پارسی‌نگار"></div></a></li>
         <li>
-          <a href="#">فایل</a>
+          <a href="#">پرونده</a>
           <ul class="submenu">
-            <li><a href="#" id="newFileBtn"><i class="fas fa-file"></i><span>فایل نو</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd></span></a></li>
-            <li><a href="#" id="loadFileBtn"><i class="fas fa-folder-open"></i><span>بارگذاری فایل</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd></span></a></li>
+            <li><a href="#" id="newFileBtn"><i class="fas fa-file"></i><span>پرونده نو</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd></span></a></li>
+            <li><a href="#" id="loadFileBtn"><i class="fas fa-folder-open"></i><span>بارگذاری پرونده</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd></span></a></li>
             <li class="has-submenu">
               <a href="#"><i class="fas fa-file-export"></i> خروجی گرفتن</a>
               <ul class="submenu">
                 <li><a href="#" id="exportMdBtn"><i class="fas fa-file-alt"></i><span>Markdown</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>E</kbd></span></a></li>
                 <li><a href="#" id="exportHtmlBtn"><i class="fas fa-file-code"></i> HTML</a></li>
                 <li><a href="#" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF</a></li>
-                <li><a href="#" id="exportAllZipBtn"><i class="fas fa-file-archive"></i> تمامی فایل‌ها (zip)</a></li>
+                <li><a href="#" id="exportAllZipBtn"><i class="fas fa-file-archive"></i> تمامی پرونده‌ها (zip)</a></li>
               </ul>
             </li>
             <li><a href="#" id="settingsBtn"><i class="fas fa-cog"></i> تنظیمات</a></li>
@@ -81,13 +81,13 @@
             <li>
               <label>
                 <input type="checkbox" id="showFiles">
-                <i class="fas fa-folder-tree"></i><span>فایل‌ها</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd></span>
+                <i class="fas fa-folder-tree"></i><span>پرونده‌ها</span><span class="shortcut-hint"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd></span>
               </label>
             </li>
             <li>
               <label>
                 <input type="checkbox" id="showFilename" checked>
-                <i class="fas fa-file-signature"></i> نام فایل
+                <i class="fas fa-file-signature"></i> نام پرونده
               </label>
             </li>
           </ul>
@@ -145,7 +145,7 @@
           </ul>
         </li>
         <li class="menu-right">
-          <a href="#" id="copyAllBtn" title="رونوشت کل فایل"><i class="fas fa-copy"></i></a>
+          <a href="#" id="copyAllBtn" title="رونوشت کل پرونده"><i class="fas fa-copy"></i></a>
           <a href="#" id="searchBtn" title="جست‌وجو"><i class="fas fa-search"></i></a>
           <a href="#" id="fullscreenBtn" title="تمام صفحه"><i class="fas fa-expand"></i></a>
           <div id="searchBar" class="hidden">
@@ -222,7 +222,7 @@
     <div id="content">
       <div id="sidePanel">
         <div id="sidePanelTabs">
-          <button class="side-panel-tab" data-tab="files" title="فایل‌ها"><i class="fas fa-folder-tree"></i></button>
+          <button class="side-panel-tab" data-tab="files" title="پرونده‌ها"><i class="fas fa-folder-tree"></i></button>
           <button class="side-panel-tab" data-tab="toc" title="فهرست مطالب"><i class="fas fa-list"></i></button>
         </div>
         <div id="sidePanelContent">
@@ -258,7 +258,7 @@
         <span id="fileSize">حجم: 0 بایت</span>
       </div>
       <div class="status-right">
-        <input type="text" id="filename" value="نام فایل" class="filename-input">
+        <input type="text" id="filename" value="نام پرونده" class="filename-input">
       </div>
     </div>
   </div>
@@ -352,7 +352,7 @@
             <a href="https://github.com/alirho/parsiNegar" target="_blank" class="github-link" title="گیت‌هاب">
               <i class="fab fa-github"></i>
             </a>
-            <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۱۴.۰</a>
+            <a href="https://github.com/alirho/parsiNegar/releases" target="_blank" class="version-link">نسخه ۲.۱۶.۰</a>
           </div>
         </div>
       </div>
@@ -362,17 +362,17 @@
   <div id="filePropertiesModal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>ویژگی‌های فایل</h2>
+        <h2>ویژگی‌های پرونده</h2>
         <button id="closePropertiesBtn"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
         <div id="propertiesContainer">
             <div class="property-item">
-                <span class="property-label">نام فایل:</span>
+                <span class="property-label">نام پرونده:</span>
                 <span id="propFileName" class="property-value"></span>
             </div>
             <div class="property-item">
-                <span class="property-label">حجم فایل:</span>
+                <span class="property-label">حجم پرونده:</span>
                 <span id="propFileSize" class="property-value"></span>
             </div>
             <div class="property-item">
@@ -425,10 +425,10 @@
       <div class="modal-body">
         <div class="shortcuts-container">
           <div class="shortcuts-column">
-            <h3>مدیریت فایل</h3>
+            <h3>مدیریت پرونده</h3>
             <table class="shortcuts-table">
-              <tr><td>فایل نو</td><td>Ctrl + Shift + N</td></tr>
-              <tr><td>بارگذاری فایل</td><td>Ctrl + Shift + O</td></tr>
+              <tr><td>پرونده نو</td><td>Ctrl + Shift + N</td></tr>
+              <tr><td>بارگذاری پرونده</td><td>Ctrl + Shift + O</td></tr>
               <tr><td>خروجی Markdown</td><td>Ctrl + E</td></tr>
             </table>
             <h3>ویرایش</h3>
@@ -445,7 +445,7 @@
             <h3>نمایش</h3>
             <table class="shortcuts-table">
               <tr><td>نمایش/پنهان کردن پیش‌نمایش</td><td>Ctrl + Alt + P</td></tr>
-              <tr><td>نمایش/پنهان کردن پنل فایل‌ها</td><td>Ctrl + Alt + F</td></tr>
+              <tr><td>نمایش/پنهان کردن پنل پرونده‌ها</td><td>Ctrl + Alt + F</td></tr>
               <tr><td>نمایش/پنهان کردن فهرست مطالب</td><td>Ctrl + Alt + T</td></tr>
               <tr><td>راهنمای کلیدها</td><td>Ctrl + Alt + K</td></tr>
             </table>

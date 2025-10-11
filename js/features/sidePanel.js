@@ -7,7 +7,7 @@ import { customConfirm, customPrompt, customAlert } from './modal.js';
 import { Parser } from '../markdown/parser.js';
 
 /**
- * ماژول پنل کناری (فهرست مطالب و لیست فایل‌ها)
+ * ماژول پنل کناری (فهرست مطالب و لیست پرونده‌ها)
  */
 
 // --- مدیریت تب‌ها و نمایش پنل ---
@@ -24,7 +24,7 @@ function updateSidePanelVisibility(options = {}) {
         if (options.tabToActivate) {
              activateTab(options.tabToActivate);
         } else {
-             // در غیر این صورت، اگر هیچ تبی فعال نیست، تب فایل‌ها را به عنوان پیش‌فرض فعال کن
+             // در غیر این صورت، اگر هیچ تبی فعال نیست، تب پرونده‌ها را به عنوان پیش‌فرض فعال کن
             const isActive = elements.filesTabBtn.classList.contains('active') || elements.tocTabBtn.classList.contains('active');
             if (!isActive) {
                 activateTab('files');
@@ -146,14 +146,14 @@ function updateToc() {
 }
 
 
-// --- منطق لیست فایل‌ها ---
+// --- منطق لیست پرونده‌ها ---
 
 async function populateFilesList() {
     const files = await storage.getAllFilesFromDB();
     files.sort((a, b) => b.lastModified - a.lastModified);
     
     if (files.length === 0) {
-        elements.filesList.innerHTML = '<p style="text-align:center;opacity:0.7;">فایلی یافت نشد.</p>';
+        elements.filesList.innerHTML = '<p style="text-align:center;opacity:0.7;">پرونده‌ای یافت نشد.</p>';
         return;
     }
 
@@ -171,7 +171,7 @@ async function populateFilesList() {
         </div>
     `).join('');
     
-    // افزودن رویدادها به عناصر جدید لیست فایل‌ها
+    // افزودن رویدادها به عناصر جدید لیست پرونده‌ها
     elements.filesList.querySelectorAll('.file-item').forEach(el => {
         el.querySelector('.file-name')?.addEventListener('click', handleLoadFile);
         el.querySelector('.file-actions-toggle')?.addEventListener('click', toggleFileActionsMenu);
@@ -201,11 +201,11 @@ async function handleLoadFile(e) {
 async function handleRenameFile(e) {
     e.preventDefault();
     const oldId = e.target.closest('.file-item').dataset.id;
-    const newName = await customPrompt('نام جدید فایل را وارد کنید:', removeFileExtension(oldId), 'تغییر نام');
+    const newName = await customPrompt('نام جدید پرونده را وارد کنید:', removeFileExtension(oldId), 'تغییر نام');
     if(newName && newName.trim() !== '' && newName !== removeFileExtension(oldId)) {
         const newId = newName.trim() + '.md';
         if (await storage.getFileFromDB(newId)) {
-            return customAlert('فایلی با این نام وجود دارد.');
+            return customAlert('پرونده‌ای با این نام وجود دارد.');
         }
         const file = await storage.getFileFromDB(oldId);
         await storage.saveFileToDB(newId, file.content, { creationDate: file.creationDate });
@@ -222,7 +222,7 @@ async function handleRenameFile(e) {
 async function handleDeleteFile(e) {
     e.preventDefault();
     const id = e.target.closest('.file-item').dataset.id;
-    const confirmed = await customConfirm(`آیا از حذف فایل «${removeFileExtension(id)}» مطمئن هستید؟`);
+    const confirmed = await customConfirm(`آیا از حذف پرونده «${removeFileExtension(id)}» مطمئن هستید؟`);
     if (confirmed) {
         await storage.deleteFileFromDB(id);
         if (state.currentFileId === id) {
@@ -253,7 +253,7 @@ export function init() {
     EventBus.on('toc:update', updateToc);
     EventBus.on('file:listChanged', populateFilesList);
     EventBus.on('file:load', (file) => {
-        // وقتی فایل جدیدی بارگذاری می‌شود، لیست را به‌روز کن تا فایل فعال مشخص شود
+        // وقتی پرونده جدیدی بارگذاری می‌شود، لیست را به‌روز کن تا پرونده فعال مشخص شود
         populateFilesList();
     });
 }

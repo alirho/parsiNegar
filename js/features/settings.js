@@ -115,7 +115,7 @@ function loadSettings() {
 
 
 async function clearAllData() {
-    const confirmed = await customConfirm('آیا مطمئن هستید؟ تمام فایل‌های ذخیره شده برای همیشه پاک خواهند شد. این عمل بازگشت‌پذیر نیست.', 'پاک کردن تمام داده‌ها');
+    const confirmed = await customConfirm('آیا مطمئن هستید؟ تمام پرونده‌های ذخیره شده برای همیشه پاک خواهند شد. این عمل بازگشت‌پذیر نیست.', 'پاک کردن تمام داده‌ها');
     if (confirmed) {
         try {
             await storage.clearFilesDB();

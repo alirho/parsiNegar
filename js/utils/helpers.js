@@ -30,9 +30,9 @@ function toPersianDigits(value) {
 }
 
 /**
- * حذف پسوند فایل از نام آن
- * @param {string} name - نام فایل
- * @returns {string} - نام فایل بدون پسوند
+ * حذف پسوند پرونده از نام آن
+ * @param {string} name - نام پرونده
+ * @returns {string} - نام پرونده بدون پسوند
  */
 export function removeFileExtension(name) {
     if (typeof name !== 'string') return name || '';
@@ -40,8 +40,8 @@ export function removeFileExtension(name) {
 }
 
 /**
- * فرمت‌بندی حجم فایل به صورت خوانا
- * @param {number} bytes - حجم فایل به بایت
+ * فرمت‌بندی حجم پرونده به صورت خوانا
+ * @param {number} bytes - حجم پرونده به بایت
  * @returns {string} - رشته فرمت‌شده
  */
 export function formatFileSize(bytes) {

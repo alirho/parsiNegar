@@ -25,8 +25,8 @@ function updateStats(content) {
 }
 
 /**
- * نمایش اطلاعات یک فایل خاص در مودال ویژگی‌ها
- * @param {object} file - آبجکت فایل از IndexedDB
+ * نمایش اطلاعات یک پرونده خاص در مودال ویژگی‌ها
+ * @param {object} file - آبجکت پرونده از IndexedDB
  */
 function showFileProperties(file) {
     const content = file.content || '';
@@ -57,7 +57,7 @@ export function init() {
     EventBus.on('editor:contentChanged', updateStats);
     EventBus.on('app:loaded', updateStats);
 
-    // مدیریت مودال ویژگی‌های فایل
+    // مدیریت مودال ویژگی‌های پرونده
     EventBus.on('file:showProperties', showFileProperties);
     elements.closePropertiesBtn.addEventListener('click', () => {
         elements.filePropertiesModal.classList.add('hidden');

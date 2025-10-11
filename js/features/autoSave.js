@@ -17,7 +17,7 @@ const debouncedSave = debounce(async (editor) => {
         let isNewFile = false;
 
         // Handle new, unnamed files that now have content
-        if (fileIdToSave === 'نام فایل' && currentContent.trim() !== '') {
+        if (fileIdToSave === 'نام پرونده' && currentContent.trim() !== '') {
             isNewFile = true;
             const baseName = 'بی‌نام'; // Always use 'بی‌نام' for new unnamed files
             const newFileId = await getUniqueFileName(baseName);
@@ -34,7 +34,7 @@ const debouncedSave = debounce(async (editor) => {
         }));
         
         // Save to IndexedDB if the file has a valid name
-        if (fileIdToSave !== 'نام فایل') {
+        if (fileIdToSave !== 'نام پرونده') {
             const existingFile = await getFileFromDB(fileIdToSave);
             
             // Save if it's a brand new file, or if content has changed for an existing file
@@ -64,7 +64,7 @@ export function init(editor) {
         debouncedSave(editor);
     });
 
-    // هنگامی که نام فایل تغییر می‌کند، ذخیره‌سازی را فراخوانی کن
+    // هنگامی که نام پرونده تغییر می‌کند، ذخیره‌سازی را فراخوانی کن
     EventBus.on('file:renamed', () => {
         debouncedSave(editor);
     });

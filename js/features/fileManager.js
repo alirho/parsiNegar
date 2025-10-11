@@ -6,17 +6,17 @@ import { removeFileExtension } from '../utils/helpers.js';
 import { customAlert, customConfirm, customPrompt } from './modal.js';
 
 /**
- * ماژول مدیریت فایل
- * مسئولیت تمام عملیات مربوط به فایل‌ها مانند ایجاد، بارگذاری، ذخیره، خروجی و حذف را بر عهده دارد.
+ * ماژول مدیریت پرونده
+ * مسئولیت تمام عملیات مربوط به پرونده‌ها مانند ایجاد، بارگذاری، ذخیره، خروجی و حذف را بر عهده دارد.
  */
 let editorInstance;
 
 // --- توابع کمکی ---
 
 /**
- * تابعی برای دانلود یک فایل Blob
- * @param {Blob} blob - محتوای فایل
- * @param {string} filename - نام فایل برای دانلود
+ * تابعی برای دانلود یک پرونده Blob
+ * @param {Blob} blob - محتوای پرونده
+ * @param {string} filename - نام پرونده برای دانلود
  */
 function downloadFile(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -30,7 +30,7 @@ function downloadFile(blob, filename) {
 }
 
 /**
- * واکشی و ترکیب فایل‌های CSS خاص مورد نیاز برای خروجی HTML تمیز.
+ * واکشی و ترکیب پرونده‌های CSS خاص مورد نیاز برای خروجی HTML تمیز.
  * این شامل استایل‌های پایه، پیش‌نمایش و تم فعال هایلایت کد است.
  * همچنین URLهای نسبی درون CSS واکشی شده را به مسیرهای مطلق تبدیل می‌کند.
  * @returns {Promise<string>} یک رشته واحد حاوی تمام قوانین CSS لازم.
@@ -61,11 +61,11 @@ async function getPreviewStyles() {
                 return '';
             }
             const text = await response.text();
-            // URL پایه برای حل مسیرهای نسبی، URL خود فایل CSS است.
+            // URL پایه برای حل مسیرهای نسبی، URL خود پرونده CSS است.
             const baseUrl = new URL(url, document.baseURI).href;
             return text.replace(/url\((?!['"]?(?:data:|https:|http:|ftp:|\/\/))['"]?(.+?)['"]?\)/g, (match, relativeUrl) => {
                 try {
-                    // حل URL نسبی در برابر URL فایل CSS
+                    // حل URL نسبی در برابر URL پرونده CSS
                     const absoluteUrl = new URL(relativeUrl, baseUrl);
                     return `url('${absoluteUrl.href}')`;
                 } catch (e) {
@@ -88,8 +88,8 @@ async function getPreviewStyles() {
 // --- مدیریت رویدادها ---
 
 /**
- * بارگذاری محتوای یک فایل در ویرایشگر و به‌روزرسانی وضعیت برنامه
- * @param {object} file - آبجکت فایل از IndexedDB
+ * بارگذاری محتوای یک پرونده در ویرایشگر و به‌روزرسانی وضعیت برنامه
+ * @param {object} file - آبجکت پرونده از IndexedDB
  */
 function loadFile(file) {
     if (!file) return;
@@ -105,16 +105,16 @@ function loadFile(file) {
     }));
 }
 
-// ایجاد فایل جدید
+// ایجاد پرونده جدید
 async function newFile() {
   editorInstance.setValue('', { resetHistory: true });
-  state.currentFileId = 'نام فایل';
-  elements.filename.value = 'نام فایل';
+  state.currentFileId = 'نام پرونده';
+  elements.filename.value = 'نام پرونده';
   localStorage.removeItem('parsiNegarLastState');
   EventBus.emit('file:listChanged');
 }
 
-// بارگذاری فایل از سیستم کاربر
+// بارگذاری پرونده از سیستم کاربر
 function uploadFile() {
   elements.fileInput.click();
 }
@@ -130,7 +130,7 @@ async function handleFileSelect(e) {
 
     const existingFile = await storage.getFileFromDB(newFileId);
     if (existingFile) {
-      await customAlert(`فایلی با نام «${newFileId}» از قبل وجود دارد و بازنویسی نخواهد شد.`, 'خطا در بارگذاری');
+      await customAlert(`پرونده‌ای با نام «${newFileId}» از قبل وجود دارد و بازنویسی نخواهد شد.`, 'خطا در بارگذاری');
       elements.fileInput.value = ''; // ریست کردن اینپوت
       return;
     }
@@ -146,19 +146,19 @@ async function handleFileSelect(e) {
   elements.fileInput.value = '';
 }
 
-// تغییر نام فایل فعلی
+// تغییر نام پرونده فعلی
 async function renameCurrentFile() {
     const oldId = state.currentFileId;
     const oldNameWithoutExt = removeFileExtension(oldId);
     const newNameWithoutExt = elements.filename.value.trim();
 
-    if (!newNameWithoutExt || newNameWithoutExt === 'نام فایل' || newNameWithoutExt === oldNameWithoutExt) {
+    if (!newNameWithoutExt || newNameWithoutExt === 'نام پرونده' || newNameWithoutExt === oldNameWithoutExt) {
         elements.filename.value = oldNameWithoutExt; // Revert if invalid
         return;
     }
 
     const extMatch = oldId.match(/\.\w+$/);
-    const ext = (oldId !== 'نام فایل' && extMatch) ? extMatch[0] : '.md';
+    const ext = (oldId !== 'نام پرونده' && extMatch) ? extMatch[0] : '.md';
     const newId = newNameWithoutExt + ext;
 
     if (newId === oldId) {
@@ -167,7 +167,7 @@ async function renameCurrentFile() {
 
     const existingFile = await storage.getFileFromDB(newId);
     if (existingFile) {
-        await customAlert('فایلی با این نام از قبل وجود دارد.', 'خطا در تغییر نام');
+        await customAlert('پرونده‌ای با این نام از قبل وجود دارد.', 'خطا در تغییر نام');
         elements.filename.value = oldNameWithoutExt;
         return;
     }
@@ -175,7 +175,7 @@ async function renameCurrentFile() {
     const contentToSave = editorInstance.getValue();
     let creationDate = new Date();
 
-    if (oldId !== 'نام فایل') {
+    if (oldId !== 'نام پرونده') {
         const oldFile = await storage.getFileFromDB(oldId);
         if (oldFile) creationDate = oldFile.creationDate || oldFile.lastModified;
         await storage.deleteFileFromDB(oldId);
@@ -237,22 +237,22 @@ async function exportAsPdf() {
     await window.html2pdf().set(opt).from(element).save();
   } catch (error) {
     console.error('خطا در ساخت PDF:', error);
-    await customAlert('خطایی در هنگام ساخت فایل PDF رخ داد.', 'خطا');
+    await customAlert('خطایی در هنگام ساخت پرونده PDF رخ داد.', 'خطا');
   }
 }
 
 async function exportAllAsZip() {
     if (typeof window.JSZip === 'undefined') {
-        await customAlert('کتابخانه مورد نیاز برای ساخت فایل فشرده بارگذاری نشده است.', 'خطا');
+        await customAlert('کتابخانه مورد نیاز برای ساخت پرونده فشرده بارگذاری نشده است.', 'خطا');
         return;
     }
-    const confirmed = await customConfirm('آیا می‌خواهید از تمام فایل‌های ذخیره شده خروجی زیپ بگیرید؟', 'خروجی کلی');
+    const confirmed = await customConfirm('آیا می‌خواهید از تمام پرونده‌های ذخیره شده خروجی زیپ بگیرید؟', 'خروجی کلی');
     if (!confirmed) return;
 
     try {
         const files = await storage.getAllFilesFromDB();
         if (files.length === 0) {
-            await customAlert('هیچ فایلی برای خروجی گرفتن وجود ندارد.', 'خروجی خالی');
+            await customAlert('هیچ پرونده‌ای برای خروجی گرفتن وجود ندارد.', 'خروجی خالی');
             return;
         }
 
@@ -264,8 +264,8 @@ async function exportAllAsZip() {
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         downloadFile(zipBlob, 'parsiNegar-backup.zip');
     } catch (error) {
-        console.error('خطا در ساخت فایل فشرده:', error);
-        await customAlert('خطایی در هنگام ایجاد فایل فشرده رخ داد.', 'خطا');
+        console.error('خطا در ساخت پرونده فشرده:', error);
+        await customAlert('خطایی در هنگام ایجاد پرونده فشرده رخ داد.', 'خطا');
     }
 }
 
@@ -273,13 +273,13 @@ async function exportAllAsZip() {
 async function loadHelpFile(filePath, fileName) {
     try {
         const response = await fetch(filePath);
-        if (!response.ok) throw new Error(`فایل ${filePath} یافت نشد`);
+        if (!response.ok) throw new Error(`پرونده ${filePath} یافت نشد`);
         const content = await response.text();
         const fileId = `${fileName}.md`;
         state.currentFileId = fileId;
         elements.filename.value = fileName;
         editorInstance.setValue(content, { resetHistory: true });
-        // ذخیره فایل راهنما در DB برای دسترسی آفلاین
+        // ذخیره پرونده راهنما در DB برای دسترسی آفلاین
         await storage.saveFileToDB(fileId, content);
         EventBus.emit('file:listChanged');
     } catch (error) {
@@ -339,7 +339,7 @@ function handleSelectAll() {
 export function init(editor) {
   editorInstance = editor;
 
-  // رویدادهای منوی فایل
+  // رویدادهای منوی پرونده
   elements.newFileBtn.addEventListener('click', newFile);
   elements.loadFileBtn.addEventListener('click', uploadFile);
   elements.fileInput.addEventListener('change', handleFileSelect);
@@ -371,7 +371,7 @@ export function init(editor) {
   elements.findMenuBtn.addEventListener('click', (e) => { e.preventDefault(); EventBus.emit('search:open'); });
   elements.replaceMenuBtn.addEventListener('click', (e) => { e.preventDefault(); EventBus.emit('search:open', { focusReplace: true }); });
 
-  // رویداد تغییر نام فایل از طریق اینپوت
+  // رویداد تغییر نام پرونده از طریق اینپوت
   elements.filename.addEventListener('change', renameCurrentFile);
 
   // گوش دادن به رویدادها از ماژول‌های دیگر

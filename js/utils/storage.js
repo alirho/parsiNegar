@@ -32,9 +32,9 @@ async function openDB() {
 }
 
 /**
- * ذخیره یک فایل در پایگاه داده
- * @param {string} id - شناسه‌ی فایل
- * @param {string} content - محتوای فایل
+ * ذخیره یک پرونده در پایگاه داده
+ * @param {string} id - شناسه‌ی پرونده
+ * @param {string} content - محتوای پرونده
  * @param {object} [options={}] - گزینه‌ها (مانند تاریخ ایجاد)
  * @returns {Promise<void>}
  */
@@ -65,8 +65,8 @@ export async function saveFileToDB(id, content, options = {}) {
 }
 
 /**
- * خواندن یک فایل از پایگاه داده
- * @param {string} id - شناسه‌ی فایل
+ * خواندن یک پرونده از پایگاه داده
+ * @param {string} id - شناسه‌ی پرونده
  * @returns {Promise<object|undefined>}
  */
 export async function getFileFromDB(id) {
@@ -81,7 +81,7 @@ export async function getFileFromDB(id) {
 }
 
 /**
- * خواندن تمام فایل‌ها از پایگاه داده
+ * خواندن تمام پرونده‌ها از پایگاه داده
  * @returns {Promise<Array<object>>}
  */
 export async function getAllFilesFromDB() {
@@ -96,8 +96,8 @@ export async function getAllFilesFromDB() {
 }
 
 /**
- * حذف یک فایل از پایگاه داده
- * @param {string} id - شناسه‌ی فایل
+ * حذف یک پرونده از پایگاه داده
+ * @param {string} id - شناسه‌ی پرونده
  * @returns {Promise<void>}
  */
 export async function deleteFileFromDB(id) {
@@ -112,7 +112,7 @@ export async function deleteFileFromDB(id) {
 }
 
 /**
- * پاک کردن تمام فایل‌ها از پایگاه داده
+ * پاک کردن تمام پرونده‌ها از پایگاه داده
  * @returns {Promise<void>}
  */
 export async function clearFilesDB() {
@@ -127,10 +127,10 @@ export async function clearFilesDB() {
 }
 
 /**
- * یک نام فایل منحصر به فرد بر اساس نام پایه ایجاد می‌کند.
+ * یک نام پرونده منحصر به فرد بر اساس نام پایه ایجاد می‌کند.
  * پسوند ".md" را اضافه می‌کند. "baseName.md"، "baseName 1.md" و غیره را بررسی می‌کند.
- * @param {string} baseName - نام پایه مورد نظر برای فایل.
- * @returns {Promise<string>} - یک شناسه فایل منحصر به فرد.
+ * @param {string} baseName - نام پایه مورد نظر برای پرونده.
+ * @returns {Promise<string>} - یک شناسه پرونده منحصر به فرد.
  */
 export async function getUniqueFileName(baseName) {
     let finalName = baseName.trim();
