@@ -1,6 +1,6 @@
 # پارسی‌نگار (ParsiNegar)
 
-![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.15.0-blue)
+![پارسی‌نگار](https://img.shields.io/badge/ParsiNegar-v2.14.0-blue)
 ![زبان](https://img.shields.io/badge/Language-Persian-green)
 ![مجوز](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -74,6 +74,20 @@ cd parsiNegar
 2. یک شاخه جدید برای ویژگی یا اصلاح خود ایجاد کنید.
 3. تغییرات خود را اعمال کنید.
 4. یک درخواست ادغام (Pull Request) ارسال کنید.
+
+## کتابخانه‌های استفاده شده
+
+پارسی‌نگار با بهره‌گیری از کتابخانه‌ها و ابزارهای متن‌باز فوق‌العاده‌ای ساخته شده است. در ادامه لیستی از این ابزارها آمده است:
+
+- **[markdown-it](https://github.com/markdown-it/markdown-it):** مفسر مارک‌داون مدرن و قابل توسعه که به عنوان پایه‌ی مفسر سفارشی «[پارس‌نشان](https://github.com/alirho/parsneshan)» استفاده شده است.
+- **[Marked.js](https://github.com/markedjs/marked):** یک مفسر سریع و سبک برای پردازش مارک‌داون استاندارد.
+- **[شه‌نشان (ShahNeshan)](https://github.com/barnevis/ShahNeshan):** مفسر مارک‌داون دیگری که برای پردازش بهینه متون فارسی طراحی شده است.
+- **[highlight.js](https://github.com/highlightjs/highlight.js):** برای هایلایت کردن سینتکس بلوک‌های کد در زبان‌های مختلف برنامه‌نویسی.
+- **[Mermaid.js](https://github.com/mermaid-js/mermaid):** ابزاری قدرتمند برای رسم نمودارها و دیاگرام‌ها از طریق متن.
+- **[html2pdf.js](https://github.com/eKoopmans/html2pdf.js):** برای پیاده‌سازی قابلیت خروجی گرفتن به فرمت PDF.
+- **[JSZip](https://github.com/Stuk/jszip):** برای ایجاد فایل‌های فشرده (`.zip`) جهت خروجی گرفتن از تمام اسناد.
+- **[emoji-picker-element](https://github.com/nolanlawson/emoji-picker-element):** یک وب کامپوننت سبک برای ارائه انتخابگر شکلک (Emoji).
+- **[Font Awesome](https://github.com/FortAwesome/Font-Awesome):** برای تامین مجموعه آیکون‌های استفاده شده در رابط کاربری.
 
 ## مجوز
 
