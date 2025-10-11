@@ -95,6 +95,7 @@ export const elements = {
   showTocCheckbox: qs('#showToc'),
   showFilesCheckbox: qs('#showFiles'),
   showFilenameCheckbox: qs('#showFilename'),
+  directionRadios: Array.from(qsa('input[name="direction"]')),
   
   // جستجو
   searchBtn: qs('#searchBtn'),

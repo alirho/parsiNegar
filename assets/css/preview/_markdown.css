@@ -93,3 +93,12 @@ ol, ul{
 ol p, ul p{
   margin-bottom: 0 !important;
 }
+
+/* Fix for list indentation in RTL context with auto-direction */
+/* When a list contains RTL list items, padding should be on the right. */
+.markdown-preview ul:has(> li[dir="rtl"]),
+.markdown-preview ol:has(> li[dir="rtl"]) {
+  /* Reset default left padding and apply it to the right for RTL layout */
+  padding-left: 0;
+  padding-right: 2.5rem;
+}

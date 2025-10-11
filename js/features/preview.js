@@ -354,7 +354,20 @@ async function updatePreview(markdown) {
         return `<div id="${id}" class="mindmap-placeholder"></div>`;
     });
 
-    elements.preview.innerHTML = Parser.parse(placeholderMarkdown);
+    let html = Parser.parse(placeholderMarkdown);
+    const globalDirection = elements.preview.dir;
+
+    // اگر جهت کلی به صورت دستی تنظیم شده باشد (نه خودکار)،
+    // تمام جهت‌های مشخص شده برای هر پاراگراف را حذف می‌کنیم
+    // تا جهت کلی والد (preview) اعمال شود.
+    if (globalDirection !== 'auto') {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        tempDiv.querySelectorAll('[dir]').forEach(el => el.removeAttribute('dir'));
+        html = tempDiv.innerHTML;
+    }
+
+    elements.preview.innerHTML = html;
 
     // رندر کردن کامپوننت‌های دینامیک
     await renderMermaidDiagrams();

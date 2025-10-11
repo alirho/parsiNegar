@@ -12,14 +12,11 @@
   margin: 1rem 0;
   overflow-x: auto;
   direction: ltr;
+  text-align: left;
 }
 .markdown-preview pre code {
   background: transparent;
   padding: 0;
-}
-pre:has(.javascript, .rust){
-  direction: ltr;
-  text-align: left;
 }
 
 /* Code Block Copy Button */

@@ -245,7 +245,7 @@
       </div>
           
       <div id="previewContainer">
-        <div id="preview" class="markdown-preview" dir="rtl"></div>
+        <div id="preview" class="markdown-preview" dir="auto"></div>
       </div>
     </div>
 
@@ -296,9 +296,9 @@
         <div class="setting-group">
           <label>مفسر مارک‌داون</label>
           <select id="markdownParser">
+            <option value="parsneshan" selected>پارس‌نشان</option>
             <option value="marked">Marked</option>
             <option value="shahneshan">شه‌نشان</option>
-            <option value="parsneshan" selected>پارس‌نشان</option>
           </select>
         </div>
         
@@ -318,6 +318,24 @@
             <option value="Vazirmatn" selected>وزیر متن</option>
             <option value="IRANYekan">ایران یکان</option>
           </select>
+        </div>
+
+        <div class="setting-group">
+          <label>جهت متن</label>
+          <div class="direction-options">
+            <label>
+              <input type="radio" name="direction" value="auto" checked>
+              <span>خودکار</span>
+            </label>
+            <label>
+              <input type="radio" name="direction" value="rtl">
+              <span>راست به چپ</span>
+            </label>
+            <label>
+              <input type="radio" name="direction" value="ltr">
+              <span>چپ به راست</span>
+            </label>
+          </div>
         </div>
 
         <div class="setting-group">

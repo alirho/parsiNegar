@@ -14,6 +14,7 @@ function saveSettings() {
         theme: elements.themeRadios.find(r => r.checked).value,
         fontSize: elements.fontSizeSelect.value,
         fontFamily: elements.fontFamilySelect.value,
+        direction: elements.directionRadios.find(r => r.checked).value,
         markdownParser: elements.markdownParserSelect.value,
         searchScope: elements.searchScope.value,
         showToolbar: elements.showToolbarCheckbox.checked,
@@ -61,6 +62,13 @@ function loadSettings() {
         setHljsTheme(savedTheme);
         configureMermaidTheme(savedTheme);
     }
+
+    // اعمال جهت متن
+    const savedDirection = settings.direction || 'auto';
+    (elements.directionRadios.find(r => r.value === savedDirection) || {}).checked = true;
+    elements.editor.dir = savedDirection;
+    elements.preview.dir = savedDirection;
+    elements.editorBackdrop.dir = savedDirection;
 
     // اعمال اندازه فونت
     if (settings.fontSize) {
@@ -152,6 +160,16 @@ export function init() {
             applyAndNotifySystemTheme();
         }
     });
+
+    elements.directionRadios.forEach(radio => radio.addEventListener('change', (e) => {
+        const selectedDirection = e.target.value;
+        elements.editor.dir = selectedDirection;
+        elements.preview.dir = selectedDirection;
+        elements.editorBackdrop.dir = selectedDirection;
+        saveSettings();
+        // رندر مجدد پیش‌نمایش برای اعمال جهت جدید
+        EventBus.emit('editor:contentChanged', elements.editor.value);
+    }));
 
     elements.fontSizeSelect.addEventListener('change', (e) => {
         elements.editor.style.fontSize = `${e.target.value}px`;
