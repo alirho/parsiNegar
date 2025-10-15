@@ -152,6 +152,13 @@ body.theme-dark .property-value {
 body.theme-dark .files-controls {
     color: #9ca3af;
 }
+body.theme-dark #fileSearchInput {
+  color: #e5e5e5;
+  border-bottom-color: #404040;
+}
+body.theme-dark #fileSearchInput:focus {
+  border-bottom-color: #5eead4;
+}
 body.theme-dark .sort-dropdown-menu {
   background: #2d2d2d;
   border-color: #404040;
@@ -308,6 +315,13 @@ body.theme-sepia .property-value {
 }
 body.theme-sepia .files-controls {
     color: #8c6d46;
+}
+body.theme-sepia #fileSearchInput {
+  color: #5f4b32;
+  border-bottom-color: #d3c4b3;
+}
+body.theme-sepia #fileSearchInput:focus {
+  border-bottom-color: #5f4b32;
 }
 body.theme-sepia .sort-dropdown-menu {
   background: #f4ecd8;

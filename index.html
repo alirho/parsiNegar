@@ -230,8 +230,10 @@
           <div id="filesPanel" class="side-panel-pane">
             <div class="files-controls">
               <button id="newFileSideBtn" class="new-file-side-btn" title="پرونده نو">
-                <!-- <i class="fas fa-plus"></i> -->
                 <i class="fa-solid fa-file-circle-plus"></i>
+              </button>
+              <button id="openFileSearchBtn" class="file-control-btn" title="جست‌وجوی پرونده‌ها">
+                <i class="fas fa-search"></i>
               </button>
               <div id="fileSortContainer" class="sort-dropdown-container">
                 <button id="fileSortToggle" class="sort-dropdown-toggle" title="چینش پرونده‌ها">
@@ -248,6 +250,10 @@
                   <a href="#" class="sort-dropdown-item" data-value="created-desc"><i class="fas fa-check"></i>نو به کهنه</a>
                   <a href="#" class="sort-dropdown-item" data-value="created-asc"><i class="fas fa-check"></i>کهنه به نو</a>
                 </div>
+              </div>
+              <div id="fileSearchContainer" class="file-search-container">
+                <input type="text" id="fileSearchInput" placeholder="جست‌وجو..." spellcheck="false">
+                <button id="clearFileSearchBtn" title="پاک کردن"><i class="fas fa-times"></i></button>
               </div>
             </div>
             <div class="files-list"></div>

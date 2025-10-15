@@ -9,6 +9,7 @@ import { Parser } from '../markdown/parser.js';
 /**
  * ماژول پنل کناری (فهرست مطالب و لیست پرونده‌ها)
  */
+let isSearchActive = false;
 
 // --- مدیریت تب‌ها و نمایش پنل ---
 
@@ -146,14 +147,35 @@ function updateToc() {
 }
 
 
-// --- منطق لیست پرونده‌ها ---
+// --- منطق لیست پرونده‌ها و جست‌وجو ---
 
-async function populateFilesList() {
+function openSearch() {
+    if (isSearchActive) return;
+    isSearchActive = true;
+    elements.filesControls.classList.add('searching');
+    elements.fileSearchInput.focus();
+}
+
+function closeSearch() {
+    if (!isSearchActive) return;
+    isSearchActive = false;
+    elements.filesControls.classList.remove('searching');
+    elements.fileSearchInput.value = '';
+    elements.clearFileSearchBtn.classList.remove('visible');
+    populateFilesList(); // بازنشانی لیست
+}
+
+async function populateFilesList(searchTerm = '') {
     const files = await storage.getAllFilesFromDB();
     const activeSortItem = elements.fileSortMenu.querySelector('.sort-dropdown-item.active');
     const sortOrder = activeSortItem ? activeSortItem.dataset.value : 'modified-desc';
 
-    files.sort((a, b) => {
+    const searchTermLower = searchTerm.trim().toLowerCase();
+    const filteredFiles = searchTermLower
+        ? files.filter(file => removeFileExtension(file.id).toLowerCase().includes(searchTermLower))
+        : files;
+
+    filteredFiles.sort((a, b) => {
         const aCreation = a.creationDate || a.lastModified;
         const bCreation = b.creationDate || b.lastModified;
         switch (sortOrder) {
@@ -173,12 +195,13 @@ async function populateFilesList() {
         }
     });
     
-    if (files.length === 0) {
-        elements.filesList.innerHTML = '<p style="text-align:center;opacity:0.7;">پرونده‌ای یافت نشد.</p>';
+    if (filteredFiles.length === 0) {
+        const message = searchTermLower ? 'پرونده‌ای یافت نشد.' : 'پرونده‌ای یافت نشد.';
+        elements.filesList.innerHTML = `<p style="text-align:center;opacity:0.7;">${message}</p>`;
         return;
     }
 
-    elements.filesList.innerHTML = files.map(file => `
+    elements.filesList.innerHTML = filteredFiles.map(file => `
         <div class="file-item ${file.id === state.currentFileId ? 'active' : ''}" data-id="${file.id}">
             <span class="file-name" title="آخرین تغییر: ${new Date(file.lastModified).toLocaleString('fa-IR')}">${removeFileExtension(file.id)}</span>
             <div class="file-actions-menu">
@@ -293,12 +316,38 @@ export function init() {
 
     elements.fileSortMenu.addEventListener('click', handleSortChange);
 
+    // رویدادهای جست‌وجو
+    elements.openFileSearchBtn.addEventListener('click', openSearch);
+    elements.fileSearchInput.addEventListener('input', () => {
+        const term = elements.fileSearchInput.value;
+        populateFilesList(term);
+        elements.clearFileSearchBtn.classList.toggle('visible', term.length > 0);
+    });
+    elements.clearFileSearchBtn.addEventListener('click', () => {
+        elements.fileSearchInput.value = '';
+        elements.fileSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        elements.fileSearchInput.focus();
+    });
+
+    // بستن جست‌وجو
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isSearchActive) {
+            e.preventDefault();
+            closeSearch();
+        }
+    });
+    document.addEventListener('click', (e) => {
+        if (isSearchActive && !elements.filesControls.contains(e.target)) {
+            closeSearch();
+        }
+    });
+
+
     EventBus.on('settings:panelsVisibilityChanged', updateSidePanelVisibility);
     EventBus.on('sidePanel:activateTab', activateTab);
     EventBus.on('toc:update', updateToc);
-    EventBus.on('file:listChanged', populateFilesList);
+    EventBus.on('file:listChanged', () => populateFilesList(elements.fileSearchInput.value));
     EventBus.on('file:load', (file) => {
-        // وقتی پرونده جدیدی بارگذاری می‌شود، لیست را به‌روز کن تا پرونده فعال مشخص شود
-        populateFilesList();
+        populateFilesList(elements.fileSearchInput.value);
     });
 }

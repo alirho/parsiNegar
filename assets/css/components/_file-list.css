@@ -18,12 +18,52 @@
 }
 
 .sort-dropdown-toggle,
-.new-file-side-btn {
+.new-file-side-btn,
+.file-control-btn {
   padding: 0.5rem;
   font-size: 1rem;
   line-height: 1;
 }
 
+/* --- Search Bar --- */
+.file-search-container {
+  display: none;
+  width: 100%;
+  position: relative;
+}
+.files-controls.searching .file-search-container {
+  display: flex;
+}
+.files-controls.searching > #newFileSideBtn,
+.files-controls.searching > #openFileSearchBtn,
+.files-controls.searching > #fileSortContainer {
+  display: none;
+}
+#fileSearchInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.5rem;
+  padding-left: 2rem;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #d1d5db;
+}
+#clearFileSearchBtn {
+  position: absolute;
+  left: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  padding: 0.25rem;
+  display: none;
+}
+#clearFileSearchBtn.visible {
+  display: block;
+}
+
+/* --- Sort Dropdown --- */
 .sort-dropdown-menu {
   position: absolute;
   left: 0;
@@ -37,18 +77,15 @@
   min-width: 180px;
   padding: 0.25rem 0;
 }
-
 .sort-dropdown-menu.hidden {
   display: none;
 }
-
 .sort-group-label {
   padding: 0.5rem 1rem 0.25rem;
   font-size: 0.75rem;
   font-weight: bold;
   color: #6b7280;
 }
-
 .sort-dropdown-item {
   display: flex;
   align-items: center;
@@ -60,24 +97,21 @@
   white-space: nowrap;
   cursor: pointer;
 }
-
 .sort-dropdown-item:hover {
   background-color: rgba(0,0,0,0.05);
 }
-
 .sort-dropdown-item .fa-check {
   visibility: hidden;
 }
-
 .sort-dropdown-item.active {
   font-weight: bold;
   color: #0f766e;
 }
-
 .sort-dropdown-item.active .fa-check {
   visibility: visible;
 }
 
+/* --- File List Items --- */
 .file-item {
   display: flex;
   justify-content: space-between;
