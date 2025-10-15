@@ -41,11 +41,6 @@
   overflow: auto;
 }
 
-#editor[dir="auto"],
-#editorBackdrop[dir="auto"] {
-  text-align: right;
-}
-
 #editorBackdrop {
   z-index: 1;
   color: inherit;
