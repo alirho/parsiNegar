@@ -150,7 +150,28 @@ function updateToc() {
 
 async function populateFilesList() {
     const files = await storage.getAllFilesFromDB();
-    files.sort((a, b) => b.lastModified - a.lastModified);
+    const activeSortItem = elements.fileSortMenu.querySelector('.sort-dropdown-item.active');
+    const sortOrder = activeSortItem ? activeSortItem.dataset.value : 'modified-desc';
+
+    files.sort((a, b) => {
+        const aCreation = a.creationDate || a.lastModified;
+        const bCreation = b.creationDate || b.lastModified;
+        switch (sortOrder) {
+            case 'name-asc':
+                return a.id.localeCompare(b.id, 'fa');
+            case 'name-desc':
+                return b.id.localeCompare(a.id, 'fa');
+            case 'modified-asc':
+                return a.lastModified - b.lastModified;
+            case 'created-desc':
+                return bCreation - aCreation;
+            case 'created-asc':
+                return aCreation - bCreation;
+            case 'modified-desc':
+            default:
+                return b.lastModified - a.lastModified;
+        }
+    });
     
     if (files.length === 0) {
         elements.filesList.innerHTML = '<p style="text-align:center;opacity:0.7;">پرونده‌ای یافت نشد.</p>';
@@ -241,6 +262,19 @@ async function handleShowProperties(e) {
     }
 }
 
+function handleSortChange(e) {
+    e.preventDefault();
+    const targetItem = e.target.closest('.sort-dropdown-item');
+    if (!targetItem) return;
+
+    elements.fileSortMenu.querySelectorAll('.sort-dropdown-item').forEach(item => item.classList.remove('active'));
+    targetItem.classList.add('active');
+    elements.fileSortMenu.classList.add('hidden');
+
+    populateFilesList();
+    EventBus.emit('settings:save');
+}
+
 
 // --- مقداردهی اولیه ---
 
@@ -248,6 +282,13 @@ export function init() {
     elements.filesTabBtn.addEventListener('click', () => activateTab('files'));
     elements.tocTabBtn.addEventListener('click', () => activateTab('toc'));
     
+    elements.fileSortToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        elements.fileSortMenu.classList.toggle('hidden');
+    });
+
+    elements.fileSortMenu.addEventListener('click', handleSortChange);
+
     EventBus.on('settings:panelsVisibilityChanged', updateSidePanelVisibility);
     EventBus.on('sidePanel:activateTab', activateTab);
     EventBus.on('toc:update', updateToc);

@@ -10,6 +10,9 @@ import { setHljsTheme, configureMermaidTheme } from '../markdown/highlighter.js'
 
 // تابع برای ذخیره تنظیمات فعلی در localStorage
 function saveSettings() {
+    const activeSortItem = elements.fileSortMenu.querySelector('.sort-dropdown-item.active');
+    const fileSortOrder = activeSortItem ? activeSortItem.dataset.value : 'modified-desc';
+
     const settings = {
         theme: elements.themeRadios.find(r => r.checked).value,
         fontSize: elements.fontSizeSelect.value,
@@ -17,6 +20,7 @@ function saveSettings() {
         direction: elements.directionRadios.find(r => r.checked).value,
         markdownParser: elements.markdownParserSelect.value,
         searchScope: elements.searchScope.value,
+        fileSortOrder: fileSortOrder,
         showToolbar: elements.showToolbarCheckbox.checked,
         showStatusBar: elements.showStatusBarCheckbox.checked,
         showToc: elements.showTocCheckbox.checked,
@@ -92,6 +96,13 @@ function loadSettings() {
     // اعمال محدوده جستجو
     if (settings.searchScope) {
         elements.searchScope.value = settings.searchScope;
+    }
+    
+    // اعمال ترتیب چینش پرونده‌ها
+    if (settings.fileSortOrder) {
+        elements.fileSortMenu.querySelectorAll('.sort-dropdown-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.value === settings.fileSortOrder);
+        });
     }
 
     // اعمال تنظیمات نمایش
@@ -210,6 +221,8 @@ export function init() {
         saveSettings();
     });
 
+    // گوش دادن به رویداد برای ذخیره تنظیمات از ماژول‌های دیگر
+    EventBus.on('settings:save', saveSettings);
 
     // دکمه پاک کردن داده‌ها
     elements.clearDBBtn.addEventListener('click', clearAllData);

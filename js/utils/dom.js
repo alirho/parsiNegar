@@ -52,6 +52,9 @@ export const elements = {
   filesList: qs('.files-list'),
   filesTabBtn: qs('.side-panel-tab[data-tab="files"]'),
   tocTabBtn: qs('.side-panel-tab[data-tab="toc"]'),
+  fileSortContainer: qs('#fileSortContainer'),
+  fileSortToggle: qs('#fileSortToggle'),
+  fileSortMenu: qs('#fileSortMenu'),
 
   // منو
   addMenu: (() => {

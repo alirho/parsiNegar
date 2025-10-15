@@ -228,6 +228,24 @@
         </div>
         <div id="sidePanelContent">
           <div id="filesPanel" class="side-panel-pane">
+            <div class="files-controls">
+              <div id="fileSortContainer" class="sort-dropdown-container">
+                <button id="fileSortToggle" class="sort-dropdown-toggle" title="چینش پرونده‌ها">
+                  <i class="fas fa-sort-amount-down"></i>
+                </button>
+                <div id="fileSortMenu" class="sort-dropdown-menu hidden">
+                  <div class="sort-group-label">نام پرونده</div>
+                  <a href="#" class="sort-dropdown-item" data-value="name-asc"><i class="fas fa-check"></i>الفبایی</a>
+                  <a href="#" class="sort-dropdown-item" data-value="name-desc"><i class="fas fa-check"></i>عکس الفبایی</a>
+                  <div class="sort-group-label">زمان ویرایش</div>
+                  <a href="#" class="sort-dropdown-item active" data-value="modified-desc"><i class="fas fa-check"></i>نو به کهنه</a>
+                  <a href="#" class="sort-dropdown-item" data-value="modified-asc"><i class="fas fa-check"></i>کهنه به نو</a>
+                  <div class="sort-group-label">زمان ساخت</div>
+                  <a href="#" class="sort-dropdown-item" data-value="created-desc"><i class="fas fa-check"></i>نو به کهنه</a>
+                  <a href="#" class="sort-dropdown-item" data-value="created-asc"><i class="fas fa-check"></i>کهنه به نو</a>
+                </div>
+              </div>
+            </div>
             <div class="files-list"></div>
           </div>
           <div id="tocPanel" class="side-panel-pane">

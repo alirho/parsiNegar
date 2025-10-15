@@ -81,22 +81,22 @@ class ParsiNegarApp {
 
     // بستن منوهای باز با کلیک در بیرون آن‌ها
     document.addEventListener('click', (e) => {
-        // بستن منوی کشویی پرونده‌ها
         if (!e.target.closest('.file-actions-menu')) {
             elements.filesList.querySelectorAll('.file-actions-dropdown:not(.hidden)').forEach(dropdown => {
                 dropdown.classList.add('hidden');
             });
         }
-        // بستن منوی میانبرها
         if (!e.target.closest('#shortcutsMenu') && !e.target.closest('#editor')) {
             elements.shortcutsMenu.style.display = 'none';
             state.isShortcutMenuVisible = false;
         }
-        // بستن منوی کشویی نوار ابزار
         if (!e.target.closest('.toolbar-dropdown-container')) {
             document.querySelectorAll('.toolbar-dropdown-menu:not(.hidden)').forEach(dropdown => {
                 dropdown.classList.add('hidden');
             });
+        }
+        if (!e.target.closest('#fileSortContainer')) {
+            elements.fileSortMenu.classList.add('hidden');
         }
     });
 
