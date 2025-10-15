@@ -10,7 +10,7 @@ import { state } from './state.js';
 export class Editor {
     constructor(element) {
         this.el = element;
-        this.history = [''];
+        this.history = [{ content: '', selectionStart: 0, selectionEnd: 0 }];
         this.historyIndex = 0;
         this.historyTimeout = null;
 
@@ -38,9 +38,13 @@ export class Editor {
         clearTimeout(this.historyTimeout);
         this.historyTimeout = setTimeout(() => {
             const currentValue = this.el.value;
-            if (this.history[this.historyIndex] !== currentValue) {
+            if (this.history[this.historyIndex].content !== currentValue) {
                 this.history = this.history.slice(0, this.historyIndex + 1);
-                this.history.push(currentValue);
+                this.history.push({
+                    content: currentValue,
+                    selectionStart: this.el.selectionStart,
+                    selectionEnd: this.el.selectionEnd
+                });
                 this.historyIndex++;
             }
         }, 400); // تاخیر ۴۰۰ میلی‌ثانیه‌ای
@@ -409,8 +413,13 @@ export class Editor {
     
         if (options.resetHistory) {
             clearTimeout(this.historyTimeout);
-            this.history = [content];
+            this.history = [{ 
+                content: content,
+                selectionStart: 0,
+                selectionEnd: 0
+            }];
             this.historyIndex = 0;
+            this.el.setSelectionRange(0, 0);
             // For initial load or new file, just update UI, don't create history
             EventBus.emit('editor:contentChanged', content);
         } else {
@@ -581,7 +590,10 @@ export class Editor {
         clearTimeout(this.historyTimeout);
         if (this.historyIndex > 0) {
             this.historyIndex--;
-            this.el.value = this.history[this.historyIndex];
+            const stateToRestore = this.history[this.historyIndex];
+            this.el.value = stateToRestore.content;
+            this.el.setSelectionRange(stateToRestore.selectionStart, stateToRestore.selectionEnd);
+            this.el.focus();
             EventBus.emit('editor:contentChanged', this.el.value);
         }
     }
@@ -592,7 +604,10 @@ export class Editor {
         clearTimeout(this.historyTimeout);
         if (this.historyIndex < this.history.length - 1) {
             this.historyIndex++;
-            this.el.value = this.history[this.historyIndex];
+            const stateToRestore = this.history[this.historyIndex];
+            this.el.value = stateToRestore.content;
+            this.el.setSelectionRange(stateToRestore.selectionStart, stateToRestore.selectionEnd);
+            this.el.focus();
             EventBus.emit('editor:contentChanged', this.el.value);
         }
     }
