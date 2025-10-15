@@ -1,6 +1,6 @@
 import { elements } from '../utils/dom.js';
 import { EventBus } from '../core/eventBus.js';
-import { formatFileSize } from '../utils/helpers.js';
+import { formatFileSize, removeFileExtension } from '../utils/helpers.js';
 
 /**
  * ماژول نوار وضعیت (آمار متن)
@@ -37,7 +37,7 @@ function showFileProperties(file) {
         size: new Blob([content]).size
     };
 
-    elements.propFileName.textContent = file.id;
+    elements.propFileName.textContent = removeFileExtension(file.id);
     elements.propFileSize.textContent = formatFileSize(stats.size);
     elements.propCreationDate.textContent = new Date(file.creationDate || file.lastModified).toLocaleString('fa-IR');
     elements.propLastModified.textContent = new Date(file.lastModified).toLocaleString('fa-IR');
