@@ -282,6 +282,10 @@ export function init() {
     elements.filesTabBtn.addEventListener('click', () => activateTab('files'));
     elements.tocTabBtn.addEventListener('click', () => activateTab('toc'));
     
+    elements.newFileSideBtn.addEventListener('click', () => {
+        EventBus.emit('file:new');
+    });
+
     elements.fileSortToggle.addEventListener('click', (e) => {
         e.stopPropagation();
         elements.fileSortMenu.classList.toggle('hidden');

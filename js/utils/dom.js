@@ -55,6 +55,7 @@ export const elements = {
   fileSortContainer: qs('#fileSortContainer'),
   fileSortToggle: qs('#fileSortToggle'),
   fileSortMenu: qs('#fileSortMenu'),
+  newFileSideBtn: qs('#newFileSideBtn'),
 
   // منو
   addMenu: (() => {

@@ -6,6 +6,7 @@
   padding: 0.5rem 0.8rem;
   font-size: 0.8rem;
   color: #4b5563;
+  gap: 0.5rem;
 }
 
 .files-list {
@@ -16,7 +17,8 @@
   position: relative;
 }
 
-.sort-dropdown-toggle {
+.sort-dropdown-toggle,
+.new-file-side-btn {
   padding: 0.5rem;
   font-size: 1rem;
   line-height: 1;
